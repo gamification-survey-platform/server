@@ -1,0 +1,20 @@
+[
+    {
+        "model": "gamification.artifact",
+        "pk": 1,
+        "fields": {
+            "entity": 2,
+            "assignment": 1,
+            "upload_time": "2022-08-03T05:47:42.486Z",
+            "file": "assignment_files/Internship_Experience_Review_Report_-_Sample_Report_Draft_V00GKst.pdf"
+        }
+    },
+    {
+        "model": "gamification.artifactreview",
+        "pk": 2,
+        "fields": {
+            "artifact": 1,
+            "user": 9
+        }
+    }
+]

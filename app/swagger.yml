@@ -1,0 +1,238 @@
+openapi: 3.0.0
+info:
+  title: GAMIFICATION-PLATFORM API doc
+  description: API doc for Gamification-platform
+  version: 1.0.0
+servers:
+  - url: http://127.0.0.1:8000/
+    description: local server
+tags:
+  - name: User
+    description: Operations regarding user
+paths:
+  "/users":
+    post:
+      tags:
+        - User
+      description: Register
+      summary: Register a user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+            example:
+              andrewId: andrewId
+              password: password
+      responses:
+        "201":
+          description: Register success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+              example:
+                andrewId: "XXX"
+                token: <JWT token>
+                acknowledgement: false
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - User
+      parameters:
+        - $ref: "#/components/parameters/criteria"
+      description: Get all users
+      summary: Get (Search) all users
+      responses:
+        "200":
+          description: Get all users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+              example:
+                [
+                  { "andrewId": "XXX", "online": true },
+                  { "andrewId": "XXX", "online": true },
+                  { "andrewId": "XXX", "online": false },
+                ]
+  "/users/{andrewId}":
+    patch:
+      security:
+        - bearerAuth: []
+      tags:
+        - User
+      summary: Update a part of specific user
+      description: Update a part of specific user
+      parameters:
+        - $ref: "#/components/parameters/andrewId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+            examples:
+              Update user password:
+                value:
+                  password: "password"
+              Update user name:
+                value:
+                  andrewId: "andrewId"
+        description: Updated part of user object
+        required: true
+      responses:
+        "200":
+          description: Update success
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: ok
+        "403":
+          description: No access (illegal access to other users' info).
+        "404":
+          description: User not found. It occurs when administrator try to modify a nonexistent user.
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: User not found
+
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - User
+      summary: Get a part of user
+      description: Get a part of user
+      parameters:
+        - $ref: "#/components/parameters/andrewId"
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                andrewId: "XXX"
+                online: true
+        "403":
+          description: No access (illegal access to other users' info).
+  "/users/{andrewId}/online":
+    put:
+      tags:
+        - User
+      description: Login
+      summary: Login an existing user
+      parameters:
+        - $ref: "#/components/parameters/andrewId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+            example:
+              password: password
+      responses:
+        "200":
+          description: Login success
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          description: Login failed - Incorrect Password
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Incorrect andrewId or password
+        "403":
+          description: Login failed - User inactive
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: Not authorized
+        "404":
+          description: Login failed - User not found
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: User not found
+  "/users/{andrewId}/offline":
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - User
+      description: Logout
+      summary: Logout a user
+      parameters:
+        - $ref: "#/components/parameters/andrewId"
+      responses:
+        "200":
+          description: Logout success
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: ok
+components:
+  parameters:
+    andrewId:
+      name: andrewId
+      in: path
+      description: AndrewId of the user
+      required: true
+      schema:
+        type: string
+    user:
+      name: andrewId
+      in: query
+      description: AndrewId of the user
+      required: false
+      schema:
+        type: string
+    criteria:
+      in: query
+      name: criteria
+      description: Search criteria
+      required: false
+      schema:
+        type: string
+
+  schemas:
+    User:
+      type: object
+      properties:
+        andrew_id:
+          type: string
+        password:
+          type: string
+          format: password
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        is_staff:
+          type: boolean
+        is_active:
+          type: boolean
+        date_joined:
+          type: string
+          format: date-time

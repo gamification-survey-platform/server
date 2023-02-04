@@ -1,0 +1,1 @@
+[{"model": "gamification.membership", "pk": 2, "fields": {"student": 7, "entity": 2}}, {"model": "gamification.membership", "pk": 3, "fields": {"student": 8, "entity": 2}}, {"model": "gamification.membership", "pk": 4, "fields": {"student": 9, "entity": 3}}]
