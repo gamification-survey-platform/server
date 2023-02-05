@@ -9,6 +9,8 @@ servers:
 tags:
   - name: User
     description: Operations regarding user
+  - name: Survey
+    description: Operations regarding Survey
 paths:
   "/users":
     post:
@@ -189,6 +191,36 @@ paths:
                 type: object
               example:
                 message: ok
+  "/surveys":
+    get:
+      tags:
+        - Survey
+      description: Get surveys
+      summary: Get the list of all surveys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SurveyTemplete"
+            example:
+              name: Survey1
+              instructions: Survey for homework1
+              is_template: false
+              other_info: This survey should be finished before 2/4
+      responses:
+        "201":
+          description: All the surveys
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurveyTemplete"
+              example:
+                pk: 1
+                name: Survey1
+                instructions: Survey for homework1
+                other_info: This survey should be finished before 2/4
+
+ 
 components:
   parameters:
     andrewId:
@@ -236,3 +268,14 @@ components:
         date_joined:
           type: string
           format: date-time
+    SurveyTemplete:
+      type: object
+      properties:
+        name:
+          type: string
+        instructions:
+          type: string
+        is_template:
+          type: boolean
+        other_info:
+          type: string
