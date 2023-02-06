@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from .user import UserList, UserDetail
-from .course import CourseList, CourseDetail
+from .course import CourseList, CourseDetail, ViewACourse, EditACourse, DeleteACourse
 from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo, SurveyList, SurveyDetail, SurveySectionList, TemplateSectionList
 from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList, ArtifactReviewList, ArtifactReviewDetail, CheckAllDone, CreateArtifactReview, CreateArtifactAnswer, FeedbackDetail, ArtifactResult, SurveyComplete, ArtifactAnswerKeywordList
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
@@ -32,8 +32,10 @@ urlpatterns = [
     path('users/', UserList.as_view(), name='user-list'),
     path('users/<str:andrew_id>/', UserDetail.as_view(), name='user-detail'),
     path('courses/', CourseList.as_view(), name='course-list'),
-    path('courses/<str:id>/', CourseDetail.as_view(), name='course-detail'),
-
+    path('courses/<str:course_id>/', CourseDetail.as_view(), name='course-detail'),
+     path('courses/<str:course_id>/view/', ViewACourse.as_view(), name='course-view'),
+     path('courses/<str:course_id>/edit/', EditACourse.as_view(), name='course-edit'),
+     path('courses/<str:course_id>/delete/', DeleteACourse.as_view(), name='course-delete'),
     # RetrieveUpdateDestroyAPIView GET, PUT, PATCH, DELETE
     # ListAPIView GET
     # ListCreateAPIView GET POST
