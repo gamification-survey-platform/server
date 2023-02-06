@@ -191,6 +191,27 @@ paths:
                 type: object
               example:
                 message: ok
+                
+  "/course/{course_id}/view":
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Course
+      summary: Get a part of course
+      description: Get a part of course
+      parameters:
+        - $ref: "#/components/parameters/course_id"
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                course_id: "123"
+
   "/surveys":
     get:
       tags:
@@ -244,6 +265,14 @@ components:
       required: false
       schema:
         type: string
+    course_id:
+      in: path
+      name: course_id
+      description: Id of the course_id
+      required: true
+      schema:
+        type:
+          string
 
   schemas:
     User:
@@ -279,3 +308,18 @@ components:
           type: boolean
         other_info:
           type: string
+    Course:
+      type: object
+      properties:
+        course_id:
+          type: string
+        name:
+          type: string
+        syllabus:
+          type: string
+        semester:
+          type: string
+        visible:
+          type: string
+        picture:
+          type: object
