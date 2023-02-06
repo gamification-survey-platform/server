@@ -2,8 +2,11 @@ from django.urls import path
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from rest_framework import status
 
 from .user import UserList, UserDetail
+from app.gamification.models import CustomUser
+from app.gamification.serializers import UserSerializer 
 from .course import CourseList, CourseDetail
 from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo, SurveyList, SurveyDetail, SurveySectionList, TemplateSectionList
 from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList, ArtifactReviewList, ArtifactReviewDetail, CheckAllDone, CreateArtifactReview, CreateArtifactAnswer, FeedbackDetail, ArtifactResult, SurveyComplete, ArtifactAnswerKeywordList
@@ -26,11 +29,32 @@ def api_root(request, format=None):
         'constraints': reverse('constraint-list', request=request, format=format),
     })
 
+@api_view(['GET'])
+def users(request):
+    if request.method == 'GET':
+          data = CustomUser.objects.all()
+
+          serializer = UserSerializer(data, context={'request': request}, many=True)
+
+          return Response(serializer.data)
+
+@api_view(['GET'])
+def users_detail(request, andrew_id):
+    if request.method == 'GET':
+          try:
+               data = CustomUser.objects.get(andrew_id=andrew_id)
+
+               serializer = UserSerializer(data, context={'request': request})
+
+               return Response(serializer.data)
+          except CustomUser.DoesNotExist:
+               return Response(status=status.HTTP_404_NOT_FOUND)               
+
 
 urlpatterns = [
     path('', api_root),
-    path('users/', UserList.as_view(), name='user-list'),
-    path('users/<str:andrew_id>/', UserDetail.as_view(), name='user-detail'),
+    path('users/', users),
+    path('users/<str:andrew_id>/', users_detail),
     path('courses/', CourseList.as_view(), name='course-list'),
     path('courses/<str:id>/', CourseDetail.as_view(), name='course-detail'),
 
