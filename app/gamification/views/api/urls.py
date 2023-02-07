@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from .user import UserList, UserDetail
-from .course import CourseList, ViewACourse, EditACourse, DeleteACourse, AddACourseForAdmin
+from .course import CourseList, ViewACourse, EditACourse, DeleteACourse, AddACourse
+from .assignment import AssignmentListForAdmin, ViewAnAssignmentForAdmin, EditAnAssignment, DeleteAnAssignment, AddAnAssignment
 from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo, SurveyList, SurveyDetail, SurveySectionList, TemplateSectionList
 from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList, ArtifactReviewList, ArtifactReviewDetail, CheckAllDone, CreateArtifactReview, CreateArtifactAnswer, FeedbackDetail, ArtifactResult, SurveyComplete, ArtifactAnswerKeywordList
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
@@ -37,7 +38,14 @@ urlpatterns = [
     path('courses/<str:course_id>/edit/', EditACourse.as_view(), name='course-edit'),
     path('courses/<str:course_id>/delete/', DeleteACourse.as_view(), name='course-delete'),
     # for admin to add a course
-    path('courses/add/', AddACourseForAdmin.as_view(), name='course-add'),
+    path('courses/add/', AddACourse.as_view(), name='course-add'),
+    
+    # assignment 
+    path('courses/<str:course_id>/assignments/', AssignmentListForAdmin.as_view(), name='assignment-list'),
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/view/', ViewAnAssignmentForAdmin.as_view(), name='assignment-view'),
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/edit/', EditAnAssignment.as_view(), name='assignment-edit'),
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/delete/', DeleteAnAssignment.as_view(), name='assignment-delete'),
+    path('courses/<str:course_id>/assignments/add/', AddAnAssignment.as_view(), name='assignment-add'),
     # RetrieveUpdateDestroyAPIView GET, PUT, PATCH, DELETE
     # ListAPIView GET
     # ListCreateAPIView GET POST

@@ -1,3 +1,5 @@
+from django.http import HttpResponse
+from app.gamification import serializers
 from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
 
@@ -6,6 +8,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from app.gamification.models import Assignment, Course, Registration, Team, Membership, Artifact, Individual, FeedbackSurvey
 import pytz
 from pytz import timezone
+from datetime import datetime
+
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     '''
@@ -30,7 +34,6 @@ class AssignmentListForAdmin(generics.ListCreateAPIView):
     
     def get(self, request, course_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
-        userRole = Registration.objects.get(users=request.user, courses=course).userRole
         assignments = Assignment.objects.filter(course=course)
         info = []
         for a in assignments:
@@ -47,12 +50,7 @@ class AssignmentListForAdmin(generics.ListCreateAPIView):
                 else:
                     assign['feedback_survey'] = 0
             info.append(assign)
-        context = {'infos': info,
-                   "course_id": course_id,
-                   "course": course,
-                   "userRole": userRole}
-        return render(request, 'assignment.html', context)
-        
+        return HttpResponse(info, content_type="application/json")
 
 class AssignmentListForStudent(generics.ListCreateAPIView):
     queryset = Assignment.objects.all()
@@ -99,10 +97,111 @@ class AssignmentListForStudent(generics.ListCreateAPIView):
                 else:
                     assign['feedback_survey'] = 0
             info.append(assign)
-        context = {'infos': info,
-                   "course_id": course_id,
-                   "course": course,
-                   "userRole": userRole}
-        # return render(request, 'assignment.html', context)
-        serializer = self.get_serializer(queryset, many=True)
+        return HttpResponse(info, content_type="application/json")
+    
+    
+class ViewAnAssignmentForAdmin(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Assignment.objects.all()
+    serializer_class = AssignmentSerializer
+    permission_classes = [permissions.IsAdminUser]
+    
+    def get(self, request, course_id, assignment_id, *args, **kwargs):
+        assignment = get_object_or_404(Assignment, pk=assignment_id)
+        # Response for admin
+        serializer = AssignmentSerializer(assignment)
         return Response(serializer.data)
+        
+class ViewAnAssignmentForStudent(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Assignment.objects.all()
+    serializer_class = AssignmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, course_id, assignment_id, *args, **kwargs):
+        assignment = get_object_or_404(Assignment, pk=assignment_id)
+        registration = get_object_or_404(
+            Registration, users=request.user, courses=course_id)
+        course = get_object_or_404(Course, pk=course_id)
+        assignment_type = assignment.assignment_type   
+        
+        if assignment_type == "Individual":
+            try:
+                entity = Individual.objects.get(
+                    registration=registration, course=course)
+            except Individual.DoesNotExist:
+                # Create an Individual entity for the user
+                individual = Individual(course=course)
+                individual.save()
+                membership = Membership(student=registration, entity=individual)
+                membership.save()
+                entity = Individual.objects.get(
+                    registration=registration, course=course)
+        elif assignment_type == "Team":
+            try:
+                entity = Team.objects.get(registration=registration, course=course)
+            except Team.DoesNotExist:
+                # TODO: Alert: you need to be a member of the team to upload the artifact
+                print("you need to be a member of the team to upload the artifact")
+                return Response(status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            artifacts = Artifact.objects.filter(
+                assignment=assignment, entity=entity)
+            latest_artifact = artifacts.latest('upload_time')
+            artifact_id = latest_artifact.id
+        except Artifact.DoesNotExist:
+            latest_artifact = "None"
+            artifact_id = None
+
+        # if artifact exist
+        if artifact_id != None:
+            latest_artifact_filename = latest_artifact.file.name.split('/')[-1]
+        else:
+            latest_artifact_filename = ""
+        # return info with assignment and artifact
+        info = {'assignment': assignment, 'latest_artifact' : latest_artifact, 'latest_artifact_filename': latest_artifact_filename}
+        return HttpResponse(info, content_type="application/json")
+
+class EditAnAssignment(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Assignment.objects.all()
+    serializer_class = AssignmentSerializer
+    permission_classes = [permissions.IsAdminUser]
+    
+    def get(self, request, course_id, assignment_id, *args, **kwargs):
+        assignment = get_object_or_404(Assignment, pk=assignment_id)
+        # Response for admin
+        serializer = AssignmentSerializer(assignment)
+        return Response(serializer.data)
+    
+    def put(self, request, course_id, assignment_id, *args, **kwargs):
+        assignment = get_object_or_404(Assignment, pk=assignment_id)
+        serializer = AssignmentSerializer(assignment, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class DeleteAnAssignment(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Assignment.objects.all()
+    serializer_class = AssignmentSerializer
+    permission_classes = [permissions.IsAdminUser]
+    
+    def delete(self, request, course_id, assignment_id, *args, **kwargs):
+        assignment = get_object_or_404(Assignment, pk=assignment_id)
+        assignment.delete()
+        # return 200 or 204
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class AddAnAssignment(generics.CreateAPIView):
+    queryset = Assignment.objects.all()
+    serializer_class = AssignmentSerializer
+    permission_classes = [permissions.IsAdminUser]
+    
+    def post(self, request, course_id, *args, **kwargs):
+        course = get_object_or_404(Course, pk=course_id)
+        serializer = AssignmentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(course=course)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

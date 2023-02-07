@@ -114,7 +114,7 @@ class DeleteACourse(generics.DestroyAPIView):
         # return Response(status=status.HTTP_204_NO_CONTENT
         return Response(status=status.HTTP_200_OK)
         
-class AddACourseForAdmin(generics.CreateAPIView):
+class AddACourse(generics.CreateAPIView):
     # queryset = Course.objects.all()
     serializer_class = CourseSerializer
     permission_classes = [permissions.IsAdminUser]
