@@ -208,7 +208,7 @@ class EditAMember(generics.UpdateAPIView):
         return Response(context)
     
     
-class DeleteAMember(generics.destoryAPIView):
+class DeleteAMember(generics.DestroyAPIView):
     # queryset = Entity.objects.all()
     serializer_class = EntitySerializer
     permission_classes = [permissions.IsAdminUser ] # admin
