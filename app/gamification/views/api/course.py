@@ -37,11 +37,11 @@ class CourseList(generics.ListCreateAPIView):
         return Response(serializer.data)
 
 
-class CourseDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Course.objects.all()
-    lookup_field = 'id'
-    serializer_class = CourseSerializer
-    permission_classes = [permissions.IsAdminUser]
+# class CourseDetail(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Course.objects.all()
+#     lookup_field = 'id'
+#     serializer_class = CourseSerializer
+#     permission_classes = [permissions.IsAdminUser]
 
 
 class ViewACourse(generics.RetrieveAPIView):
@@ -64,21 +64,6 @@ class ViewACourse(generics.RetrieveAPIView):
         return Response(serializer.data)
 
 
-# @login_required
-# @user_role_check(user_roles=[Registration.UserRole.Instructor, Registration.UserRole.TA])
-# def edit_course(request, course_id):
-#     course = get_object_or_404(Course, pk=course_id)
-#     if request.method == 'POST':
-#         form = CourseForm(request.POST, request.FILES,
-#                           instance=course, label_suffix='')
-
-#         if form.is_valid():
-#             course = form.save()
-#         return redirect('course')
-
-#     else:
-#         form = CourseForm(instance=course)
-#         return render(request, 'edit_course.html', {'course': course, 'form': form})
 class EditACourse(generics.UpdateAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
@@ -94,9 +79,20 @@ class EditACourse(generics.UpdateAPIView):
             # return 403 and error message
             content = {'message': 'Permission denied'}
             return Response(content, status=status.HTTP_403_FORBIDDEN)
-        serializer = self.get_serializer(course, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
+        course_number = request.data.get('course_number').strip()
+        course_name = request.data.get('course_name').strip()
+        syllabus =  request.data.get('syllabus').strip()
+        semester = request.data.get('semester').strip()
+        visible = request.data.get('visible').strip()
+        picture = request.data.get('picture').strip()
+        course.course_number = course_number
+        course.course_name = course_name
+        course.syllabus = syllabus
+        course.semester = semester
+        course.visible = visible
+        course.picture = picture
+        course.save()
+        serializer = CourseSerializer(course)
         return Response(serializer.data)
     
 class DeleteACourse(generics.DestroyAPIView):
@@ -118,3 +114,32 @@ class DeleteACourse(generics.DestroyAPIView):
         # return Response(status=status.HTTP_204_NO_CONTENT
         return Response(status=status.HTTP_200_OK)
         
+class AddACourseForAdmin(generics.CreateAPIView):
+    # queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        # add course
+        course_number = request.data.get('course_number').strip()
+        course_name = request.data.get('course_name').strip()
+        syllabus =  request.data.get('syllabus').strip()
+        semester = request.data.get('semester').strip()
+        # boolean value visible
+        visible = request.data.get('visible')
+        visible = True if visible == 'true' else False
+        picture = request.data.get('picture').strip()
+        course = Course.objects.create(
+            course_number=course_number,
+            course_name=course_name,
+            syllabus=syllabus,
+            semester=semester,
+            visible=visible,
+            picture=picture
+        )
+        course.save()
+        registration = Registration(
+            users=request.user, courses=course, userRole=Registration.UserRole.Instructor)
+        registration.save()
+        serializer = CourseSerializer(course)
+        return Response(serializer.data)
