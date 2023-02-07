@@ -1,29 +1,73 @@
 from rest_framework import generics
 from rest_framework import permissions
-
+import json
 from app.gamification.models import CustomUser
 from app.gamification.serializers import UserSerializer
 
-
-class IsAdminOrSelf(permissions.BasePermission):
-    '''
-    Custom permission to only allow users to edit information of itself.
-    Admin users are allowed to edit information of all users.
-    '''
-
-    def has_object_permission(self, request, view, obj):
-        # Write permissions are only allowed to the user itself or admin users
-        return bool(request.user.is_staff or request.user == obj)
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 
 
-class UserList(generics.ListCreateAPIView):
+from app.gamification.models import CustomUser
+from app.gamification.serializers import UserSerializer 
+
+class Users(generics.ListCreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAdminUser]
+    def get(self, request ,*args, **kwargs):
+        data = CustomUser.objects.all()
 
+        serializer = UserSerializer(data, context={'request': request}, many=True)
 
-class UserDetail(generics.RetrieveUpdateAPIView):
+        return Response(serializer.data)
+
+class UserDetail(generics.RetrieveAPIView):
     queryset = CustomUser.objects.all()
-    lookup_field = 'andrew_id'
     serializer_class = UserSerializer
-    permission_classes = [IsAdminOrSelf]
+
+    def get(self, request, andrew_id, *args, **kwargs):
+        try:
+            data = CustomUser.objects.get(andrew_id=andrew_id)
+
+            serializer = UserSerializer(data, context={'request': request})
+
+            return Response(serializer.data)
+        except CustomUser.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)      
+
+class Login(generics.ListCreateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserSerializer
+
+
+    def post(self, request , *args, **kwargs):
+        andrew_id = request.data.get('andrew_id')
+        password = request.data.get('password')
+        try:
+            user = CustomUser.objects.get(andrew_id=andrew_id)
+        except CustomUser.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if password == user.password:
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+class Register(generics.ListCreateAPIView):
+    def post(self, request, *args, **kwargs):
+
+        
+        andrew_id = request.data.get('andrew_id')
+        password = request.data.get('password')
+
+        try:
+            user = CustomUser.objects.get(andrew_id=andrew_id)
+        except CustomUser.DoesNotExist:
+            user = CustomUser.objects.create(andrew_id=andrew_id)
+            user.set_password(password)
+            user.save()
+            return Response(status=status.HTTP_200_OK)
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
