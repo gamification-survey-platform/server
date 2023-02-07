@@ -10,6 +10,7 @@ from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, Ques
 from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList, ArtifactReviewList, ArtifactReviewDetail, CheckAllDone, CreateArtifactReview, CreateArtifactAnswer, FeedbackDetail, ArtifactResult, SurveyComplete, ArtifactAnswerKeywordList
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
+from .member import MemberList, EditAMember, DeleteAMember
 
 @api_view(['GET'])
 def api_root(request, format=None):
@@ -46,6 +47,11 @@ urlpatterns = [
     path('courses/<str:course_id>/assignments/<str:assignment_id>/edit/', EditAnAssignment.as_view(), name='assignment-edit'),
     path('courses/<str:course_id>/assignments/<str:assignment_id>/delete/', DeleteAnAssignment.as_view(), name='assignment-delete'),
     path('courses/<str:course_id>/assignments/add/', AddAnAssignment.as_view(), name='assignment-add'),
+    
+    # Entity/member
+    path('courses/<str:course_id>/members/', MemberList.as_view(), name='member-list'),
+    path('courses/<str:course_id>/members/<str:andrew_id>/edit/', EditAMember.as_view(), name='member-edit'),
+    path('courses/<str:course_id>/members/<str:andrew_id>/delete/', DeleteAMember.as_view(), name='member-delete'),
     # RetrieveUpdateDestroyAPIView GET, PUT, PATCH, DELETE
     # ListAPIView GET
     # ListCreateAPIView GET POST
