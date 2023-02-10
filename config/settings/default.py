@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'app.gamification',
 
     'django_cleanup.apps.CleanupConfig',
+    'rest_framework_jwt'
 ]
 
 MIDDLEWARE = [
@@ -141,7 +142,16 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'gamification.CustomUser'
 
-
+# Django Rest Framework (DRF) and JWT
+# https://jpadilla.github.io/django-rest-framework-jwt/
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ],
+}
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
