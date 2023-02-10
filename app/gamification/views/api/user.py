@@ -1,6 +1,7 @@
 from rest_framework import generics
 from rest_framework import permissions
 import json
+
 from app.gamification.models import CustomUser
 from app.gamification.serializers import UserSerializer
 
@@ -10,17 +11,23 @@ from rest_framework import status
 
 
 from app.gamification.models import CustomUser
-from app.gamification.serializers import UserSerializer 
+from app.gamification.serializers import UserSerializer
+
+from django.conf import settings
+import jwt
+import os
+
 
 class Users(generics.ListCreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-    def get(self, request ,*args, **kwargs):
+
+    def get(self, request, *args, **kwargs):
         data = CustomUser.objects.all()
-
-        serializer = UserSerializer(data, context={'request': request}, many=True)
-
+        serializer = UserSerializer(
+            data, context={'request': request}, many=True)
         return Response(serializer.data)
+
 
 class UserDetail(generics.RetrieveAPIView):
     queryset = CustomUser.objects.all()
@@ -34,29 +41,32 @@ class UserDetail(generics.RetrieveAPIView):
 
             return Response(serializer.data)
         except CustomUser.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)      
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
 
 class Login(generics.ListCreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
 
-
-    def post(self, request , *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         andrew_id = request.data.get('andrew_id')
         password = request.data.get('password')
         try:
             user = CustomUser.objects.get(andrew_id=andrew_id)
         except CustomUser.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if password == user.password:
-            return Response(status=status.HTTP_200_OK)
+        if user.check_password(password):
+            jwt_token = {'token': jwt.encode(
+                {'id': user.id}, os.getenv('SECRET_KEY'), algorithm='HS256').decode('utf-8')}
+
+            return Response(jwt_token, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 class Register(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
 
-        
         andrew_id = request.data.get('andrew_id')
         password = request.data.get('password')
 
@@ -69,5 +79,3 @@ class Register(generics.ListCreateAPIView):
             return Response(status=status.HTTP_200_OK)
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
