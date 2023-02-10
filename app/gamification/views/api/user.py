@@ -21,6 +21,7 @@ import os
 class Users(generics.ListCreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request, *args, **kwargs):
         data = CustomUser.objects.all()
@@ -32,6 +33,7 @@ class Users(generics.ListCreateAPIView):
 class UserDetail(generics.RetrieveAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request, andrew_id, *args, **kwargs):
         try:
@@ -44,9 +46,12 @@ class UserDetail(generics.RetrieveAPIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 
-class Login(generics.ListCreateAPIView):
+class Login(generics.CreateAPIView):
+    http_method_names = ['get', 'post']
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
+
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):
         andrew_id = request.data.get('andrew_id')

@@ -15,7 +15,7 @@ from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgre
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def api_root(request, format=None):
     return Response({
         'users': reverse('user-list', request=request, format=format),
@@ -37,8 +37,8 @@ urlpatterns = [
     # User API
     path('users/', Users.as_view(), name='user-list'),
     path('users/<str:andrew_id>/', UserDetail.as_view(), name='user-detail'),
-    path('users/login/', Login.as_view(), name='user-login'),
-    path('users/register/', Register.as_view(), name='user-register'),
+    path('login/', Login.as_view(), name='user-login'),
+    path('register/', Register.as_view(), name='user-register'),
 
 
     path('courses/', CourseList.as_view(), name='course-list'),
