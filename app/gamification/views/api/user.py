@@ -18,6 +18,11 @@ import jwt
 import os
 
 
+# class IsAdminUser(permissions.BasePermission):
+#     def has_permission(self, request, view):
+#         return request.user and request.user.is_staff
+
+
 class Users(generics.ListCreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
@@ -56,13 +61,15 @@ class Login(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         andrew_id = request.data.get('andrew_id')
         password = request.data.get('password')
+
         try:
             user = CustomUser.objects.get(andrew_id=andrew_id)
         except CustomUser.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if user.check_password(password):
+            print(user.id, user.is_staff, os.getenv('SECRET_KEY'))
             jwt_token = {'token': jwt.encode(
-                {'id': user.id}, os.getenv('SECRET_KEY'), algorithm='HS256').decode('utf-8')}
+                {'id': user.id, 'is_staff': user.is_staff}, os.getenv('SECRET_KEY'), algorithm='HS256').decode('utf-8')}
 
             return Response(jwt_token, status=status.HTTP_200_OK)
         else:
