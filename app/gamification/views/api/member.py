@@ -30,7 +30,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 class MemberList(generics.ListCreateAPIView):
     # queryset = Entity.objects.all()
     serializer_class = EntitySerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request, course_id):
         def get_member_list(course_id):
@@ -64,12 +64,44 @@ class MemberList(generics.ListCreateAPIView):
         userRole = registration.userRole
         context = get_member_list(course_id)
         return Response(context)
-        # return render(request, 'course_member.html', context)
 
-class EditAMember(generics.UpdateAPIView):
+class ManageAMember(generics.RetrieveUpdateDestroyAPIView):
     queryset = Entity.objects.all()
     serializer_class = EntitySerializer
     permission_classes = [permissions.IsAdminUser ] # admin
+    
+    def get(self, request, course_id, andrew_id):
+        def get_a_member(course_id):
+            # get user with andrew_id
+            user = get_object_or_404(CustomUser, andrew_id=andrew_id)
+            registration = Registration.objects.filter(courses=course, users=user)
+            membership = []
+            for i in registration:
+                try:
+                    get_registration_team = Team.objects.filter(registration=i)
+                    if len(get_registration_team) > 1:
+                        team = get_registration_team[len(
+                            get_registration_team) - 1].name
+                    else:
+                        team = Team.objects.get(registration=i).name
+                except Team.DoesNotExist:
+                    team = ''
+                membership.append({
+                    'andrew_id': i.users.andrew_id,
+                    'userRole': i.userRole,
+                    'team': team,
+                    'is_activated': i.users.is_activated,
+                })
+            membership = sorted(membership, key=lambda x: x['team'])
+            context = {'membership': membership,
+                    'course_id': course_id, 'userRole': userRole}
+            return context
+        course = get_object_or_404(Course, pk=course_id)
+        registration = get_object_or_404(
+            Registration, users=request.user, courses=course)
+        userRole = registration.userRole
+        context = get_a_member(course_id)
+        return Response(context)
 
     def post(self, request, course_id, andrew_id):
         def get_member_list(course_id):
@@ -206,13 +238,7 @@ class EditAMember(generics.UpdateAPIView):
         
         context = get_member_list(course_id)
         return Response(context)
-    
-    
-class DeleteAMember(generics.DestroyAPIView):
-    # queryset = Entity.objects.all()
-    serializer_class = EntitySerializer
-    permission_classes = [permissions.IsAdminUser ] # admin
-    
+
     def delete(self, request, course_id, andrew_id):
         user = get_object_or_404(CustomUser, andrew_id=andrew_id)
         registration = get_object_or_404(
@@ -223,3 +249,4 @@ class DeleteAMember(generics.DestroyAPIView):
         # delete all artifact_review of TA or instructor
         # return delete success message, return 200 or 204
         return Response(status=status.HTTP_204_NO_CONTENT)
+    

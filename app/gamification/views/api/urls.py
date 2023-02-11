@@ -4,13 +4,13 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from .user import UserList, UserDetail
-from .course import CourseList, ViewACourse, EditACourse, DeleteACourse, AddACourse
-from .assignment import AssignmentListForAdmin, ViewAnAssignmentForAdmin, EditAnAssignment, DeleteAnAssignment, AddAnAssignment
+from .course import CourseList, ManageACourse
+from .assignment import AssignmentList, ManageAnAssignment
 from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo, SurveyList, SurveyDetail, SurveySectionList, TemplateSectionList
 from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList, ArtifactReviewList, ArtifactReviewDetail, CheckAllDone, CreateArtifactReview, CreateArtifactAnswer, FeedbackDetail, ArtifactResult, SurveyComplete, ArtifactAnswerKeywordList
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
-from .member import MemberList, EditAMember, DeleteAMember
+from .member import MemberList, ManageAMember
 
 @api_view(['GET'])
 def api_root(request, format=None):
@@ -33,25 +33,15 @@ urlpatterns = [
     path('', api_root),
     path('users/', UserList.as_view(), name='user-list'),
     path('users/<str:andrew_id>/', UserDetail.as_view(), name='user-detail'),
+    # course
     path('courses/', CourseList.as_view(), name='course-list'),
-    # path('courses/<str:course_id>/', CourseDetail.as_view(), name='course-detail'),
-    path('courses/<str:course_id>/view/', ViewACourse.as_view(), name='course-view'),
-    path('courses/<str:course_id>/edit/', EditACourse.as_view(), name='course-edit'),
-    path('courses/<str:course_id>/delete/', DeleteACourse.as_view(), name='course-delete'),
-    # for admin to add a course
-    path('courses/add/', AddACourse.as_view(), name='course-add'),
-    
+    path('courses/<str:course_id>/', ManageACourse.as_view(), name='manage-a-course'),
     # assignment 
-    path('courses/<str:course_id>/assignments/', AssignmentListForAdmin.as_view(), name='assignment-list'),
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/view/', ViewAnAssignmentForAdmin.as_view(), name='assignment-view'),
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/edit/', EditAnAssignment.as_view(), name='assignment-edit'),
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/delete/', DeleteAnAssignment.as_view(), name='assignment-delete'),
-    path('courses/<str:course_id>/assignments/add/', AddAnAssignment.as_view(), name='assignment-add'),
-    
+    path('courses/<str:course_id>/assignments/', AssignmentList.as_view(), name='assignment-list'),
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/', ManageAnAssignment.as_view(), name='manage-an-assignment'),
     # Entity/member
     path('courses/<str:course_id>/members/', MemberList.as_view(), name='member-list'),
-    path('courses/<str:course_id>/members/<str:andrew_id>/edit/', EditAMember.as_view(), name='member-edit'),
-    path('courses/<str:course_id>/members/<str:andrew_id>/delete/', DeleteAMember.as_view(), name='member-delete'),
+    path('courses/<str:course_id>/members/<str:andrew_id>/', ManageAMember.as_view(), name='manage-a-member'),
     # RetrieveUpdateDestroyAPIView GET, PUT, PATCH, DELETE
     # ListAPIView GET
     # ListCreateAPIView GET POST
