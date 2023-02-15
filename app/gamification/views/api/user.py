@@ -61,26 +61,17 @@ class Login(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         andrew_id = request.data.get('andrew_id')
         password = request.data.get('password')
-
+        user_data = None
         try:
             user = CustomUser.objects.get(andrew_id=andrew_id)
+            serializer = UserSerializer(user, context={'request': request})
+            user_data = serializer.data
         except CustomUser.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if user.check_password(password):
             print(user.id, user.is_staff, os.getenv('SECRET_KEY'))
             jwt_token = {'token': jwt.encode(
                 {'id': user.id, 'is_staff': user.is_staff}, os.getenv('SECRET_KEY'), algorithm='HS256').decode('utf-8')}
-            
-            user_data = {
-                'andrew_id': andrew_id,
-                'first_name': request.data.get('first_name'),
-                'last_name': request.data.get('last_name'),
-                'email': request.data.get('email'),
-                'is_staff': request.data.get('is_staff'),
-                'is_active': request.data.get('is_active'),
-                'date_joined': request.data.get('date_joined')
-            }
-
             response_payload = {
                 'jwt_token': jwt_token,
                 'data': user_data
