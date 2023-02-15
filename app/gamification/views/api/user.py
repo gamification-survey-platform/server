@@ -92,6 +92,9 @@ class Login(generics.CreateAPIView):
 
 
 class Register(generics.ListCreateAPIView):
+
+    permission_classes = [permissions.AllowAny]
+    
     def post(self, request, *args, **kwargs):
 
         andrew_id = request.data.get('andrew_id')
