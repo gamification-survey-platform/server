@@ -11,6 +11,8 @@ tags:
     description: Operations regarding user
   - name: Survey
     description: Operations regarding Survey
+  - name: Course
+    description: Operations regarding Course
   - name: Assignment
     description: Operations regarding Assignment
 paths:
