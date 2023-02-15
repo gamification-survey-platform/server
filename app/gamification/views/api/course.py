@@ -36,15 +36,25 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
                 else:
                     registration.append(reg)
             return registration
+        user = None
         # list courses
-        andrew_id = request.data.andrewId
-        user = CustomUser.objects.get(andrewId=andrew_id)
-        if user.is_staff:
+        if 'andrewId' in request.query_params:
+            andrew_id = request.query_params['andrewId']
+            user = CustomUser.objects.get(andrewId=andrew_id)
+        if user is None:
+            # TODO: check authentication
             registrations = Registration.objects.all()
+            print(registrations)
+            serializer = RegistrationSerializer(registrations, many=True)
+            return Response(serializer.data)
         else:
-            registrations = get_registrations(user)
-        serializer = RegistrationSerializer(registrations)
-        return Response(serializer.data)
+            if user.is_staff:
+                registrations = Registration.objects.all()
+            else:
+                registrations = get_registrations(user)
+                
+            serializer = RegistrationSerializer(registrations, many=True)
+            return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
         # add course
