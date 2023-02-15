@@ -32,6 +32,52 @@ def api_root(request, format=None):
     })
 
 
+@api_view(['GET', 'POST', 'DELETE'])
+def courses(request):
+     if request.method == 'POST':
+          return Response(status=status.HTTP_201_CREATED)
+     if request.method == 'GET':
+          return Response(status=status.HTTP_200_OK)
+     if request.method == 'DELETE':
+          return Response(status=status.HTTP_200_OK)
+
+@api_view(['GET', 'POST', 'DELETE'])
+def course_details(request, course_id):
+     if request.method == 'POST':
+          return Response(status=status.HTTP_201_CREATED)
+     if request.method == 'GET':
+          return Response(status=status.HTTP_200_OK)
+     if request.method == 'DELETE':
+          return Response(status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def user_courses(request, andrew_id):
+     return Response(status=status.HTTP_200_OK)
+
+@api_view(['GET', 'POST'])
+def assignments(request, course_id):
+     if request.method == 'POST':
+          return Response(status=status.HTTP_201_CREATED)
+     if request.method == 'GET':
+          return Response(status=status.HTTP_200_OK)
+
+@api_view(['GET', 'POST'])
+def assignment(request, course_id, assignment_id):
+     if request.method == 'POST':
+          return Response(status=status.HTTP_201_CREATED)
+     if request.method == 'GET':
+          return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['GET', 'POST', 'PUT'])
+def surveys(request, course_id, assignment_id):
+     if request.method == 'POST':
+          return Response(status=status.HTTP_201_CREATED)
+     if request.method == 'GET':
+          return Response(status=status.HTTP_200_OK)
+     if request.method == 'PUT':
+          return Response(status=status.HTTP_200_OK)
+
 urlpatterns = [
     path('', api_root),
     # User API
@@ -41,8 +87,12 @@ urlpatterns = [
     path('register/', Register.as_view(), name='user-register'),
 
 
-    path('courses/', CourseList.as_view(), name='course-list'),
-    path('courses/<str:id>/', CourseDetail.as_view(), name='course-detail'),
+    path('courses/', courses),
+     path('courses/<str:course_id>/', course_details),
+    path('courses/<str:course_id>/assignments/', assignments),
+     path('courses/<str:course_id>/assignments/<str:assignment_id>/', assignment),
+     path('courses/<str:course_id>/assignments/<str:assignment_id>/survey', surveys),
+    #path('courses/<str:id>/', CourseDetail.as_view(), name='course-detail'),
 
     # RetrieveUpdateDestroyAPIView GET, PUT, PATCH, DELETE
     # ListAPIView GET
