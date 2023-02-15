@@ -69,15 +69,10 @@ class Login(generics.CreateAPIView):
         except CustomUser.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         if user.check_password(password):
-            print(user.id, user.is_staff, os.getenv('SECRET_KEY'))
             jwt_token = {'token': jwt.encode(
                 {'id': user.id, 'is_staff': user.is_staff}, os.getenv('SECRET_KEY'), algorithm='HS256').decode('utf-8')}
-            response_payload = {
-                'jwt_token': jwt_token,
-                'data': user_data
-            }
-
-            return Response(response_payload, status=status.HTTP_200_OK)
+            user_data['token'] = jwt_token['token']
+            return Response(user_data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
