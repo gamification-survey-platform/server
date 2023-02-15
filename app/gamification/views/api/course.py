@@ -1,8 +1,8 @@
 from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
 
-from app.gamification.models import Course, Registration
-from app.gamification.serializers import CourseSerializer
+from app.gamification.models import Course, Registration, CustomUser
+from app.gamification.serializers import CourseSerializer, RegistrationSerializer
 from django.shortcuts import get_object_or_404
 
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -28,12 +28,22 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
     permission_classes =  [permissions.AllowAny] # [IsAdminOrReadOnly]
     
     def get(self, request, *args, **kwargs):
+        def get_registrations(user):
+            registration = []
+            for reg in Registration.objects.filter(users=user):
+                if reg.userRole == Registration.UserRole.Student and reg.courses.visible == False:
+                    continue
+                else:
+                    registration.append(reg)
+            return registration
         # list courses
-        if request.user.is_staff:
-            queryset = Course.objects.all()
+        andrew_id = request.data.andrewId
+        user = CustomUser.objects.get(andrewId=andrew_id)
+        if user.is_staff:
+            registrations = Registration.objects.all()
         else:
-            queryset = Course.objects.filter(visible=True)
-        serializer = self.get_serializer(queryset, many=True)
+            registrations = get_registrations(user)
+        serializer = RegistrationSerializer(registrations)
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
