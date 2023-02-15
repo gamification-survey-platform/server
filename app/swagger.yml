@@ -16,7 +16,7 @@ tags:
   - name: Assignment
     description: Operations regarding Assignment
 paths:
-  "/users":
+  "/api/users":
     get:
       security:
         - bearerAuth: []
@@ -41,7 +41,7 @@ paths:
                   { "andrewId": "XXX", "online": true },
                   { "andrewId": "XXX", "online": false },
                 ]
-  "/users/{andrewId}":
+  "/api/users/{andrewId}":
     get:
       security:
         - bearerAuth: []
@@ -64,7 +64,7 @@ paths:
         "403":
           description: No access (illegal access to other users' info).
 
-  "/login":
+  "/api/login":
     post:
       security:
         - bearerAuth: []
@@ -90,7 +90,7 @@ paths:
         "400":
           description: Andrew ID and password do not match
 
-  "/users/register":
+  "/api/users/register":
     post:
       security:
         - bearerAuth: []
@@ -155,7 +155,7 @@ paths:
         401:
           description: Unauthorized
 
-  "/courses/{course_id}/":
+  "/api/courses/{course_id}/":
     get:
       security:
         - bearerAuth: []
@@ -205,7 +205,7 @@ paths:
         "401":
           description: Unauthorized
 
-  "/courses/{course_id}/assignments/":
+  "/api/courses/{course_id}/assignments/":
     get:
       security:
         - bearerAuth: []
@@ -312,7 +312,7 @@ paths:
         401:
           description: User role not found
 
-  "/surveys":
+  "/api/surveys":
     get:
       tags:
         - Survey
