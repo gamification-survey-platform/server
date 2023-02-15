@@ -77,7 +77,7 @@ class Login(generics.CreateAPIView):
                 'data': user_data
             }
 
-            return Response(user_data, status=status.HTTP_200_OK)
+            return Response(response_payload, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
