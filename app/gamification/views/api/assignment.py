@@ -1,10 +1,11 @@
 from django.http import HttpResponse, JsonResponse
 from app.gamification import serializers
+import json
 from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
 
 from app.gamification.serializers import CourseSerializer, AssignmentSerializer
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404
 from app.gamification.models import Assignment, Course, Registration, Team, Membership, Artifact, Individual, FeedbackSurvey
 import pytz
 from pytz import timezone
@@ -30,7 +31,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
     queryset = Assignment.objects.all()
     serializer_class = AssignmentSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny] # [permissions.IsAuthenticated]
     
     def get(self, request, course_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
@@ -72,7 +73,9 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
                     else:
                         assign['feedback_survey'] = 0
                 info.append(assign)
-            return HttpResponse(info, content_type="application/json")
+            data = json.dumps(info)
+            return Response(data, status=status.HTTP_200_OK)
+            # return HttpResponse(info, content_type="application/json")
         elif userRole == Registration.UserRole.Instructor or userRole == Registration.UserRole.TA:
             assignments = Assignment.objects.filter(course=course)
             info = []
@@ -90,7 +93,9 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
                     else:
                         assign['feedback_survey'] = 0
                 info.append(assign)
-            return HttpResponse(info, content_type="application/json")
+            data = json.dumps(info)
+            return Response(data, status=status.HTTP_200_OK)
+            # return HttpResponse(info, content_type="application/json")
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -115,7 +120,7 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
 class ManageAnAssignment(generics.RetrieveUpdateDestroyAPIView):
     queryset = Assignment.objects.all()
     serializer_class = AssignmentSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny] # [permissions.IsAuthenticated]
     
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
@@ -165,7 +170,9 @@ class ManageAnAssignment(generics.RetrieveUpdateDestroyAPIView):
                 latest_artifact_filename = ""
             # return info with assignment and artifact
             info = {'assignment': assignment, 'latest_artifact' : latest_artifact, 'latest_artifact_filename': latest_artifact_filename}
-            return HttpResponse(info, content_type="application/json")
+            data = json.dumps(info)
+            return Response(data)
+            # return HttpResponse(info, content_type="application/json")
         elif userRole == Registration.UserRole.Instructor or userRole == Registration.UserRole.TA:
             assignment = get_object_or_404(Assignment, pk=assignment_id)
             # Response for admin

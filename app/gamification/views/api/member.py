@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from django.contrib import messages
 from app.gamification.serializers import EntitySerializer
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404
 from app.gamification.models import Assignment, Course, CustomUser, Registration, Team, Membership, Artifact, ArtifactReview, Entity
 import pytz
 from pytz import timezone
@@ -30,9 +30,9 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 class MemberList(generics.ListCreateAPIView):
     # queryset = Entity.objects.all()
     serializer_class = EntitySerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny] # [permissions.IsAuthenticated]
     
-    def get(self, request, course_id):
+    def get(self, request, course_id, *args, **kwargs):
         def get_member_list(course_id):
             registration = Registration.objects.filter(courses=course)
             membership = []
@@ -68,9 +68,9 @@ class MemberList(generics.ListCreateAPIView):
 class ManageAMember(generics.RetrieveUpdateDestroyAPIView):
     queryset = Entity.objects.all()
     serializer_class = EntitySerializer
-    permission_classes = [permissions.IsAdminUser ] # admin
+    permission_classes = [permissions.AllowAny] # [permissions.IsAdminUser ]
     
-    def get(self, request, course_id, andrew_id):
+    def get(self, request, course_id, andrew_id, *args, **kwargs):
         def get_a_member(course_id):
             # get user with andrew_id
             user = get_object_or_404(CustomUser, andrew_id=andrew_id)
@@ -103,7 +103,7 @@ class ManageAMember(generics.RetrieveUpdateDestroyAPIView):
         context = get_a_member(course_id)
         return Response(context)
 
-    def post(self, request, course_id, andrew_id):
+    def post(self, request, course_id, andrew_id, *args, **kwargs):
         def get_member_list(course_id):
             registration = Registration.objects.filter(courses=course)
             membership = []
@@ -239,7 +239,7 @@ class ManageAMember(generics.RetrieveUpdateDestroyAPIView):
         context = get_member_list(course_id)
         return Response(context)
 
-    def delete(self, request, course_id, andrew_id):
+    def delete(self, request, course_id, andrew_id, *args, **kwargs):
         user = get_object_or_404(CustomUser, andrew_id=andrew_id)
         registration = get_object_or_404(
             Registration, users=user, courses=course_id)

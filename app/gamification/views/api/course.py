@@ -3,7 +3,7 @@ from rest_framework.response import Response
 
 from app.gamification.models import Course, Registration
 from app.gamification.serializers import CourseSerializer
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     '''
@@ -25,7 +25,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 class CourseList(generics.RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    permission_classes =  [permissions.IsAdminUser] #[IsAdminOrReadOnly]
+    permission_classes =  [permissions.AllowAny] # [IsAdminOrReadOnly]
     
     def get(self, request, *args, **kwargs):
         # list courses
@@ -72,7 +72,7 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
 class ManageACourse(generics.RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny] # [permissions.IsAuthenticated]
     
     def get(self, request, course_id, *args, **kwargs):
         # view course details

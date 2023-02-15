@@ -48,9 +48,13 @@ urlpatterns = [
     # assignment 
     path('courses/<str:course_id>/assignments/', AssignmentList.as_view(), name='assignment-list'),
     path('courses/<str:course_id>/assignments/<str:assignment_id>/', ManageAnAssignment.as_view(), name='manage-an-assignment'),
+    # TODO: assignment report 
     # Entity/member
     path('courses/<str:course_id>/members/', MemberList.as_view(), name='member-list'),
     path('courses/<str:course_id>/members/<str:andrew_id>/', ManageAMember.as_view(), name='manage-a-member'),
+    # Report
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/<andrew_id>', ArtifactReviewList.as_view(), name='artifact-review-list'),
+    
     # RetrieveUpdateDestroyAPIView GET, PUT, PATCH, DELETE
     # ListAPIView GET
     # ListCreateAPIView GET POST
