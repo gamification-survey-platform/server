@@ -37,7 +37,7 @@ packaging==23.0
 pathy==0.10.1
 Pillow==9.1.1
 preshed==3.0.8
-psycopg2==2.9.3
+# psycopg2==2.9.3
 psycopg2-binary==2.9.5
 pydantic==1.10.4
 PyMySQL==1.0.2
