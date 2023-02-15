@@ -70,8 +70,23 @@ class Login(generics.CreateAPIView):
             print(user.id, user.is_staff, os.getenv('SECRET_KEY'))
             jwt_token = {'token': jwt.encode(
                 {'id': user.id, 'is_staff': user.is_staff}, os.getenv('SECRET_KEY'), algorithm='HS256').decode('utf-8')}
+            
+            user_data = {
+                'andrew_id': andrew_id,
+                'first_name': request.data.get('first_name'),
+                'last_name': request.data.get('last_name'),
+                'email': request.data.get('email'),
+                'is_staff': request.data.get('is_staff'),
+                'is_active': request.data.get('is_active'),
+                'date_joined': request.data.get('date_joined')
+            }
 
-            return Response(jwt_token, status=status.HTTP_200_OK)
+            response_payload = {
+                'jwt_token': jwt_token,
+                'data': user_data
+            }
+
+            return Response(response_payload, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
