@@ -40,7 +40,7 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         # list courses
         if 'andrewId' in request.query_params:
             andrew_id = request.query_params['andrewId']
-            user = CustomUser.objects.get(andrewId=andrew_id)
+            user = CustomUser.objects.get(andrew_id=andrew_id)
         if user is None:
             # TODO: check authentication
             registrations = Registration.objects.all()
