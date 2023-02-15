@@ -9,9 +9,14 @@ servers:
 tags:
   - name: User
     description: Operations regarding user
+  - name: Survey
+    description: Operations regarding Survey
+  - name: Course
+    description: Operations regarding Course
+  - name: Assignment
+    description: Operations regarding Assignment
 paths:
   "/users":
-
     get:
       security:
         - bearerAuth: []
@@ -37,7 +42,6 @@ paths:
                   { "andrewId": "XXX", "online": false },
                 ]
   "/users/{andrewId}":
-
     get:
       security:
         - bearerAuth: []
@@ -110,7 +114,234 @@ paths:
         "400":
           description: The user name already existed
 
+  "/courses/":
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Course
+      description: Retrieve a list of courses
+      responses:
+        200:
+          description: A list of courses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+        401:
+          description: Unauthorized
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Course
+      description: Create a new course
+      parameters:
+        - in: query
+          name: body
+          schema:
+            type: object
+            required:
+              - course_name
+              - course_number
+            properties:
+              course_name:
+                type: string
+              course_number:
+                type: string
+      responses:
+        201:
+          description: Course created successfully
+        401:
+          description: Unauthorized
 
+  "/courses/{course_id}/":
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Course
+      description: retrieve a specific course
+      parameters:
+        - $ref: "#/components/parameters/course_id"
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+        "401":
+          description: Unauthorized
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - Course
+      description: update a specific course
+      parameters:
+        - $ref: "#/components/parameters/course_id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Course"
+      responses:
+        "200":
+          description: success
+        "401":
+          description: Unauthorized
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Course
+      description: delete a specific course
+      parameters:
+        - $ref: "#/components/parameters/course_id"
+      responses:
+        "200":
+          description: success
+        "401":
+          description: Unauthorized
+
+  "/courses/{course_id}/assignments/":
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Assignment
+      description: Retrieve a list of assignments for a specific course
+      parameters:
+        - $ref: "#/components/parameters/course_id"
+      responses:
+        200:
+          description: A list of assignments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assignment"
+        401:
+          description: Unauthorized
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Assignment
+      description: Create a new assignment for a specific course
+      parameters:
+        - $ref: "#/components/parameters/course_id"
+        - in: query
+          name: body
+          schema:
+            type: object
+            required:
+              - course
+              - assignment_name
+            properties:
+              course:
+                type: object
+              assignment_name:
+                type: string
+      responses:
+        201:
+          description: Assignment created successfully
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+
+  "/api/courses/{course_id}/assignments/{assignment_id}":
+    get:
+      security:
+        - bearerAuth: []
+      operationId: get_assignment_info
+      tags:
+        - Assignment
+      summary: Retrieve information about an assignment and its latest artifact
+      parameters:
+        - $ref: "#/components/parameters/course_id"
+        
+      responses:
+        200:
+          description: Successfully retrieved the information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assignment:
+                    type: object
+                    description: Information about the assignment
+                  latest_artifact:
+                    type: object
+                    description: Information about the latest artifact
+                  latest_artifact_filename:
+                    type: string
+                    description: Filename of the latest artifact
+        401:
+          description: User role not found
+        403:
+          description: Forbidden
+        404:
+          description: Course or assignment not found
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - Assignment
+      operationId: update_assignment
+      summary: Update information about an assignment
+      parameters:
+        - $ref: "#/components/parameters/course_id"
+        - $ref: "#/components/parameters/assignment_id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/schemas/Assignment"
+      responses:
+        200:
+          description: Successfully updated the assignment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assignment"
+        400:
+          description: Bad request
+        401:
+          description: User role not found
+
+  "/surveys":
+    get:
+      tags:
+        - Survey
+      description: Get surveys
+      summary: Get the list of all surveys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SurveyTemplete"
+            example:
+              name: Survey1
+              instructions: Survey for homework1
+              is_template: false
+              other_info: This survey should be finished before 2/4
+      responses:
+        "201":
+          description: All the surveys
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SurveyTemplete"
+              example:
+                pk: 1
+                name: Survey1
+                instructions: Survey for homework1
+                other_info: This survey should be finished before 2/4
+
+ 
 components:
   parameters:
     andrewId:
@@ -134,6 +365,21 @@ components:
       required: false
       schema:
         type: string
+    course_id:
+      in: path
+      name: course_id
+      description: Id of the course_id
+      required: true
+      schema:
+        type:
+          string
+    assignment_id:
+      in: path
+      name: assignment_id
+      description: ID of the assignment
+      required: true
+      schema:
+        type: integer
 
   schemas:
     User:
@@ -158,3 +404,59 @@ components:
         date_joined:
           type: string
           format: date-time
+    SurveyTemplete:
+      type: object
+      properties:
+        name:
+          type: string
+        instructions:
+          type: string
+        is_template:
+          type: boolean
+        other_info:
+          type: string
+    Course:
+      type: object
+      properties:
+        course_id:
+          type: string
+        name:
+          type: string
+        syllabus:
+          type: string
+        semester:
+          type: string
+        visible:
+          type: string
+        picture:
+          type: object
+    Assignment:
+      type: object
+      properties:
+        course:
+          type: object
+        assignment_name:
+          type: string
+        description:
+          type: string
+        assignment_type:
+          type: string
+        submission_type:
+          type: string
+        total_score:
+          type: number
+        weight:
+          type: number
+        date_created:
+          type: string
+          format: date-time
+        date_released:
+          type: string
+          format: date-time
+        date_due:
+          type: string
+          format: date-time
+        review_assign_policy:
+          type: string
+    
+        
