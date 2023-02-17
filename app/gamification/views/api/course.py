@@ -2,6 +2,7 @@ from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
 
 from app.gamification.models import Course, Registration, CustomUser
+from app.gamification.utils import get_user_pk
 from app.gamification.serializers import CourseSerializer, RegistrationSerializer
 from django.shortcuts import get_object_or_404
 
@@ -71,8 +72,8 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         course_name = request.data.get('course_name').strip()
         syllabus =  request.data.get('syllabus').strip()
         semester = request.data.get('semester').strip()
-        andrew_id = request.data.get('andrew_id').strip()
-        user = CustomUser.objects.get(andrew_id=andrew_id)
+        user_pk = get_user_pk(request)
+        user = CustomUser.objects.get(pk=user_pk)
         # boolean value visible
         visible = request.data.get('visible')
         visible = True if visible == 'true' else False
@@ -123,9 +124,10 @@ class ManageACourse(generics.RetrieveUpdateDestroyAPIView):
     def delete(self, request, course_id, *args, **kwargs):
         # delete course
         course = get_object_or_404(Course, pk=course_id)
+        user_pk = get_user_pk(request)
+        user = CustomUser.objects.get(pk=user_pk)
         registration = get_object_or_404(
-            Registration, users=request.user, courses=course)
-
+            Registration, users=user, courses=course)
         if registration.userRole == Registration.UserRole.Student:
             # return 403 and error message
             content = {'message': 'Permission denied'}
@@ -137,8 +139,10 @@ class ManageACourse(generics.RetrieveUpdateDestroyAPIView):
     def put(self, request, course_id, *args, **kwargs):
         # edit course details
         course = get_object_or_404(Course, pk=course_id)
+        user_pk = get_user_pk(request)
+        user = CustomUser.objects.get(pk=user_pk)
         registration = get_object_or_404(
-            Registration, users=request.user, courses=course)
+            Registration, users=user, courses=course)
 
         if registration.userRole == Registration.UserRole.Student:
             # return 403 and error message
