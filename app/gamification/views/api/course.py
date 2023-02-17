@@ -71,6 +71,8 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         course_name = request.data.get('course_name').strip()
         syllabus =  request.data.get('syllabus').strip()
         semester = request.data.get('semester').strip()
+        andrew_id = request.data.get('andrew_id').strip()
+        user = CustomUser.objects.get(andrew_id=andrew_id)
         # boolean value visible
         visible = request.data.get('visible')
         visible = True if visible == 'true' else False
@@ -85,7 +87,7 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         )
         course.save()
         registration = Registration(
-            users=request.user, courses=course, userRole=Registration.UserRole.Instructor)
+            users=user, courses=course, userRole=Registration.UserRole.Instructor)
         registration.save()
         serializer = CourseSerializer(course)
         return Response(serializer.data)
