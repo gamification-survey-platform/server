@@ -85,11 +85,11 @@ class Register(generics.ListCreateAPIView):
 
         andrew_id = request.data.get('andrew_id')
         password = request.data.get('password')
-
+        email = f'{andrew_id}@andrew.cmu.edu'
         try:
             user = CustomUser.objects.get(andrew_id=andrew_id)
         except CustomUser.DoesNotExist:
-            user = CustomUser.objects.create(andrew_id=andrew_id)
+            user = CustomUser.objects.create(andrew_id=andrew_id, email=email)
             user.set_password(password)
             user.save()
             return Response(status=status.HTTP_200_OK)

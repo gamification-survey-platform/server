@@ -20,6 +20,9 @@ class CustomUserManager(BaseUserManager):
         if not andrew_id:
             raise ValueError('The given Andrew ID must be set')
 
+        if not email:
+            raise ValueError('The given emai must exist')
+
         email = self.normalize_email(email)
         user = self.model(andrew_id=andrew_id, email=email, **extra_fields)
         user.set_password(password)
