@@ -3,10 +3,11 @@ from app.gamification import serializers
 import json
 from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
+from app.gamification.utils import get_user_pk
 
 from app.gamification.serializers import CourseSerializer, AssignmentSerializer
 from django.shortcuts import get_object_or_404
-from app.gamification.models import Assignment, Course, Registration, Team, Membership, Artifact, Individual, FeedbackSurvey
+from app.gamification.models import Assignment, Course, Registration, Team, Membership, Artifact, Individual, FeedbackSurvey, CustomUser
 import pytz
 from pytz import timezone
 from datetime import datetime
@@ -35,13 +36,16 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
     
     def get(self, request, course_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
-        userRole = Registration.objects.get(users=request.user, courses=course).userRole
+        andrew_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, andrew_id=andrew_id)
+        userRole = Registration.objects.get(users=user, courses=course).userRole
+
         if userRole == Registration.UserRole.Student:
             infos = Assignment.objects.filter(course=course)
             user_is_individual = True
             try:
                 registration = get_object_or_404(
-                    Registration, users=request.user, courses=course_id)
+                    Registration, users=user, courses=course_id)
                 entity = Team.objects.get(
                     registration=registration, course=course)
                 user_is_individual = False
@@ -101,7 +105,9 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
 
     def post(self, request, course_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
-        userRole = Registration.objects.get(users=request.user, courses=course).userRole
+        andrew_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, andrew_id=andrew_id)
+        userRole = Registration.objects.get(users=user, courses=course).userRole
         if userRole == Registration.UserRole.Student:
             # Students are not allowed to create assignments
             return Response(status=status.HTTP_403_FORBIDDEN)
@@ -124,11 +130,13 @@ class ManageAnAssignment(generics.RetrieveUpdateDestroyAPIView):
     
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
-        userRole = Registration.objects.get(users=request.user, courses=course).userRole
+        andrew_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, andrew_id=andrew_id)
+        userRole = Registration.objects.get(users=user, courses=course).userRole
         if userRole == Registration.UserRole.Student:
             assignment = get_object_or_404(Assignment, pk=assignment_id)
             registration = get_object_or_404(
-                Registration, users=request.user, courses=course_id)
+                Registration, users=user, courses=course_id)
             assignment_type = assignment.assignment_type   
             
             if assignment_type == "Individual":
@@ -184,7 +192,9 @@ class ManageAnAssignment(generics.RetrieveUpdateDestroyAPIView):
         
     def put(self, request, course_id, assignment_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
-        userRole = Registration.objects.get(users=request.user, courses=course).userRole
+        andrew_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, andrew_id=andrew_id)
+        userRole = Registration.objects.get(users=user, courses=course).userRole
         if userRole == Registration.UserRole.Student:
             return Response(status=status.HTTP_403_FORBIDDEN)
         elif userRole == Registration.UserRole.Instructor or userRole == Registration.UserRole.TA:
@@ -200,7 +210,9 @@ class ManageAnAssignment(generics.RetrieveUpdateDestroyAPIView):
         
     def delete(self, request, course_id, assignment_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
-        userRole = Registration.objects.get(users=request.user, courses=course).userRole
+        andrew_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, andrew_id=andrew_id)
+        userRole = Registration.objects.get(users=user, courses=course).userRole
         if userRole == Registration.UserRole.Student:
             return Response(status=status.HTTP_403_FORBIDDEN)
         elif userRole == Registration.UserRole.Instructor or userRole == Registration.UserRole.TA:

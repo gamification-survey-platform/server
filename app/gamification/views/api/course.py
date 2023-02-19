@@ -123,9 +123,11 @@ class ManageACourse(generics.RetrieveUpdateDestroyAPIView):
     
     def get(self, request, course_id, *args, **kwargs):
         # view course details
+        andrew_id = get_user_pk(request)
+        user = CustomUser.objects.get(andrew_id=andrew_id)
         course = get_object_or_404(Course, pk=course_id)
         registration = get_object_or_404(
-            Registration, users=request.user, courses=course)
+            Registration, users=user, courses=course)
 
         if course.visible == False and registration.userRole == Registration.UserRole.Student:
             # return 403 and error message
