@@ -44,6 +44,9 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
                 courses.append(course)
             return courses
         user = None
+        if 'course_id' in request.query_params:
+            course_id = request.query_params['course_id']
+            course = Course.objects.get(pk=course_id)
         # list courses
         if 'andrewId' in request.query_params:
             andrew_id = request.query_params['andrewId']
@@ -108,51 +111,9 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         # return Response(status=status.HTTP_204_NO_CONTENT
         return Response(status=status.HTTP_200_OK)
 
-
-# class CourseDetail(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Course.objects.all()
-#     lookup_field = 'id'
-#     serializer_class = CourseSerializer
-#     permission_classes = [permissions.IsAdminUser]
-
-
-class ManageACourse(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Course.objects.all()
-    serializer_class = CourseSerializer
-    permission_classes = [permissions.AllowAny] # [permissions.IsAuthenticated]
-    
-    def get(self, request, course_id, *args, **kwargs):
-        # view course details
-        course = get_object_or_404(Course, pk=course_id)
-        registration = get_object_or_404(
-            Registration, users=request.user, courses=course)
-
-        if course.visible == False and registration.userRole == Registration.UserRole.Student:
-            # return 403 and error message
-            content = {'message': 'Permission denied'}
-            return Response(content, status=status.HTTP_403_FORBIDDEN)
-        serializer = CourseSerializer(course)
-        # serializer = self.get_serializer(course)
-        return Response(serializer.data)
-
-
-    def delete(self, request, course_id, *args, **kwargs):
-        # delete course
-        course = get_object_or_404(Course, pk=course_id)
-        user_pk = get_user_pk(request)
-        user = CustomUser.objects.get(pk=user_pk)
-        registration = get_object_or_404(
-            Registration, users=user, courses=course)
-        if registration.userRole == Registration.UserRole.Student:
-            # return 403 and error message
-            content = {'message': 'Permission denied'}
-            return Response(content, status=status.HTTP_403_FORBIDDEN)
-        course.delete()
-        # return Response(status=status.HTTP_204_NO_CONTENT
-        return Response(status=status.HTTP_200_OK)
-
-    def put(self, request, course_id, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         # edit course details
+        course_id = request.query_params['course_id']
         course = get_object_or_404(Course, pk=course_id)
         user_pk = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_pk)
@@ -179,3 +140,4 @@ class ManageACourse(generics.RetrieveUpdateDestroyAPIView):
         course.save()
         serializer = CourseSerializer(course)
         return Response(serializer.data)
+        

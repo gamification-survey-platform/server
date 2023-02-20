@@ -120,7 +120,20 @@ paths:
         - bearerAuth: []
       tags:
         - Course
-      description: Retrieve a list of courses
+      description: Retrieve a list of courses.
+      parameters:
+        - in: query
+          name: andrew_id
+          schema:
+            type: string
+          required: false
+          description: andrew_id of user for whom to get all courses
+        - in: query
+          name: course_id
+          schema:
+            type: string
+          required: false
+          description: course_id for which to get course
       responses:
         200:
           description: A list of courses
@@ -136,42 +149,24 @@ paths:
       tags:
         - Course
       description: Create a new course
-      parameters:
-        - in: query
-          name: body
-          schema:
-            type: object
-            required:
-              - course_name
-              - course_number
-            properties:
-              course_name:
-                type: string
-              course_number:
-                type: string
+      requestBody:
+        description: New course to be added
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - course_name
+                - course_number
+              properties:
+                course_name:
+                  type: string
+                course_number:
+                    type: string
       responses:
         201:
           description: Course created successfully
         401:
-          description: Unauthorized
-
-  "/api/courses/{course_id}/":
-    get:
-      security:
-        - bearerAuth: []
-      tags:
-        - Course
-      description: retrieve a specific course
-      parameters:
-        - $ref: "#/components/parameters/course_id"
-      responses:
-        "200":
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Course"
-        "401":
           description: Unauthorized
     put:
       security:
@@ -180,12 +175,9 @@ paths:
         - Course
       description: update a specific course
       parameters:
-        - $ref: "#/components/parameters/course_id"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Course"
+        - in: query
+          name: course_id
+          $ref: "#/components/parameters/course_id"
       responses:
         "200":
           description: success
@@ -204,7 +196,7 @@ paths:
           description: success
         "401":
           description: Unauthorized
-
+          
   "/api/courses/{course_id}/assignments/":
     get:
       security:
