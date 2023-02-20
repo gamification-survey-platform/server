@@ -11,6 +11,8 @@ import pytz
 from pytz import timezone
 from datetime import datetime
 
+from app.gamification.utils import get_user_pk
+
 class IsAdminOrReadOnly(permissions.BasePermission):
     '''
     Custom permission to only allow users to view read-only information.
@@ -59,8 +61,10 @@ class MemberList(generics.ListCreateAPIView):
 
         course = get_object_or_404(Course, pk=course_id)
         # TODO: rethink about permission control for staff(superuser) and instructor
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, pk=user_id)
         registration = get_object_or_404(
-            Registration, users=request.user, courses=course)
+            Registration, users=user, courses=course)
         userRole = registration.userRole
         context = get_member_list(course_id)
         return Response(context)
@@ -96,9 +100,11 @@ class ManageAMember(generics.RetrieveUpdateDestroyAPIView):
             context = {'membership': membership,
                     'course_id': course_id, 'userRole': userRole}
             return context
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, pk=user_id)
         course = get_object_or_404(Course, pk=course_id)
         registration = get_object_or_404(
-            Registration, users=request.user, courses=course)
+            Registration, users=user, courses=course)
         userRole = registration.userRole
         context = get_a_member(course_id)
         return Response(context)
@@ -219,9 +225,11 @@ class ManageAMember(generics.RetrieveUpdateDestroyAPIView):
                     artifact_review.delete()
         
         course = get_object_or_404(Course, pk=course_id)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, pk=user_id)
         # TODO: rethink about permission control for staff(superuser) and instructor
         registration = get_object_or_404(
-            Registration, users=request.user, courses=course)
+            Registration, users=user, courses=course)
         userRole = registration.userRole
         andrew_id = request.POST['andrew_id']
         try:
