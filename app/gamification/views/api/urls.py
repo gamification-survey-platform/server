@@ -59,9 +59,12 @@ urlpatterns = [
     # ListAPIView GET
     # ListCreateAPIView GET POST
 
-
     # Get the list of all surveys, or Post a new survey
-    path('surveys/', SurveyList.as_view(), name='survey-list'),
+    path('assignments/<str:assignment_id>/surveys/', SurveyList.as_view(), name='survey-list'),
+
+    # Get detail of a survey, Delete a survey, Update a survey
+    path('surveys/<int:survey_pk>/', SurveyDetail.as_view(), name='survey-detail'),
+
 
     # Get detail of a survey, Delete a survey, Update a survey
     path('surveys/<int:survey_pk>/', SurveyDetail.as_view(), name='survey-detail'),

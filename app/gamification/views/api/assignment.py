@@ -1,3 +1,4 @@
+from django.forms import model_to_dict
 from django.http import HttpResponse, JsonResponse
 from app.gamification import serializers
 import json
@@ -36,8 +37,8 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
     
     def get(self, request, course_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
-        andrew_id = get_user_pk(request)
-        user = get_object_or_404(CustomUser, andrew_id=andrew_id)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
         userRole = Registration.objects.get(users=user, courses=course).userRole
 
         if userRole == Registration.UserRole.Student:
@@ -86,7 +87,7 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
             for a in assignments:
                 feedback_survey = FeedbackSurvey.objects.filter(assignment=a)
                 assign = dict()
-                assign['assignment'] = a
+                assign['assignment'] = model_to_dict(a)
                 assign['feedback_survey'] = feedback_survey.count()
                 if feedback_survey.count() == 1:
                     feedback_survey_release_date = feedback_survey[0].date_released.astimezone(
@@ -97,7 +98,8 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
                     else:
                         assign['feedback_survey'] = 0
                 info.append(assign)
-            data = json.dumps(info)
+            print(info)
+            data = json.dumps(info, default=str)
             return Response(data, status=status.HTTP_200_OK)
             # return HttpResponse(info, content_type="application/json")
         else:
@@ -105,8 +107,8 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
 
     def post(self, request, course_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
-        andrew_id = get_user_pk(request)
-        user = get_object_or_404(CustomUser, andrew_id=andrew_id)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
         userRole = Registration.objects.get(users=user, courses=course).userRole
         if userRole == Registration.UserRole.Student:
             # Students are not allowed to create assignments
@@ -130,8 +132,8 @@ class ManageAnAssignment(generics.RetrieveUpdateDestroyAPIView):
     
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
-        andrew_id = get_user_pk(request)
-        user = get_object_or_404(CustomUser, andrew_id=andrew_id)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
         userRole = Registration.objects.get(users=user, courses=course).userRole
         if userRole == Registration.UserRole.Student:
             assignment = get_object_or_404(Assignment, pk=assignment_id)
@@ -192,8 +194,8 @@ class ManageAnAssignment(generics.RetrieveUpdateDestroyAPIView):
         
     def put(self, request, course_id, assignment_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
-        andrew_id = get_user_pk(request)
-        user = get_object_or_404(CustomUser, andrew_id=andrew_id)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
         userRole = Registration.objects.get(users=user, courses=course).userRole
         if userRole == Registration.UserRole.Student:
             return Response(status=status.HTTP_403_FORBIDDEN)
@@ -210,8 +212,8 @@ class ManageAnAssignment(generics.RetrieveUpdateDestroyAPIView):
         
     def delete(self, request, course_id, assignment_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
-        andrew_id = get_user_pk(request)
-        user = get_object_or_404(CustomUser, andrew_id=andrew_id)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
         userRole = Registration.objects.get(users=user, courses=course).userRole
         if userRole == Registration.UserRole.Student:
             return Response(status=status.HTTP_403_FORBIDDEN)
