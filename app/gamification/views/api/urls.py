@@ -8,14 +8,13 @@ from rest_framework import status
 from app.gamification.models import CustomUser
 from app.gamification.serializers import UserSerializer
 from .user import Users, UserDetail, Login, Register
-from .course import CourseList, ManageACourse
-from .assignment import AssignmentList, ManageAnAssignment
+from .course import CourseList
+from .assignment import AssignmentList
 from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo, SurveyList, SurveyDetail, SurveySectionList, TemplateSectionList
 from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList, ArtifactReviewList, ArtifactReviewDetail, CheckAllDone, CreateArtifactReview, CreateArtifactAnswer, FeedbackDetail, ArtifactResult, SurveyComplete, ArtifactAnswerKeywordList
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
-from .member import MemberList, ManageAMember
-# from rest_framework_swagger.views import get_swagger_view
+from .member import MemberList
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from drf_yasg import openapi
@@ -65,14 +64,11 @@ urlpatterns = [
 
     # course
     path('courses/', CourseList.as_view(), name='course-list'),
-    path('courses/<str:course_id>/', ManageACourse.as_view(), name='manage-a-course'),
     # assignment 
     path('courses/<str:course_id>/assignments/', AssignmentList.as_view(), name='assignment-list'),
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/', ManageAnAssignment.as_view(), name='manage-an-assignment'),
     # TODO: assignment report 
     # Entity/member
     path('courses/<str:course_id>/members/', MemberList.as_view(), name='member-list'),
-    path('courses/<str:course_id>/members/<str:andrew_id>/', ManageAMember.as_view(), name='manage-a-member'),
     # Report
     path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/<andrew_id>', ArtifactReviewList.as_view(), name='artifact-review-list'),
     
@@ -80,9 +76,12 @@ urlpatterns = [
     # ListAPIView GET
     # ListCreateAPIView GET POST
 
-
     # Get the list of all surveys, or Post a new survey
-    path('surveys/', SurveyList.as_view(), name='survey-list'),
+    path('assignments/<str:assignment_id>/surveys/', SurveyList.as_view(), name='survey-list'),
+
+    # Get detail of a survey, Delete a survey, Update a survey
+    path('surveys/<int:survey_pk>/', SurveyDetail.as_view(), name='survey-detail'),
+
 
     # Get detail of a survey, Delete a survey, Update a survey
     path('surveys/<int:survey_pk>/', SurveyDetail.as_view(), name='survey-detail'),
