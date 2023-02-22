@@ -9,7 +9,7 @@ from app.gamification.models import CustomUser
 from app.gamification.serializers import UserSerializer
 from .user import Users, UserDetail, Login, Register
 from .course import CourseList
-from .assignment import AssignmentList, ManageAnAssignment
+from .assignment import AssignmentList
 from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo, SurveyList, SurveyDetail, SurveySectionList, TemplateSectionList
 from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList, ArtifactReviewList, ArtifactReviewDetail, CheckAllDone, CreateArtifactReview, CreateArtifactAnswer, FeedbackDetail, ArtifactResult, SurveyComplete, ArtifactAnswerKeywordList
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
@@ -46,7 +46,6 @@ urlpatterns = [
     path('courses/', CourseList.as_view(), name='course-list'),
     # assignment 
     path('courses/<str:course_id>/assignments/', AssignmentList.as_view(), name='assignment-list'),
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/', ManageAnAssignment.as_view(), name='manage-an-assignment'),
     # TODO: assignment report 
     # Entity/member
     path('courses/<str:course_id>/members/', MemberList.as_view(), name='member-list'),
