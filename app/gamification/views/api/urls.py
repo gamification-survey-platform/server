@@ -14,7 +14,7 @@ from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, Ques
 from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList, ArtifactReviewList, ArtifactReviewDetail, CheckAllDone, CreateArtifactReview, CreateArtifactAnswer, FeedbackDetail, ArtifactResult, SurveyComplete, ArtifactAnswerKeywordList
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
-from .member import MemberList, ManageAMember
+from .member import MemberList
 
 
 @api_view(['GET', 'POST'])
@@ -49,7 +49,6 @@ urlpatterns = [
     # TODO: assignment report 
     # Entity/member
     path('courses/<str:course_id>/members/', MemberList.as_view(), name='member-list'),
-    path('courses/<str:course_id>/members/<str:andrew_id>/', ManageAMember.as_view(), name='manage-a-member'),
     # Report
     path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/<andrew_id>', ArtifactReviewList.as_view(), name='artifact-review-list'),
     

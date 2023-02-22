@@ -29,8 +29,8 @@ class IsAdminOrReadOnly(permissions.BasePermission):
             return True
         return request.user.is_staff
     
-class MemberList(generics.ListCreateAPIView):
-    # queryset = Entity.objects.all()
+class MemberList(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Entity.objects.all()
     serializer_class = EntitySerializer
     permission_classes = [permissions.AllowAny] # [permissions.IsAuthenticated]
     
@@ -59,23 +59,7 @@ class MemberList(generics.ListCreateAPIView):
                     'course_id': course_id, 'userRole': userRole}
             return context
 
-        course = get_object_or_404(Course, pk=course_id)
-        # TODO: rethink about permission control for staff(superuser) and instructor
-        user_id = get_user_pk(request)
-        user = get_object_or_404(CustomUser, pk=user_id)
-        registration = get_object_or_404(
-            Registration, users=user, courses=course)
-        userRole = registration.userRole
-        context = get_member_list(course_id)
-        return Response(context)
-
-class ManageAMember(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Entity.objects.all()
-    serializer_class = EntitySerializer
-    permission_classes = [permissions.AllowAny] # [permissions.IsAdminUser ]
-    
-    def get(self, request, course_id, andrew_id, *args, **kwargs):
-        def get_a_member(course_id):
+        def get_a_member(course_id, andrew_id):
             # get user with andrew_id
             user = get_object_or_404(CustomUser, andrew_id=andrew_id)
             registration = Registration.objects.filter(courses=course, users=user)
@@ -100,16 +84,22 @@ class ManageAMember(generics.RetrieveUpdateDestroyAPIView):
             context = {'membership': membership,
                     'course_id': course_id, 'userRole': userRole}
             return context
+        
+        course = get_object_or_404(Course, pk=course_id)
+        # TODO: rethink about permission control for staff(superuser) and instructor
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, pk=user_id)
-        course = get_object_or_404(Course, pk=course_id)
         registration = get_object_or_404(
             Registration, users=user, courses=course)
         userRole = registration.userRole
-        context = get_a_member(course_id)
+        if 'andrew_id' in request.query_params:
+            andrew_id = request.query_params['andrew_id']
+            context = get_a_member(course_id, andrew_id)
+        else:
+            context = get_member_list(course_id)
         return Response(context)
 
-    def post(self, request, course_id, andrew_id, *args, **kwargs):
+    def post(self, request, course_id, *args, **kwargs):
         def get_member_list(course_id):
             registration = Registration.objects.filter(courses=course)
             membership = []
@@ -231,7 +221,14 @@ class ManageAMember(generics.RetrieveUpdateDestroyAPIView):
         registration = get_object_or_404(
             Registration, users=user, courses=course)
         userRole = registration.userRole
-        andrew_id = request.POST['andrew_id']
+        
+        andrew_id = None
+        if 'andrewId' in request.query_params:
+                andrew_id = request.query_params['andrewId']
+        if andrew_id is None:
+            # missing andrew_id, return 400 bad request
+            return Response({'error': 'AndrewID is missing'}, status=status.HTTP_400_BAD_REQUEST)
+        # andrew_id = request.POST['andrew_id']
         try:
             user = CustomUser.objects.get(andrew_id=andrew_id)
             users = add_users_from_the_same_course()
@@ -247,7 +244,12 @@ class ManageAMember(generics.RetrieveUpdateDestroyAPIView):
         context = get_member_list(course_id)
         return Response(context)
 
-    def delete(self, request, course_id, andrew_id, *args, **kwargs):
+    def delete(self, request, course_id, *args, **kwargs):
+        andrew_id = None
+        if 'andrewId' in request.query_params:
+            andrew_id = request.query_params['andrewId']
+        if andrew_id is None:
+            return Response({'error': 'AndrewID is missing'}, status=status.HTTP_400_BAD_REQUEST)
         user = get_object_or_404(CustomUser, andrew_id=andrew_id)
         registration = get_object_or_404(
             Registration, users=user, courses=course_id)
@@ -257,4 +259,3 @@ class ManageAMember(generics.RetrieveUpdateDestroyAPIView):
         # delete all artifact_review of TA or instructor
         # return delete success message, return 200 or 204
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
