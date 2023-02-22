@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'rest_framework',
     'storages',
+    'drf_yasg',
 
     'app.gamification',
 
@@ -65,6 +66,17 @@ INSTALLED_APPS = [
     'rest_framework_jwt'
 ]
 
+# CORS_ALLOW_ALL_ORIGINS = True
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
+}
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -145,6 +157,7 @@ AUTH_USER_MODEL = 'gamification.CustomUser'
 # Django Rest Framework (DRF) and JWT
 # https://jpadilla.github.io/django-rest-framework-jwt/
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
