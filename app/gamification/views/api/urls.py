@@ -15,6 +15,22 @@ from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswer
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
 from .member import MemberList, ManageAMember
+# from rest_framework_swagger.views import get_swagger_view
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
+from drf_yasg import openapi
+
+
+# Create a schema view for Swagger UI
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Gamification API",
+        default_version='v1',
+        description="API for Gamification",
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 
 @api_view(['GET', 'POST'])
@@ -36,7 +52,12 @@ def api_root(request, format=None):
 
 urlpatterns = [
     path('', api_root),
-    # User API
+    path('swagger/', schema_view.with_ui('swagger',
+         cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc',
+         cache_timeout=0), name='schema-redoc'),
+
+#     # User API
     path('users/', Users.as_view(), name='user-list'),
     path('users/<str:andrew_id>/', UserDetail.as_view(), name='user-detail'),
     path('login/', Login.as_view(), name='user-login'),

@@ -10,25 +10,25 @@ from app.gamification.models.survey_section import SurveySection
 from app.gamification.models.survey_template import SurveyTemplate
 from app.gamification.serializers.survey import OptionChoiceSerializer, OptionChoiceWithoutNumberOfTextSerializer, QuestionSerializer, SectionSerializer, SurveySerializer, TemplateSectionSerializer
 
+# class IsAdminOrReadOnly(permissions.BasePermission):
+#     def has_permission(self, request, view):
+#         if request.method in permissions.SAFE_METHODS:
+#             return True
+#         registrations = Registration.objects.filter(users=request.user)
 
-class IsAdminOrReadOnly(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        registrations = Registration.objects.filter(users=request.user)
-        for registration in registrations:
-            if registration.userRole == Registration.UserRole.Instructor:
-                return True
-        return False
+#         for registration in registrations:
+#             if registration.userRole == Registration.UserRole.Instructor:
+#                 return True
+#         return False
 
-    def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        registrations = Registration.objects.filter(users=request.user)
-        for registration in registrations:
-            if registration.userRole == Registration.UserRole.Instructor:
-                return True
-        return False
+#     def has_object_permission(self, request, view, obj):
+#         if request.method in permissions.SAFE_METHODS:
+#             return True
+#         registrations = Registration.objects.filter(users=request.user)
+#         for registration in registrations:
+#             if registration.userRole == Registration.UserRole.Instructor:
+#                 return True
+#         return False
 
 
 class SurveyList(generics.ListCreateAPIView):
