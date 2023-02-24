@@ -126,8 +126,8 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
 
         # Create registration for user who is not registered this course, otherwise, return the registration
         def get_users_registration(users, request):
-            andrew_id = request.POST['andrew_id']
-            role = request.POST['membershipRadios']
+            andrew_id = request.data.get('andrew_id')
+            role = request.data.get('membershipRadios')
             if user not in users:
                 registration = Registration(
                     users=user, courses=course, userRole=role)
@@ -156,7 +156,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
 
         # Create membership for user's team
         def get_users_team(registration, request):
-            team_name = request.POST['team_name']
+            team_name = request.data.get('team_name')
             if team_name != '' and registration.userRole == 'Student':
                 team = registration.team
                 if team is not None:
@@ -221,7 +221,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         registration = get_object_or_404(
             Registration, users=user, courses=course)
         userRole = registration.userRole
-        
+
         andrew_id = request.data.get('andrew_id')
         if andrew_id is None:
             # missing andrew_id, return 400 bad request
