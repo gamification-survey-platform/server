@@ -8,13 +8,29 @@ from rest_framework import status
 from app.gamification.models import CustomUser
 from app.gamification.serializers import UserSerializer
 from .user import Users, UserDetail, Login, Register
-from .course import CourseList, ManageACourse
-from .assignment import AssignmentList, ManageAnAssignment
-from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo, SurveyList, SurveyDetail, SurveySectionList, TemplateSectionList
+from .course import CourseList
+from .assignment import AssignmentList
+from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo,  SurveySectionList, TemplateSectionList
 from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList, ArtifactReviewList, ArtifactReviewDetail, CheckAllDone, CreateArtifactReview, CreateArtifactAnswer, FeedbackDetail, ArtifactResult, SurveyComplete, ArtifactAnswerKeywordList
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
+from .feedback_survey import SurveyList, SurveyDetail
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
-from .member import MemberList, ManageAMember
+from .member import MemberList
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
+from drf_yasg import openapi
+
+
+# Create a schema view for Swagger UI
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Gamification API",
+        default_version='v1',
+        description="API for Gamification",
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 
 @api_view(['GET', 'POST'])
@@ -36,7 +52,12 @@ def api_root(request, format=None):
 
 urlpatterns = [
     path('', api_root),
-    # User API
+    path('swagger/', schema_view.with_ui('swagger',
+         cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc',
+         cache_timeout=0), name='schema-redoc'),
+
+#     # User API
     path('users/', Users.as_view(), name='user-list'),
     path('users/<str:andrew_id>/', UserDetail.as_view(), name='user-detail'),
     path('login/', Login.as_view(), name='user-login'),
@@ -44,31 +65,23 @@ urlpatterns = [
 
     # course
     path('courses/', CourseList.as_view(), name='course-list'),
-    path('courses/<str:course_id>/', ManageACourse.as_view(), name='manage-a-course'),
     # assignment 
     path('courses/<str:course_id>/assignments/', AssignmentList.as_view(), name='assignment-list'),
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/', ManageAnAssignment.as_view(), name='manage-an-assignment'),
     # TODO: assignment report 
     # Entity/member
     path('courses/<str:course_id>/members/', MemberList.as_view(), name='member-list'),
-    path('courses/<str:course_id>/members/<str:andrew_id>/', ManageAMember.as_view(), name='manage-a-member'),
+
     # Report
     path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/<andrew_id>', ArtifactReviewList.as_view(), name='artifact-review-list'),
-    
-    # RetrieveUpdateDestroyAPIView GET, PUT, PATCH, DELETE
-    # ListAPIView GET
-    # ListCreateAPIView GET POST
 
-
-    # Get the list of all surveys, or Post a new survey
-    path('surveys/', SurveyList.as_view(), name='survey-list'),
+    # Get the  feedback_surveys, Post a new survey,update a survey
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/', SurveyList.as_view(), name='survey-list'),
 
     # Get detail of a survey, Delete a survey, Update a survey
-    path('surveys/<int:survey_pk>/', SurveyDetail.as_view(), name='survey-detail'),
-
+    #path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/<int:feedback_survey_pk>/', SurveyDetail.as_view(), name='survey-detail'),
+    
     # get all sections, questions, options of a survey
-    path('surveys/<int:survey_pk>/get_info/',
-         SurveyGetInfo.as_view(), name='survey-get-info'),
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/surveys/',SurveyGetInfo.as_view(), name='survey-get-info'),
 
     # Get the sections of a survey, Post a new section of the survey
     path('surveys/<int:survey_pk>/sections/',
@@ -79,8 +92,7 @@ urlpatterns = [
     path('sections/', SectionList.as_view(), name='section-list'),
 
     # List template sections
-    path('template_sections/', TemplateSectionList.as_view(),
-         name='template-section-list'),
+    path('template_sections/', TemplateSectionList.as_view(), name='template-section-list'),
 
     # Get detail of a section, Update a section, Delete a section
     path('sections/<int:section_pk>/',

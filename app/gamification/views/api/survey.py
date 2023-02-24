@@ -2,6 +2,8 @@ import json
 from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from app.gamification.models.assignment import Assignment
+from app.gamification.models.feedback_survey import FeedbackSurvey
 from app.gamification.models.option_choice import OptionChoice
 from app.gamification.models.question import Question
 from app.gamification.models.question_option import QuestionOption
@@ -9,6 +11,7 @@ from app.gamification.models.registration import Registration
 from app.gamification.models.survey_section import SurveySection
 from app.gamification.models.survey_template import SurveyTemplate
 from app.gamification.serializers.survey import OptionChoiceSerializer, OptionChoiceWithoutNumberOfTextSerializer, QuestionSerializer, SectionSerializer, SurveySerializer, TemplateSectionSerializer
+from app.gamification.utils import parse_datetime
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -31,41 +34,6 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         return False
 
 
-class SurveyList(generics.ListCreateAPIView):
-    queryset = SurveyTemplate.objects.all()
-    serializer_class = SurveySerializer
-    # permission_classes = [IsAdminOrReadOnly]
-
-
-class SurveyDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = SurveyTemplate.objects.all()
-    serializer_class = SurveySerializer
-    # permission_classes = [IsAdminOrReadOnly]
-
-    def get(self, request, survey_pk, *args, **kwargs):
-        survey = get_object_or_404(SurveyTemplate, id=survey_pk)
-        serializer = self.get_serializer(survey)
-        return Response(serializer.data)
-
-    def put(self, request, survey_pk, *args, **kwargs):
-        survey = get_object_or_404(SurveyTemplate, id=survey_pk)
-        name = request.data.get('name').strip()
-        if name == '':
-            content = {'message': 'Survey name cannot be empty'}
-            return Response(content, status=status.HTTP_400_BAD_REQUEST)
-        instructions = request.data.get('instructions')
-        other_info = request.data.get('other_info')
-        survey.name = name
-        survey.instructions = instructions
-        survey.other_info = other_info
-        survey.save()
-        serializer = self.get_serializer(survey)
-        return Response(serializer.data)
-
-    def delete(self, request, survey_pk, *args, **kwargs):
-        survey = get_object_or_404(SurveyTemplate, id=survey_pk)
-        survey.delete()
-        return Response(status=204)
 
 
 class SurveySectionList(generics.ListCreateAPIView):
@@ -460,11 +428,15 @@ class TemplateSectionList(generics.ListAPIView):
 
 
 class SurveyGetInfo(generics.ListAPIView):
-    def get(self, request, survey_pk, *args, **kwargs):
-        survey_template = get_object_or_404(
-            SurveyTemplate, pk=survey_pk)
+    queryset = SurveyTemplate.objects.all()
+    serializer_class = SurveySerializer
+    permission_classes = [permissions.AllowAny] # [IsAdminOrReadOnly]
+
+    def get(self, request, course_id, assignment_id, *args, **kwargs):
+        assignment = get_object_or_404(Assignment, id=assignment_id)
+        survey_template = assignment.survey_template
         data = dict()
-        data['pk'] = survey_pk
+        data['pk'] = survey_template.pk
         data['name'] = survey_template.name
         data['instructions'] = survey_template.instructions
         data['other_info'] = survey_template.other_info
@@ -497,4 +469,4 @@ class SurveyGetInfo(generics.ListAPIView):
                     curr_question['number_of_text'] = question_option.number_of_text
                 curr_section['questions'].append(curr_question)
             data['sections'].append(curr_section)
-        return Response(json.dumps(data))
+        return Response(data)

@@ -2,10 +2,16 @@ import datetime
 
 from django.forms.fields import DateTimeFormatsIterator
 import time
+import jwt
+import os
 from django.core import signing
 import hashlib
 from django.core.cache import cache
 
+def get_user_pk(request):
+    token = request.META.get('HTTP_AUTHORIZATION').split()[1]
+    token_data = jwt.decode(token, os.getenv('SECRET_KEY'), algorithm='HS256')
+    return token_data['id']
 
 def parse_datetime(value):
     for format in DateTimeFormatsIterator():
