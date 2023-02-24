@@ -222,9 +222,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
             Registration, users=user, courses=course)
         userRole = registration.userRole
         
-        andrew_id = None
-        if 'andrewId' in request.query_params:
-                andrew_id = request.query_params['andrewId']
+        andrew_id = request.data.get('andrew_id')
         if andrew_id is None:
             # missing andrew_id, return 400 bad request
             return Response({'error': 'AndrewID is missing'}, status=status.HTTP_400_BAD_REQUEST)
@@ -245,9 +243,8 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         return Response(context)
 
     def delete(self, request, course_id, *args, **kwargs):
-        andrew_id = None
-        if 'andrewId' in request.query_params:
-            andrew_id = request.query_params['andrewId']
+        andrew_id = request.data.get('andrew_id')
+        
         if andrew_id is None:
             return Response({'error': 'AndrewID is missing'}, status=status.HTTP_400_BAD_REQUEST)
         user = get_object_or_404(CustomUser, andrew_id=andrew_id)
