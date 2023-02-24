@@ -77,10 +77,9 @@ urlpatterns = [
     # Get the  feedback_surveys, Post a new survey,update a survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/', SurveyList.as_view(), name='survey-list'),
 
-     # Get detail of a survey, Delete a survey, Update a survey
-     #path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/<int:feedback_survey_pk>/', SurveyDetail.as_view(), name='survey-detail'),
-
-
+    # Get detail of a survey, Delete a survey, Update a survey
+    #path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/<int:feedback_survey_pk>/', SurveyDetail.as_view(), name='survey-detail'),
+    
     # get all sections, questions, options of a survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/surveys/',SurveyGetInfo.as_view(), name='survey-get-info'),
 

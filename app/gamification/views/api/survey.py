@@ -432,11 +432,11 @@ class SurveyGetInfo(generics.ListAPIView):
     serializer_class = SurveySerializer
     permission_classes = [permissions.AllowAny] # [IsAdminOrReadOnly]
 
-    def get(self, request, survey_pk, *args, **kwargs):
-        survey_template = get_object_or_404(
-            SurveyTemplate, pk=survey_pk)
+    def get(self, request, course_id, assignment_id, *args, **kwargs):
+        assignment = get_object_or_404(Assignment, id=assignment_id)
+        survey_template = assignment.survey_template
         data = dict()
-        data['pk'] = survey_pk
+        data['pk'] = survey_template.pk
         data['name'] = survey_template.name
         data['instructions'] = survey_template.instructions
         data['other_info'] = survey_template.other_info
@@ -469,4 +469,4 @@ class SurveyGetInfo(generics.ListAPIView):
                     curr_question['number_of_text'] = question_option.number_of_text
                 curr_section['questions'].append(curr_question)
             data['sections'].append(curr_section)
-        return Response(json.dumps(data))
+        return Response(data)
