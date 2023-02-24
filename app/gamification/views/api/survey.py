@@ -13,25 +13,25 @@ from app.gamification.models.survey_template import SurveyTemplate
 from app.gamification.serializers.survey import OptionChoiceSerializer, OptionChoiceWithoutNumberOfTextSerializer, QuestionSerializer, SectionSerializer, SurveySerializer, TemplateSectionSerializer
 from app.gamification.utils import parse_datetime
 
-# class IsAdminOrReadOnly(permissions.BasePermission):
-#     def has_permission(self, request, view):
-#         if request.method in permissions.SAFE_METHODS:
-#             return True
-#         registrations = Registration.objects.filter(users=request.user)
 
-#         for registration in registrations:
-#             if registration.userRole == Registration.UserRole.Instructor:
-#                 return True
-#         return False
+class IsAdminOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        registrations = Registration.objects.filter(users=request.user)
+        for registration in registrations:
+            if registration.userRole == Registration.UserRole.Instructor:
+                return True
+        return False
 
-#     def has_object_permission(self, request, view, obj):
-#         if request.method in permissions.SAFE_METHODS:
-#             return True
-#         registrations = Registration.objects.filter(users=request.user)
-#         for registration in registrations:
-#             if registration.userRole == Registration.UserRole.Instructor:
-#                 return True
-#         return False
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        registrations = Registration.objects.filter(users=request.user)
+        for registration in registrations:
+            if registration.userRole == Registration.UserRole.Instructor:
+                return True
+        return False
 
 
 class SurveyList(generics.ListCreateAPIView):
@@ -53,8 +53,8 @@ class SurveyList(generics.ListCreateAPIView):
         survey_template_name = request.data.get('template_name').strip()
         survey_template_instruction = request.data.get('instructions')
         survey_template_other_info = request.data.get('other_info')
-        #feedback_survey_date_released = parse_datetime(request.data.get('date_released'))
-        #feedback_survey_date_due = parse_datetime(request.data.get('date_due'))
+        feedback_survey_date_released = parse_datetime(request.data.get('date_released'))
+        feedback_survey_date_due = parse_datetime(request.data.get('date_due'))
         feedback_survey = FeedbackSurvey.objects.filter(assignment=assignment)
         if feedback_survey:
             return Response({"error": "Feedback survey already exists"}, status=status.HTTP_400_BAD_REQUEST)
@@ -65,8 +65,8 @@ class SurveyList(generics.ListCreateAPIView):
         feedback_survey = FeedbackSurvey(
             assignment=assignment,
             template=survey_template,
-            #date_released=feedback_survey_date_released,
-            #date_due=feedback_survey_date_due
+            date_released=feedback_survey_date_released,
+            date_due=feedback_survey_date_due
         )
         feedback_survey.save()
 
@@ -129,7 +129,7 @@ class SurveyDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def put(self, request, survey_pk, *args, **kwargs):
         survey = get_object_or_404(SurveyTemplate, id=survey_pk)
-        name = request.data.get('name').strip()
+        name = request.data.get('template_name').strip()
         if name == '':
             content = {'message': 'Survey name cannot be empty'}
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
@@ -540,6 +540,10 @@ class TemplateSectionList(generics.ListAPIView):
 
 
 class SurveyGetInfo(generics.ListAPIView):
+    queryset = SurveyTemplate.objects.all()
+    serializer_class = SurveySerializer
+    permission_classes = [permissions.AllowAny] # [IsAdminOrReadOnly]
+
     def get(self, request, survey_pk, *args, **kwargs):
         survey_template = get_object_or_404(
             SurveyTemplate, pk=survey_pk)

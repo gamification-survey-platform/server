@@ -71,24 +71,16 @@ urlpatterns = [
     path('courses/<str:course_id>/members/', MemberList.as_view(), name='member-list'),
     # Report
     path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/<andrew_id>', ArtifactReviewList.as_view(), name='artifact-review-list'),
-    
-    # RetrieveUpdateDestroyAPIView GET, PUT, PATCH, DELETE
-    # ListAPIView GET
-    # ListCreateAPIView GET POST
 
-    # Get the list of all surveys, or Post a new survey
-    path('assignments/<str:assignment_id>/surveys/', SurveyList.as_view(), name='survey-list'),
+    # Get the list of all feedback_surveys, or Post a new survey
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/', SurveyList.as_view(), name='survey-list'),
 
     # Get detail of a survey, Delete a survey, Update a survey
-    path('surveys/<int:survey_pk>/', SurveyDetail.as_view(), name='survey-detail'),
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/<int:feedback_survey_pk>/', SurveyDetail.as_view(), name='survey-detail'),
 
-
-    # Get detail of a survey, Delete a survey, Update a survey
-    path('surveys/<int:survey_pk>/', SurveyDetail.as_view(), name='survey-detail'),
 
     # get all sections, questions, options of a survey
-    path('surveys/<int:survey_pk>/get_info/',
-         SurveyGetInfo.as_view(), name='survey-get-info'),
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/surveys/',SurveyGetInfo.as_view(), name='survey-get-info'),
 
     # Get the sections of a survey, Post a new section of the survey
     path('surveys/<int:survey_pk>/sections/',
@@ -99,8 +91,7 @@ urlpatterns = [
     path('sections/', SectionList.as_view(), name='section-list'),
 
     # List template sections
-    path('template_sections/', TemplateSectionList.as_view(),
-         name='template-section-list'),
+    path('template_sections/', TemplateSectionList.as_view(), name='template-section-list'),
 
     # Get detail of a section, Update a section, Delete a section
     path('sections/<int:section_pk>/',
