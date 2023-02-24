@@ -10,9 +10,10 @@ from app.gamification.serializers import UserSerializer
 from .user import Users, UserDetail, Login, Register
 from .course import CourseList
 from .assignment import AssignmentList
-from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo, SurveyList, SurveyDetail, SurveySectionList, TemplateSectionList
+from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo,  SurveySectionList, TemplateSectionList
 from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList, ArtifactReviewList, ArtifactReviewDetail, CheckAllDone, CreateArtifactReview, CreateArtifactAnswer, FeedbackDetail, ArtifactResult, SurveyComplete, ArtifactAnswerKeywordList
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
+from .feedback_survey import SurveyList, SurveyDetail
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
 from .member import MemberList
 from drf_yasg.views import get_schema_view
@@ -69,26 +70,18 @@ urlpatterns = [
     # TODO: assignment report 
     # Entity/member
     path('courses/<str:course_id>/members/', MemberList.as_view(), name='member-list'),
+
     # Report
     path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/<andrew_id>', ArtifactReviewList.as_view(), name='artifact-review-list'),
+
+    # Get the  feedback_surveys, Post a new survey,update a survey
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/', SurveyList.as_view(), name='survey-list'),
+
+    # Get detail of a survey, Delete a survey, Update a survey
+    #path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/<int:feedback_survey_pk>/', SurveyDetail.as_view(), name='survey-detail'),
     
-    # RetrieveUpdateDestroyAPIView GET, PUT, PATCH, DELETE
-    # ListAPIView GET
-    # ListCreateAPIView GET POST
-
-    # Get the list of all surveys, or Post a new survey
-    path('assignments/<str:assignment_id>/surveys/', SurveyList.as_view(), name='survey-list'),
-
-    # Get detail of a survey, Delete a survey, Update a survey
-    path('surveys/<int:survey_pk>/', SurveyDetail.as_view(), name='survey-detail'),
-
-
-    # Get detail of a survey, Delete a survey, Update a survey
-    path('surveys/<int:survey_pk>/', SurveyDetail.as_view(), name='survey-detail'),
-
     # get all sections, questions, options of a survey
-    path('surveys/<int:survey_pk>/get_info/',
-         SurveyGetInfo.as_view(), name='survey-get-info'),
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/surveys/',SurveyGetInfo.as_view(), name='survey-get-info'),
 
     # Get the sections of a survey, Post a new section of the survey
     path('surveys/<int:survey_pk>/sections/',
@@ -99,8 +92,7 @@ urlpatterns = [
     path('sections/', SectionList.as_view(), name='section-list'),
 
     # List template sections
-    path('template_sections/', TemplateSectionList.as_view(),
-         name='template-section-list'),
+    path('template_sections/', TemplateSectionList.as_view(), name='template-section-list'),
 
     # Get detail of a section, Update a section, Delete a section
     path('sections/<int:section_pk>/',
