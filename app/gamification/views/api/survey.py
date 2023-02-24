@@ -122,13 +122,13 @@ class SurveyDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = SurveySerializer
     # permission_classes = [IsAdminOrReadOnly]
 
-    def get(self, request, survey_pk, *args, **kwargs):
-        survey = get_object_or_404(SurveyTemplate, id=survey_pk)
+    def get(self, request, feedback_survey_pk, *args, **kwargs):
+        survey = get_object_or_404(SurveyTemplate, id=feedback_survey_pk)
         serializer = self.get_serializer(survey)
         return Response(serializer.data)
 
-    def put(self, request, survey_pk, *args, **kwargs):
-        survey = get_object_or_404(SurveyTemplate, id=survey_pk)
+    def put(self, request, feedback_survey_pk, *args, **kwargs):
+        survey = get_object_or_404(SurveyTemplate, id=feedback_survey_pk)
         name = request.data.get('template_name').strip()
         if name == '':
             content = {'message': 'Survey name cannot be empty'}
@@ -142,8 +142,8 @@ class SurveyDetail(generics.RetrieveUpdateDestroyAPIView):
         serializer = self.get_serializer(survey)
         return Response(serializer.data)
 
-    def delete(self, request, survey_pk, *args, **kwargs):
-        survey = get_object_or_404(SurveyTemplate, id=survey_pk)
+    def delete(self, request, feedback_survey_pk, *args, **kwargs):
+        survey = get_object_or_404(SurveyTemplate, id=feedback_survey_pk)
         survey.delete()
         return Response(status=204)
 
