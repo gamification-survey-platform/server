@@ -40,13 +40,13 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 class AnswerList(generics.ListAPIView):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
-    # permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [permissions.AllowAny]
 
 
 class AnswerDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
-    # permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request, answer_pk, *args, **kwargs):
         answer = get_object_or_404(Answer, id=answer_pk)
@@ -70,7 +70,7 @@ class AnswerDetail(generics.RetrieveUpdateDestroyAPIView):
 class FeedbackDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = ArtifactFeedback.objects.all()
     serializer_class = ArtifactFeedbackSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request, feedback_pk, *args, **kwargs):
         feedback = get_object_or_404(ArtifactFeedback, id=feedback_pk)
@@ -106,7 +106,7 @@ class ArtifactAnswerList(generics.ListCreateAPIView):
 class CreateArtifactAnswer(generics.RetrieveUpdateAPIView):
     queryset = Answer.objects.all()
     serializer_class = CreateAnswerSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request, artifact_review_pk, question_pk, * args, **kwargs):
         question = get_object_or_404(Question, id=question_pk)
@@ -228,7 +228,7 @@ class CreateArtifactAnswer(generics.RetrieveUpdateAPIView):
 class ArtifactReviewList(generics.RetrieveUpdateDestroyAPIView):
     queryset = ArtifactReview.objects.all()
     serializer_class = ArtifactReviewSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request, *args, **kwargs):
         if 'artifact_review_pk' in request.query_params:
@@ -245,8 +245,11 @@ class ArtifactReviewList(generics.RetrieveUpdateDestroyAPIView):
             serializer = self.get_serializer(artifact_review)
             return Response(serializer.data)
         else:
-            # missing artifact_review_pk, return 400 bad request
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            # return all artifact_reviews
+            artifact_reviews = ArtifactReview.objects.all()
+            serializer = self.get_serializer(artifact_reviews, many=True)
+            return Response(serializer.data)
+
 
     def post(self, request, *args, **kwargs):
         if 'artifact_pk' in request.query_params and 'registration_pk' in request.query_params:
@@ -279,6 +282,7 @@ class ArtifactReviewList(generics.RetrieveUpdateDestroyAPIView):
 class ArtifactResult(generics.ListAPIView):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request, artifact_pk, *args, **kwargs):
         artifact = get_object_or_404(Artifact, pk=artifact_pk)
@@ -363,6 +367,8 @@ class ArtifactResult(generics.ListAPIView):
 
 
 class SurveyComplete(generics.CreateAPIView):
+    permission_classes = [permissions.AllowAny]
+    
     def post(self, request, artifact_review_pk, *args, **kwargs):
         artifact_review = get_object_or_404(
             ArtifactReview, id=artifact_review_pk)
