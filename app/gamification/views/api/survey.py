@@ -427,7 +427,7 @@ class TemplateSectionList(generics.ListAPIView):
         return Response(json.dumps(data))
 
 
-class SurveyGetInfo(generics.ListAPIView):
+class SurveyGetInfo(generics.RetrieveUpdateAPIView):
     queryset = SurveyTemplate.objects.all()
     serializer_class = SurveySerializer
     permission_classes = [permissions.AllowAny] # [IsAdminOrReadOnly]
@@ -470,3 +470,56 @@ class SurveyGetInfo(generics.ListAPIView):
                 curr_section['questions'].append(curr_question)
             data['sections'].append(curr_section)
         return Response(data)
+    
+    def patch(self, request, course_id, assignment_id, *args, **kwargs):
+        survey_info = request.data.get('survey_info')
+        survey_template = get_object_or_404(SurveyTemplate, id=survey_info["pk"])
+        sections = SurveySection.objects.filter(template=survey_template)
+        for section in sections:
+            questions = Question.objects.filter(section=section)
+            for question in questions:
+                question.delete()
+            section.delete()
+        for section in survey_info["sections"]:
+            try:
+                section_template = SurveySection.objects.get(id=section["pk"])
+            except SurveySection.DoesNotExist:
+                section_template = SurveySection()
+                section_template.template = survey_template
+            section_template.title = section["title"]
+            section_template.is_required = section["is_required"]
+            section_template.save()
+            for question in section["questions"]:
+                try:
+                    question_template = Question.objects.get(id=question["pk"])
+                except Question.DoesNotExist:
+                    question_template = Question()
+                    question_template.section = section_template
+                question_template.text = question["text"]
+                question_template.is_required = question["is_required"]
+                question_template.question_type = question["question_type"]
+                question_template.save()
+                if question["question_type"] == Question.QuestionType.MULTIPLECHOICE:
+                    question_option = QuestionOption.objects.filter(question=question_template)
+                    for option in question_template.options:
+                        option.delete()
+                    for option_choice in question["option_choices"]:
+                        question_option = QuestionOption()
+                        question_option.question = question_template
+                        option_choice_template = OptionChoice()
+                        option_choice_template.text = option_choice["text"]
+                        option_choice_template.save()
+                        question_option.option_choice = option_choice_template
+                        question_option.save()
+                else:
+                    try:
+                        question_option = QuestionOption.objects.get(question=question_template)
+                    except QuestionOption.DoesNotExist:
+                        question_option = QuestionOption()
+                        question_option.question = question_template
+                    option_choice = OptionChoice()
+                    option_choice.save()
+                    question_option.number_of_text = question["number_of_text"]
+                    question_option.option_choice = option_choice
+                    question_option.save()
+        return Response(status=200)
