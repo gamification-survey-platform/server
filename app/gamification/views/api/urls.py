@@ -81,7 +81,7 @@ urlpatterns = [
     #path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/<int:feedback_survey_pk>/', SurveyDetail.as_view(), name='survey-detail'),
     
     # get all sections, questions, options of a survey
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/surveys/',SurveyGetInfo.as_view(), name='survey-get-info'),
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/surveys/', SurveyGetInfo.as_view(), name='survey-get-info'),
 
     # Get the sections of a survey, Post a new section of the survey
     path('surveys/<int:survey_pk>/sections/',
@@ -132,28 +132,18 @@ urlpatterns = [
     # Get detail of answer, update an answer, delete an answer
     path('answers/<int:answer_pk>/', AnswerDetail.as_view(), name='answer-detail'),
 
-    # Get answers of artifact review
-    path('artifact_reviews/<int:artifact_review_pk>/answers/',
-         ArtifactAnswerList.as_view(), name='artifact-answer'),
-
-    # Get answers of a question, Post answer to artifact(response answer_pk)
-    path('artifact_reviews/<int:artifact_review_pk>/questions/<question_pk>/answers/',
-         CreateArtifactAnswer.as_view(), name='create-artifact-answer'),
-
     # Get list of artifact reviews
-    path('artifact_reviews/', ArtifactReviewList.as_view(),
-         name="artifact-review-list"),
-
+    path('artifact_reviews/', ArtifactReviewList.as_view(), name="artifact-review-list"),
     # Get detail of an artifact review. delete an artifact review
-    path('artifact_reviews/<int:artifact_review_id>/',
-         ArtifactReviewDetail.as_view(), name="artifact-review-detail"),
-
-    path('artifact_reviews/<int:artifact_review_pk>/is_complete/',
-         SurveyComplete.as_view(), name="survey-complete"),
-
+    path('artifact_reviews/<int:artifact_review_pk>/', ArtifactReviewDetail.as_view(), name="artifact-review-detail"),
     # Get artifact review of an artifact, post a new artifact review
-    path('artifact_reviews/<int:artifact_pk>/<int:registration_pk>',
-         CreateArtifactReview.as_view(), name="artifact-review"),
+    path('artifact_reviews/<int:artifact_pk>/<int:registration_pk>', CreateArtifactReview.as_view(), name="artifact-review"),
+    # Get answers of artifact review
+    path('artifact_reviews/<int:artifact_review_pk>/answers/', ArtifactAnswerList.as_view(), name='artifact-answer'),
+    # Get answers of a question, Post answer to artifact(response answer_pk)
+    path('artifact_reviews/<int:artifact_review_pk>/questions/<question_pk>/answers/', CreateArtifactAnswer.as_view(), name='create-artifact-answer'),
+    # 
+    path('artifact_reviews/<int:artifact_review_pk>/is_complete/', SurveyComplete.as_view(), name="survey-complete"),
 
     path('artifacts/<int:artifact_pk>/',
          ArtifactResult.as_view(), name="artifact-result"),

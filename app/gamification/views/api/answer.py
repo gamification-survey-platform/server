@@ -21,6 +21,21 @@ from collections import defaultdict
 import pytz
 from datetime import datetime
 
+class IsAdminOrReadOnly(permissions.BasePermission):
+    '''
+    Custom permission to only allow users to view read-only information.
+    Admin users are allowed to view and edit information.
+    '''
+
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user.is_staff
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user.is_staff
 
 class AnswerList(generics.ListAPIView):
     queryset = Answer.objects.all()
@@ -55,7 +70,7 @@ class AnswerDetail(generics.RetrieveUpdateDestroyAPIView):
 class FeedbackDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = ArtifactFeedback.objects.all()
     serializer_class = ArtifactFeedbackSerializer
-    # permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, feedback_pk, *args, **kwargs):
         feedback = get_object_or_404(ArtifactFeedback, id=feedback_pk)
@@ -79,7 +94,7 @@ class FeedbackDetail(generics.RetrieveUpdateDestroyAPIView):
 class ArtifactAnswerList(generics.ListCreateAPIView):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
-    # permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get(self, request, artifact_review_pk, *args, **kwargs):
         answer = Answer.objects.filter(
@@ -91,7 +106,7 @@ class ArtifactAnswerList(generics.ListCreateAPIView):
 class CreateArtifactAnswer(generics.RetrieveUpdateAPIView):
     queryset = Answer.objects.all()
     serializer_class = CreateAnswerSerializer
-    # permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, artifact_review_pk, question_pk, * args, **kwargs):
         question = get_object_or_404(Question, id=question_pk)
@@ -213,23 +228,23 @@ class CreateArtifactAnswer(generics.RetrieveUpdateAPIView):
 class ArtifactReviewList(generics.ListCreateAPIView):
     queryset = ArtifactReview.objects.all()
     serializer_class = ArtifactReviewSerializer
-    # permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class ArtifactReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = ArtifactReview.objects.all()
     serializer_class = ArtifactReviewSerializer
-    # permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, artifact_review_id, *args, **kwargs):
+    def get(self, request, artifact_review_pk, *args, **kwargs):
         artifact_review = get_object_or_404(
-            ArtifactReview, artifact_review_pk=artifact_review_id)
+            ArtifactReview, artifact_review_pk=artifact_review_pk)
         serializer = self.get_serializer(artifact_review)
         return Response(serializer.data)
 
-    def delete(self, request, artifact_review_id, *args, **kwargs):
+    def delete(self, request, artifact_review_pk, *args, **kwargs):
         artifact_review = get_object_or_404(
-            ArtifactReview, id=artifact_review_id)
+            ArtifactReview, id=artifact_review_pk)
         artifact_review.delete()
         return Response(status=204)
 
@@ -237,7 +252,7 @@ class ArtifactReviewDetail(generics.RetrieveUpdateDestroyAPIView):
 class CreateArtifactReview(generics.ListCreateAPIView):
     queryset = ArtifactReview.objects.all()
     serializer_class = ArtifactReviewSerializer
-    # permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get(self, request, artifact_pk, registration_pk, *args, **kwargs):
         artifact_review = get_object_or_404(
