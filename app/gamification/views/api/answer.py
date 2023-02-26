@@ -256,7 +256,8 @@ class ArtifactReviewList(generics.RetrieveUpdateDestroyAPIView):
         registration_pk = request.data.get('registration_pk').strip()
         artifact = get_object_or_404(Artifact, id=artifact_pk)
         registration = get_object_or_404(Registration, id=registration_pk)
-        artifact_review = ArtifactReview.objects.get_or_create(
+        # created_flag is a boolean value, artifact_review is an object
+        artifact_review, created_flag = ArtifactReview.objects.get_or_create(
             artifact=artifact,
             user=registration,
         )
