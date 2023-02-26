@@ -16,6 +16,7 @@ from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgre
 from .feedback_survey import SurveyList, SurveyDetail
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
 from .member import MemberList
+from .report import ViewReport
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from drf_yasg import openapi
@@ -72,7 +73,7 @@ urlpatterns = [
     path('courses/<str:course_id>/members/', MemberList.as_view(), name='member-list'),
 
     # Report
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/<andrew_id>', ArtifactReviewList.as_view(), name='artifact-review-list'),
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/<andrew_id>', ViewReport.as_view(), name='artifact-review-list'),
 
     # Get the  feedback_surveys, Post a new survey,update a survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/', SurveyList.as_view(), name='survey-list'),
