@@ -99,7 +99,7 @@ class ArtifactAnswerList(generics.ListCreateAPIView):
     def get(self, request, artifact_review_pk, *args, **kwargs):
         answer = Answer.objects.filter(
             artifact_review_id=artifact_review_pk).order_by('pk')
-        serializer = self.get_serializer(answer)
+        serializer = self.get_serializer(answer, many=True)
         return Response(serializer.data)
 
 
@@ -402,7 +402,7 @@ class CheckAllDone(generics.GenericAPIView):
 class ArtifactAnswerKeywordList(generics.ListCreateAPIView):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
-    # permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request, artifact_pk, *args, **kwargs):
         nlp = spacy.load("en_core_web_sm")
