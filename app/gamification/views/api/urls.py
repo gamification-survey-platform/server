@@ -138,7 +138,7 @@ urlpatterns = [
     path('artifact_reviews/<int:artifact_review_pk>/answers/', ArtifactAnswerList.as_view(), name='artifact-answer'),
     # Get answers of a question, Post answer to artifact(response answer_pk)
     path('artifact_reviews/<int:artifact_review_pk>/questions/<question_pk>/answers/', CreateArtifactAnswer.as_view(), name='create-artifact-answer'),
-    # 
+    # Update an artifact review's status (to completed or late)
     path('artifact_reviews/<int:artifact_review_pk>/is_complete/', SurveyComplete.as_view(), name="survey-complete"),
 
     path('artifacts/<int:artifact_pk>/',

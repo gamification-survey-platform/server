@@ -377,7 +377,8 @@ class SurveyComplete(generics.CreateAPIView):
         else:
             artifact_review.status = ArtifactReview.ArtifactReviewType.COMPLETED
         artifact_review.save()
-        return Response(status=204)
+        # return 204 no content
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CheckAllDone(generics.GenericAPIView):
