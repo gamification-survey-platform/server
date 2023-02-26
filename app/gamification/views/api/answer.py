@@ -234,7 +234,7 @@ class ArtifactReviewList(generics.RetrieveUpdateDestroyAPIView):
         if 'artifact_review_pk' in request.query_params:
             artifact_review_pk = request.query_params['artifact_review_pk']
             artifact_review = get_object_or_404(
-                ArtifactReview, artifact_review_pk=artifact_review_pk)
+                ArtifactReview, pk=artifact_review_pk)
             serializer = self.get_serializer(artifact_review)
             return Response(serializer.data)
         elif 'artifact_pk' in request.query_params and 'registration_pk' in request.query_params:
