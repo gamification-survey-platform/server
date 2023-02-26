@@ -252,21 +252,17 @@ class ArtifactReviewList(generics.RetrieveUpdateDestroyAPIView):
 
 
     def post(self, request, *args, **kwargs):
-        if 'artifact_pk' in request.query_params and 'registration_pk' in request.query_params:
-            artifact_pk = request.query_params['artifact_pk']
-            registration_pk = request.query_params['registration_pk']
-            
-            artifact = get_object_or_404(Artifact, id=artifact_pk)
-            registration = get_object_or_404(Registration, id=registration_pk)
-            artifact_review = Answer.objects.get_or_create(
-                artifact=artifact,
-                user=registration,
-            )
-            serializer = self.get_serializer(artifact_review)
-            return Response(serializer.data)
-        else:
-            # missing artifact_pk or registration_pk, return 400 bad request
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        artifact_pk = request.data.get('artifact_pk').strip()
+        registration_pk = request.data.get('registration_pk').strip()
+        artifact = get_object_or_404(Artifact, id=artifact_pk)
+        registration = get_object_or_404(Registration, id=registration_pk)
+        artifact_review = Answer.objects.get_or_create(
+            artifact=artifact,
+            user=registration,
+        )
+        serializer = self.get_serializer(artifact_review)
+        return Response(serializer.data)
+
     
     def delete(self, request, *args, **kwargs):
         if 'artifact_review_pk' in request.query_params:
