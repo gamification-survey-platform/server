@@ -4,7 +4,7 @@ import yake
 import spacy
 import re
 from django.utils import timezone
-from rest_framework import generics, mixins, permissions
+from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
@@ -225,51 +225,56 @@ class CreateArtifactAnswer(generics.RetrieveUpdateAPIView):
             return Response(serializer.data)
 
 
-class ArtifactReviewList(generics.ListCreateAPIView):
-    queryset = ArtifactReview.objects.all()
-    serializer_class = ArtifactReviewSerializer
-    permission_classes = [IsAdminOrReadOnly]
-
-
-class ArtifactReviewDetail(generics.RetrieveUpdateDestroyAPIView):
+class ArtifactReviewList(generics.RetrieveUpdateDestroyAPIView):
     queryset = ArtifactReview.objects.all()
     serializer_class = ArtifactReviewSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, artifact_review_pk, *args, **kwargs):
-        artifact_review = get_object_or_404(
-            ArtifactReview, artifact_review_pk=artifact_review_pk)
-        serializer = self.get_serializer(artifact_review)
-        return Response(serializer.data)
+    def get(self, request, *args, **kwargs):
+        if 'artifact_review_pk' in request.query_params:
+            artifact_review_pk = request.query_params['artifact_review_pk']
+            artifact_review = get_object_or_404(
+                ArtifactReview, artifact_review_pk=artifact_review_pk)
+            serializer = self.get_serializer(artifact_review)
+            return Response(serializer.data)
+        elif 'artifact_pk' in request.query_params and 'registration_pk' in request.query_params:
+            artifact_pk = request.query_params['artifact_pk']
+            registration_pk = request.query_params['registration_pk']
+            artifact_review = get_object_or_404(
+                ArtifactReview, artifact_id=artifact_pk, user_id=registration_pk)
+            serializer = self.get_serializer(artifact_review)
+            return Response(serializer.data)
+        else:
+            # missing artifact_review_pk, return 400 bad request
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, artifact_review_pk, *args, **kwargs):
-        artifact_review = get_object_or_404(
-            ArtifactReview, id=artifact_review_pk)
-        artifact_review.delete()
-        return Response(status=204)
-
-
-class CreateArtifactReview(generics.ListCreateAPIView):
-    queryset = ArtifactReview.objects.all()
-    serializer_class = ArtifactReviewSerializer
-    permission_classes = [IsAdminOrReadOnly]
-
-    def get(self, request, artifact_pk, registration_pk, *args, **kwargs):
-        artifact_review = get_object_or_404(
-            ArtifactReview, artifact_id=artifact_pk, user_id=registration_pk)
-        serializer = self.get_serializer(artifact_review)
-        return Response(serializer.data)
-
-    def post(self, request, artifact_pk, registration_pk, *args, **kwargs):
-        artifact = get_object_or_404(Artifact, id=artifact_pk)
-        registration = get_object_or_404(Registration, id=registration_pk)
-        artifact_review = Answer.objects.get_or_create(
-            artifact=artifact,
-            user=registration,
-        )
-        serializer = self.get_serializer(artifact_review)
-        return Response(serializer.data)
-
+    def post(self, request, *args, **kwargs):
+        if 'artifact_pk' in request.query_params and 'registration_pk' in request.query_params:
+            artifact_pk = request.query_params['artifact_pk']
+            registration_pk = request.query_params['registration_pk']
+            
+            artifact = get_object_or_404(Artifact, id=artifact_pk)
+            registration = get_object_or_404(Registration, id=registration_pk)
+            artifact_review = Answer.objects.get_or_create(
+                artifact=artifact,
+                user=registration,
+            )
+            serializer = self.get_serializer(artifact_review)
+            return Response(serializer.data)
+        else:
+            # missing artifact_pk or registration_pk, return 400 bad request
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, *args, **kwargs):
+        if 'artifact_review_pk' in request.query_params:
+            artifact_review_pk = request.query_params['artifact_review_pk']
+            artifact_review = get_object_or_404(
+                ArtifactReview, id=artifact_review_pk)
+            artifact_review.delete()
+            return Response(status=204)
+        else:
+            # missing artifact_review_pk, return 400 bad request
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class ArtifactResult(generics.ListAPIView):
     queryset = Answer.objects.all()

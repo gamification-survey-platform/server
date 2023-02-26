@@ -11,7 +11,7 @@ from .user import Users, UserDetail, Login, Register
 from .course import CourseList
 from .assignment import AssignmentList
 from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo,  SurveySectionList, TemplateSectionList
-from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList, ArtifactReviewList, ArtifactReviewDetail, CheckAllDone, CreateArtifactReview, CreateArtifactAnswer, FeedbackDetail, ArtifactResult, SurveyComplete, ArtifactAnswerKeywordList
+from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList, ArtifactReviewList, CheckAllDone, CreateArtifactAnswer, FeedbackDetail, ArtifactResult, SurveyComplete, ArtifactAnswerKeywordList
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
 from .feedback_survey import SurveyList, SurveyDetail
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
@@ -132,12 +132,8 @@ urlpatterns = [
     # Get detail of answer, update an answer, delete an answer
     path('answers/<int:answer_pk>/', AnswerDetail.as_view(), name='answer-detail'),
 
-    # Get list of artifact reviews
+    # Artifact reviews
     path('artifact_reviews/', ArtifactReviewList.as_view(), name="artifact-review-list"),
-    # Get detail of an artifact review. delete an artifact review
-    path('artifact_reviews/<int:artifact_review_pk>/', ArtifactReviewDetail.as_view(), name="artifact-review-detail"),
-    # Get artifact review of an artifact, post a new artifact review
-    path('artifact_reviews/<int:artifact_pk>/<int:registration_pk>', CreateArtifactReview.as_view(), name="artifact-review"),
     # Get answers of artifact review
     path('artifact_reviews/<int:artifact_review_pk>/answers/', ArtifactAnswerList.as_view(), name='artifact-answer'),
     # Get answers of a question, Post answer to artifact(response answer_pk)
