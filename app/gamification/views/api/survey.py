@@ -481,20 +481,14 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                 question.delete()
             section.delete()
         for section in survey_info["sections"]:
-            try:
-                section_template = SurveySection.objects.get(id=section["pk"])
-            except SurveySection.DoesNotExist:
-                section_template = SurveySection()
-                section_template.template = survey_template
+            section_template = SurveySection()
+            section_template.template = survey_template
             section_template.title = section["title"]
             section_template.is_required = section["is_required"]
             section_template.save()
             for question in section["questions"]:
-                try:
-                    question_template = Question.objects.get(id=question["pk"])
-                except Question.DoesNotExist:
-                    question_template = Question()
-                    question_template.section = section_template
+                question_template = Question()
+                question_template.section = section_template
                 question_template.text = question["text"]
                 question_template.is_required = question["is_required"]
                 question_template.question_type = question["question_type"]
@@ -512,11 +506,8 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                         question_option.option_choice = option_choice_template
                         question_option.save()
                 else:
-                    try:
-                        question_option = QuestionOption.objects.get(question=question_template)
-                    except QuestionOption.DoesNotExist:
-                        question_option = QuestionOption()
-                        question_option.question = question_template
+                    question_option = QuestionOption()
+                    question_option.question = question_template
                     option_choice = OptionChoice()
                     option_choice.save()
                     question_option.number_of_text = question["number_of_text"]
