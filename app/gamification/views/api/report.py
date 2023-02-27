@@ -4,7 +4,7 @@ from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
 
 from django.contrib import messages
-from app.gamification.serializers import EntitySerializer
+from app.gamification.serializers import EntitySerializer, UserSerializer, CourseSerializer
 from django.shortcuts import get_object_or_404
 from app.gamification.models import Assignment, Course, CustomUser, Registration, Team, Membership, Artifact, ArtifactReview, Entity, Team, Individual
 import pytz
@@ -41,7 +41,6 @@ class ViewReport(generics.ListCreateAPIView):
             course = get_object_or_404(Course, pk=course_id)
             registration = get_object_or_404(
                 Registration, users=user, courses=course)
-            userRole = registration.userRole
             assignment = get_object_or_404(Assignment, pk=assignment_id)
             assignment_type = assignment.assignment_type
             if assignment_type == "Individual":
@@ -69,30 +68,23 @@ class ViewReport(generics.ListCreateAPIView):
                 return Response("Assignment type is not valid", status=status.HTTP_400_BAD_REQUEST)
             # find artifact id with assignment id and entity id
             # artifact = get_object_or_404(Artifact, assignment=assignment, entity=entity)
+            artifact_id = None
+            artifact_url = None
+            artifact_answers_url = None
             try:
                 artifact = Artifact.objects.get(assignment=assignment, entity=entity)
-                artifact_exists_flag = True
                 artifact_id = artifact.pk
-                artifact_path = artifact.file.url
                 artifact_url = r"/api/artifacts/" + str(artifact_id) + "/"
                 artifact_answers_url = r"/api/artifacts/" + str(artifact_id) + r"/answers/statistics"
             except Artifact.DoesNotExist:
-                print("artifact does not exist")
-                artifact_exists_flag = False
-                artifact_id = None
-                artifact_path = None
-                artifact_url = None
-                artifact_answers_url = None
-            context = {'user': user,
-                    'course': course,
-                    'entity': entity,
-                    'userRole': userRole,
-                    'artifact_url': artifact_url,
-                    'artifact_path': artifact_path,
+                return Response("Artifact does not exist", status=status.HTTP_404_NOT_FOUND)
+
+            context = {'andrew_id': user.andrew_id,
+                    'course_name': course.course_name,
                     'team_name': team_name,
-                    "artifact_exists_flag": artifact_exists_flag,
-                    "artifact_answers_url": artifact_answers_url
-                    }
+                    'artifact_url': artifact_url, # api to retrive artifact url
+                    "artifact_answers_url": artifact_answers_url # api to retrive answers url
+            }
             data = json.dumps(context)
             return Response(data)
         else:
