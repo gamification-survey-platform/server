@@ -500,5 +500,53 @@ class ArtifactAnswerMultipleChoiceList(generics.ListCreateAPIView):
                 option_index = list(choice_labels_scale).index(answer.question_option.option_choice.text)
                 result["sections_scale"][answer.question_option.question.section.title][answer.question_option.question.text][option_index] += 1
         return Response(result)
+    
+
+
+class AnswerDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, course_id, assignment_id,  artifact_review_pk, *args, **kwargs):
+        return Response()
+    
+    def patch(self, request, course_id, assignment_id, artifact_review_pk, *args, **kwargs):
+        artifact_review_detail = request.data.get('artifact_review_detail')
+        artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_pk)
+        # delete old answers
+        Answer.objects.filter(artifact_review_id=artifact_review_pk).delete()
+        for answer in artifact_review_detail:
+            question_pk = answer["question_pk"]
+            answer_text = answer["answer_text"]
+            question = Question.objects.get(id=question_pk)
+            question_type = question.question_type
+            is_required = question.is_required
+            if is_required and answer_text == "":
+                return Response({"error": "Please answer all required questions."}, status=status.HTTP_400_BAD_REQUEST)
+            if answer_text == "":
+                continue
+            if question_type == Question.QuestionType.MULTIPLECHOICE or question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
+                question_options = question.options.all()
+                for question_option in question_options:
+                    if question_option.option_choice.text == answer_text:
+                        answer = Answer()
+                        answer.question_option = question_option
+                        answer.artifact_review = artifact_review
+                        answer.answer_text = answer_text
+                        answer.save()
+                        break
+
+            elif question_type == Question.QuestionType.FIXEDTEXT or question_type == Question.QuestionType.MULTIPLETEXT or question_type == Question.QuestionType.TEXTAREA or question_type == Question.QuestionType.NUMBER:
+                question_options = question.options[0]
+                answer = Answer()
+                answer.question_option = None
+                answer.artifact_review = artifact_review
+                answer.answer_text = answer_text
+                answer.save()
+            else:
+                # question type: slide review
+                pass
+        return Response(status=status.HTTP_200_OK)
+
+
         
 
