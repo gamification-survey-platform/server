@@ -68,10 +68,8 @@ urlpatterns = [
     path('courses/', CourseList.as_view(), name='course-list'),
     # assignment 
     path('courses/<str:course_id>/assignments/', AssignmentList.as_view(), name='assignment-list'),
-    # TODO: assignment report 
     # Entity/member
     path('courses/<str:course_id>/members/', MemberList.as_view(), name='member-list'),
-
     # Report
     path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/', ViewReport.as_view(), name='artifact-review-list'),
 

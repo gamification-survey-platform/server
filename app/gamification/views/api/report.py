@@ -11,7 +11,7 @@ import pytz
 import json
 from pytz import timezone
 from datetime import datetime
-
+from app.gamification.utils import get_user_pk
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     '''
@@ -66,8 +66,7 @@ class ViewReport(generics.ListCreateAPIView):
                     return Response("You are not a member of the team", status=status.HTTP_403_FORBIDDEN)
             else:
                 return Response("Assignment type is not valid", status=status.HTTP_400_BAD_REQUEST)
-            # find artifact id with assignment id and entity id
-            # artifact = get_object_or_404(Artifact, assignment=assignment, entity=entity)
+
             artifact_id = None
             artifact_url = None
             artifact_answers_url = None
@@ -88,5 +87,60 @@ class ViewReport(generics.ListCreateAPIView):
             data = json.dumps(context)
             return Response(data)
         else:
-            # missing andrew_id
-            return Response("Missing andrew_id", status=status.HTTP_400_BAD_REQUEST)
+            # assignment report
+            course = get_object_or_404(Course, pk=course_id)
+            assignment = get_object_or_404(Assignment, pk=assignment_id)
+            assignment_type = assignment.assignment_type
+            user_id = get_user_pk(request)
+            user = get_object_or_404(CustomUser, id=user_id)
+            userRole = Registration.objects.get(users=user, courses=course).userRole
+
+            if userRole == Registration.UserRole.Instructor or userRole == Registration.UserRole.TA:
+                assignment_id = assignment.id
+                students = []
+                teams = []
+                if assignment_type == "Individual":
+                    is_individual = True
+                    registrations = Registration.objects.filter(courses=course_id, userRole = Registration.UserRole.Student)
+                    counter = 0
+                    student_row = []
+                    for registration in registrations:
+                        student_row.append(registration.users.andrew_id)
+                        counter += 1
+                        if counter == 4:
+                            students.append(student_row)
+                            counter = 0
+                            student_row = []
+                    students.append(student_row)
+                        
+                elif assignment_type == "Team":
+                    is_individual = False
+                    all_teams = Team.objects.filter(course = course)
+                    team_row = []
+                    counter = 0
+                    for team in all_teams:
+                        team_row.append(team.name)
+                        counter += 1
+                        if counter == 4:
+                            teams.append(team_row)
+                            counter = 0
+                            team_row = []
+                    teams.append(team_row)
+                else:
+                    # assignment type not found, internal error 500
+                    return Response("Assignment type is not valid", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
+                context = {
+                        'is_individual': is_individual,
+                        'students': students,
+                        'teams': teams
+                        }
+                print(context)
+                data = json.dumps(context)
+                return Response(data)
+            else:
+                # permission denied
+                return Response("Permission denied", status=status.HTTP_403_FORBIDDEN)
+            
+
+# TODO: team_list
