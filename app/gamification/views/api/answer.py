@@ -8,6 +8,8 @@ from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
+
+from app.gamification.models.assignment import Assignment
 from ...models.feedback_survey import FeedbackSurvey
 from app.gamification.models.option_choice import OptionChoice
 from app.gamification.models.artifact import Artifact
@@ -503,11 +505,55 @@ class ArtifactAnswerMultipleChoiceList(generics.ListCreateAPIView):
     
 
 
-class AnswerDetail(generics.RetrieveUpdateDestroyAPIView):
+class AnswerDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, course_id, assignment_id,  artifact_review_pk, *args, **kwargs):
-        return Response()
+        artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_pk)
+        assignment = get_object_or_404(Assignment, id=assignment_id)
+        survey_template = assignment.survey_template
+        data = dict()
+        data['pk'] = survey_template.pk
+        data['name'] = survey_template.name
+        data['instructions'] = survey_template.instructions
+        data['other_info'] = survey_template.other_info
+        data['sections'] = []
+        for section in survey_template.sections:
+            curr_section = dict()
+            curr_section['pk'] = section.pk
+            curr_section['title'] = section.title
+            curr_section['is_required'] = section.is_required
+            curr_section['questions'] = []
+            for question in section.questions:
+                curr_question = dict()
+                curr_question['pk'] = question.pk
+                curr_question['text'] = question.text
+                curr_question['is_required'] = question.is_required
+                curr_question['question_type'] = question.question_type
+                curr_question['answer'] = []
+                answers = Answer.objects.filter(
+                        artifact_review_id=artifact_review_pk, question_option__question=question)
+                for answer in answers:
+                    curr_question['answer'].append(
+                        answer.answer_text)
+                if question.question_type == Question.QuestionType.MULTIPLECHOICE:
+                    curr_question['option_choices'] = []
+                    for option_choice in question.options:
+                        curr_option_choice = dict()
+                        curr_option_choice['pk'] = option_choice.option_choice.pk
+                        curr_option_choice['text'] = option_choice.option_choice.text
+                        curr_question['option_choices'].append(
+                            curr_option_choice)
+                    
+                elif question.question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
+                    curr_question['number_of_scale'] = question.number_of_scale
+                else:
+                    question_option = get_object_or_404(
+                        QuestionOption, question=question)
+                    curr_question['number_of_text'] = question_option.number_of_text
+                curr_section['questions'].append(curr_question)
+            data['sections'].append(curr_section)
+        return Response(data)
     
     def patch(self, request, course_id, assignment_id, artifact_review_pk, *args, **kwargs):
         artifact_review_detail = request.data.get('artifact_review_detail')
@@ -536,9 +582,9 @@ class AnswerDetail(generics.RetrieveUpdateDestroyAPIView):
                         break
 
             elif question_type == Question.QuestionType.FIXEDTEXT or question_type == Question.QuestionType.MULTIPLETEXT or question_type == Question.QuestionType.TEXTAREA or question_type == Question.QuestionType.NUMBER:
-                question_options = question.options[0]
+                question_option = question.options[0]
                 answer = Answer()
-                answer.question_option = None
+                answer.question_option = question_option
                 answer.artifact_review = artifact_review
                 answer.answer_text = answer_text
                 answer.save()
