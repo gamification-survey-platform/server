@@ -49,7 +49,7 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
             def get_registrations(user):
                 registration = []
                 for reg in Registration.objects.filter(users=user):
-                    if reg.userRole == Registration.UserRole.Student and reg.courses.visible == False:
+                    if reg.courses.visible == False:
                         continue
                     else:
                         registration.append(reg)
@@ -77,6 +77,7 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
                     registrations = Registration.objects.all()
                 else:
                     registrations = get_registrations(user)
+                    print(registrations)
                 courses = registrations_to_courses(registrations)
                 serializer = CourseSerializer(courses, many=True)
                 # serializer = RegistrationSerializer(registrations, many=True)
