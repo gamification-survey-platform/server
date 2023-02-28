@@ -97,7 +97,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
             context = get_a_member(course_id, andrew_id)
         else:
             context = get_member_list(course_id)
-        return Response(context)
+        return Response({"user_role": userRole, "context": context})
 
     def post(self, request, course_id, *args, **kwargs):
         def get_member_list(course_id):
@@ -240,7 +240,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         messages.info(request, message_info)
         
         context = get_member_list(course_id)
-        return Response(context)
+        return Response({"user_role": userRole, "context": context})
 
     def delete(self, request, course_id, *args, **kwargs):
         if 'andrew_id' not in  request.query_params:

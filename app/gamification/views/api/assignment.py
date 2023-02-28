@@ -87,7 +87,7 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
                 else:
                     latest_artifact_filename = ""
                 # return info with assignment and artifact
-                info = {'assignment': assignment, 'latest_artifact' : latest_artifact, 'latest_artifact_filename': latest_artifact_filename}
+                info = {'user_role':userRole,'assignment': assignment, 'latest_artifact' : latest_artifact, 'latest_artifact_filename': latest_artifact_filename}
                 data = json.dumps(info)
                 return Response(data)
                 # return HttpResponse(info, content_type="application/json")
@@ -95,7 +95,7 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
                 assignment = get_object_or_404(Assignment, pk=assignment_id)
                 # Response for admin
                 serializer = AssignmentSerializer(assignment)
-                return Response(serializer.data)
+                return Response({"user_role": userRole, "assignments":serializer.data})
             else:
                 # user role not found
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -138,7 +138,7 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
                             assign['feedback_survey'] = 0
                     info.append(assign)
                 data = json.dumps(info)
-                return Response(data, status=status.HTTP_200_OK)
+                return Response({"user_role":userRole, "data":data}, status=status.HTTP_200_OK)
                 # return HttpResponse(info, content_type="application/json")
             elif userRole == Registration.UserRole.Instructor or userRole == Registration.UserRole.TA:
                 assignments = Assignment.objects.filter(course=course)
@@ -157,9 +157,8 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
                         else:
                             assign['feedback_survey'] = 0
                     info.append(assign)
-                print(info)
                 data = json.dumps(info, default=str)
-                return Response(data, status=status.HTTP_200_OK)
+                return Response({"user_role": userRole, "data": data}, status=status.HTTP_200_OK)
                 # return HttpResponse(info, content_type="application/json")
             else:
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
