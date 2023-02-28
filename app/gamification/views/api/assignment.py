@@ -95,7 +95,7 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
                 assignment = get_object_or_404(Assignment, pk=assignment_id)
                 # Response for admin
                 serializer = AssignmentSerializer(assignment)
-                return Response({"user_role": userRole, "assignments":serializer.data})
+                return Response({"user_role": userRole, "assignment":serializer.data})
             else:
                 # user role not found
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -122,11 +122,11 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
                             assignments.append(assignment)
                         elif assignment.date_released == None:
                             assignments.append(assignment)
-                info = []
+                assignments_info = []
                 for a in assignments:
                     feedback_survey = FeedbackSurvey.objects.filter(assignment=a)
                     assign = dict()
-                    assign['assignment'] = model_to_dict(a)
+                    assign = model_to_dict(a)
                     assign['feedback_survey'] = feedback_survey.count()
                     if feedback_survey.count() == 1:
                         feedback_survey_release_date = feedback_survey[0].date_released.astimezone(
@@ -136,19 +136,16 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
                             assign['feedback_survey'] = 1
                         else:
                             assign['feedback_survey'] = 0
-                    info.append(assign)
+                    assignments_info.append(assign)
+                return Response({"user_role":userRole, "assignments": assignments_info}, status=status.HTTP_200_OK)
 
-                data = json.dumps(info)
-                return Response({"user_role":userRole, "data":data}, status=status.HTTP_200_OK)
-
-                # return HttpResponse(info, content_type="application/json")
             elif userRole == Registration.UserRole.Instructor or userRole == Registration.UserRole.TA:
                 assignments = Assignment.objects.filter(course=course)
-                info = []
+                assignments_info = []
                 for a in assignments:
                     feedback_survey = FeedbackSurvey.objects.filter(assignment=a)
                     assign = dict()
-                    assign['assignment'] = model_to_dict(a)
+                    assign = model_to_dict(a)
                     assign['feedback_survey'] = feedback_survey.count()
                     if feedback_survey.count() == 1:
                         feedback_survey_release_date = feedback_survey[0].date_released.astimezone(
@@ -158,10 +155,8 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
                             assign['feedback_survey'] = 1
                         else:
                             assign['feedback_survey'] = 0
-                    info.append(assign)
-                data = json.dumps(info, default=str)
-                return Response({"user_role": userRole, "data": data}, status=status.HTTP_200_OK)
-                # return HttpResponse(info, content_type="application/json")
+                    assignments_info.append(assign)
+                return Response({"user_role": userRole, "assignments": assignments_info}, status=status.HTTP_200_OK)
             else:
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
             
