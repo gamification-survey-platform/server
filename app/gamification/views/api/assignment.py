@@ -126,7 +126,7 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
                 for a in assignments:
                     feedback_survey = FeedbackSurvey.objects.filter(assignment=a)
                     assign = dict()
-                    assign['assignment'] = a
+                    assign['assignment'] = model_to_dict(a)
                     assign['feedback_survey'] = feedback_survey.count()
                     if feedback_survey.count() == 1:
                         feedback_survey_release_date = feedback_survey[0].date_released.astimezone(
@@ -137,8 +137,10 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
                         else:
                             assign['feedback_survey'] = 0
                     info.append(assign)
+
                 data = json.dumps(info)
                 return Response({"user_role":userRole, "data":data}, status=status.HTTP_200_OK)
+
                 # return HttpResponse(info, content_type="application/json")
             elif userRole == Registration.UserRole.Instructor or userRole == Registration.UserRole.TA:
                 assignments = Assignment.objects.filter(course=course)
