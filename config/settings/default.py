@@ -34,7 +34,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', False) == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost 127.0.0.1').split(' ')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,*').split(',')
 
 CSRF_TRUSTED_ORIGINS = os.getenv(
     'CSRF_TRUSTED_ORIGINS', 'localhost:8000').split(' ')
@@ -129,10 +129,12 @@ DATABASES = {
     },
 }
 
-if os.getenv('DATABASE_URL', None):
-    DATABASES['default'] = dj_database_url.parse(
-        os.getenv('DATABASE_URL', None))
-
+# if os.getenv('DATABASE_URL', None):
+#     DATABASES['default'] = dj_database_url.parse(
+#         os.getenv('DATABASE_URL', None))
+DATABASES = {
+    'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
