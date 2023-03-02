@@ -7,11 +7,12 @@ from rest_framework import status
 
 from app.gamification.models import CustomUser
 from app.gamification.serializers import UserSerializer
+from app.gamification.views.api.artifacts import SubmitArtifact
 from .user import Users, UserDetail, Login, Register
 from .course import CourseList
 from .assignment import AssignmentList
 from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo,  SurveySectionList, TemplateSectionList
-from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList, ArtifactReviewList, CheckAllDone, CreateArtifactAnswer, FeedbackDetail, ArtifactResult, SurveyComplete, ArtifactAnswerKeywordList, AnswerDetails
+from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList, ArtifactReviewList, CheckAllDone, CreateArtifactAnswer, FeedbackDetail, SurveyComplete, ArtifactAnswerKeywordList, AnswerDetails
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
 from .feedback_survey import SurveyList, SurveyDetail
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
@@ -86,68 +87,11 @@ urlpatterns = [
 
     # get survey details with answers, patch answers
 
-     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/<str:artifact_review_pk>/', AnswerDetails.as_view(), name='survey-detail'),
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/<str:artifact_review_pk>/', AnswerDetails.as_view(), name='survey-detail'),
 
-    # Get the sections of a survey, Post a new section of the survey
-    path('surveys/<int:survey_pk>/sections/',
-         SurveySectionList.as_view(), name='survey-section-list'),
 
-    # Get list of sections
-    # ListAPIView
-    path('sections/', SectionList.as_view(), name='section-list'),
-
-    # List template sections
-    path('template_sections/', TemplateSectionList.as_view(), name='template-section-list'),
-
-    # Get detail of a section, Update a section, Delete a section
-    path('sections/<int:section_pk>/',
-         SectionDetail.as_view(), name='section-detail'),
-
-    # Get list of questions of a section, Post a new question of the section
-    path('sections/<int:section_pk>/questions/',
-         SectionQuestionList.as_view(), name='section-question-list'),
-
-    # Get list of questions
-    path('questions/', QuestionList.as_view(), name='question-list'),
-
-    # Get detail of a question, Update a question, Delete a question
-    path('questions/<int:question_pk>/',
-         QuestionDetail.as_view(), name='question-detail'),
-
-    path('questions/<int:question_pk>/check_all_done/',
-         CheckAllDone.as_view(), name="check-all-done"),
-
-    # Get list of options of a question, Post a new option of the question
-    path('questions/<int:question_pk>/options/',
-         QuestionOptionList.as_view(), name='question-option-list'),
-
-    # Update an option, Delete an option
-    path('questions/<int:question_pk>/options/<int:option_pk>/',
-         QuestionOptionDetail.as_view(), name='question-option-detail'),
-
-    # Get list of options, Post a new option
-    path('options/', OptionList.as_view(), name='option-list'),
-
-    # Get detail of an option, Update an option, Delete an option
-    path('options/<int:option_pk>/', OptionDetail.as_view(), name='option-detail'),
-
-    # Get the list of all answers
-    path('answers/', AnswerList.as_view(), name='answer-list'),
-
-    # Get detail of answer, update an answer, delete an answer
-    path('answers/<int:answer_pk>/', AnswerDetail.as_view(), name='answer-detail'),
-
-    # Artifact reviews
-    path('artifact_reviews/', ArtifactReviewList.as_view(), name="artifact-review-list"),
-    # Get answers of artifact review
-    path('artifact_reviews/<int:artifact_review_pk>/answers/', ArtifactAnswerList.as_view(), name='artifact-answer'),
-    # Get answers of a question, Post answer to artifact(response answer_pk)
-    path('artifact_reviews/<int:artifact_review_pk>/questions/<question_pk>/answers/', CreateArtifactAnswer.as_view(), name='create-artifact-answer'),
-    # Update an artifact review's status (to completed or late)
-    path('artifact_reviews/<int:artifact_review_pk>/is_complete/', SurveyComplete.as_view(), name="survey-complete"),
-
-    path('artifacts/<int:artifact_pk>/',
-         ArtifactResult.as_view(), name="artifact-result"),
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/',
+         SubmitArtifact.as_view(), name="submit-artifact"),
 
     # Get answers keywords of artifact review
     path('artifacts/<int:artifact_pk>/answers/keywords',
@@ -157,33 +101,33 @@ urlpatterns = [
     path('artifacts/<int:artifact_pk>/answers/statistics',
          ArtifactAnswerMultipleChoiceList.as_view(), name='artifact-answer-statistics'),
 
-    # Get list of constraints
-    path('constraints/', ConstraintList.as_view(), name='constraint-list'),
+#     # Get list of constraints
+#     path('constraints/', ConstraintList.as_view(), name='constraint-list'),
 
-    # Get detail of a constraint, Update a constraint, Delete a constraint
-    path('constraints/<str:url>/',
-         ConstraintDetail.as_view(), name='constraint-detail'),
+#     # Get detail of a constraint, Update a constraint, Delete a constraint
+#     path('constraints/<str:url>/',
+#          ConstraintDetail.as_view(), name='constraint-detail'),
 
-    # Get progress of a constraint
-    path('constraints/<str:url>/progress/',
-         ConstraintProgress.as_view(), name='constraint-progress'),
+#     # Get progress of a constraint
+#     path('constraints/<str:url>/progress/',
+#          ConstraintProgress.as_view(), name='constraint-progress'),
 
-    # Get progress of an action constraint, update progress of an action constraint, delete progress of an action constraint
-    path('constraints/<str:url>/progress/action',
-         ActionConstraintProgressDetail.as_view(), name='constraint-progress-detail'),
+#     # Get progress of an action constraint, update progress of an action constraint, delete progress of an action constraint
+#     path('constraints/<str:url>/progress/action',
+#          ActionConstraintProgressDetail.as_view(), name='constraint-progress-detail'),
 
-    # Get progress of a grade constraint, update progress of a grade constraint, delete progress of a grade constraint
-    path('constraints/<str:url>/progress/grade',
-         GradeConstraintProgressDetail.as_view(), name='constraint-progress-detail'),
-    # path('constraints/<int:constraint_pk>/progress', ConstraintProgress.as_view(), name='constraint-progress'),
+#     # Get progress of a grade constraint, update progress of a grade constraint, delete progress of a grade constraint
+#     path('constraints/<str:url>/progress/grade',
+#          GradeConstraintProgressDetail.as_view(), name='constraint-progress-detail'),
+#     # path('constraints/<int:constraint_pk>/progress', ConstraintProgress.as_view(), name='constraint-progress'),
 
-    # get all rules
-    path('rules/', getAllRules.as_view(), name='rule-list'),
+#     # get all rules
+#     path('rules/', getAllRules.as_view(), name='rule-list'),
 
-    # get the progress of all rules
-    path('rules/progress/', getAllRuleProgress.as_view(), name='rule-progress'),
+#     # get the progress of all rules
+#     path('rules/progress/', getAllRuleProgress.as_view(), name='rule-progress'),
 
-    # get the progress of all rules by constraint id
-    path('rules/progress/<int:constraint_pk>',
-         getRulesProgressByContraint.as_view(), name='rule-progress'),
+#     # get the progress of all rules by constraint id
+#     path('rules/progress/<int:constraint_pk>',
+#          getRulesProgressByContraint.as_view(), name='rule-progress'),
 ]
