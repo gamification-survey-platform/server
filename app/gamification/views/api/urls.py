@@ -83,16 +83,17 @@ urlpatterns = [
     # get all sections, questions, options of a survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/surveys/', SurveyGetInfo.as_view(), name='survey-get-info'),
 
-     # get all artifact reviews
-     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/',
+    # post or get an artifact
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/',
+          SubmitArtifact.as_view(), name="submit-artifact"),
+
+    # get all artifact reviews
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/',
            ArtifactReviewList.as_view(), name="artifact-review-list"),
 
     # get survey details with answers, patch answers for an artifact review survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/<str:artifact_review_pk>/', ArtifactReviewDetails.as_view(), name='survey-detail'),
 
-#     # post or get an artifact
-#     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/',
-#          SubmitArtifact.as_view(), name="submit-artifact"),
 
 
 #     # Get answers keywords of artifact review
