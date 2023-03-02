@@ -93,7 +93,7 @@ PostgreSQL server database.
    ```
    SECRET_KEY='django-insecure-2-mg5vw^&skma(kxqan1_7^2acwc74pb54g6&ea&&a=0g=!!0g'
    DEBUG=True
-   ALLOWED_HOSTS='localhost'
+   ALLOWED_HOSTS='localhost 127.0.0.1'
    DB_ENGINE='django.db.backends.postgresql'
    DB_NAME='dev'
    DB_USER='dbuser'
@@ -136,14 +136,14 @@ PostgreSQL server database.
 
 After setting up the environment, run `python manage.py runserver` to start the server. Here are a few pages implemented at the moment:
 
-- Sign in page `localhost:8000/signin/`
+- Sign in page `127.0.0.1:8000/signin/`
 
   The sign in page is where you input your andrew ID and password to login into
   the system. If the andrew ID doesn't exist or the password is incorrect, an
   error message will be displayed to ask you to enter again. \
   After successful sign in, you will be redirected to your profile page.
 
-- Sign up page `localhost:8000/signup/`
+- Sign up page `127.0.0.1:8000/signup/`
 
   The sign up page is where you register an account. You will be asked to enter
   your andrew ID (required), email (required), password (required), and enter
