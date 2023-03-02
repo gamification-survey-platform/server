@@ -7,12 +7,13 @@ from rest_framework import status
 
 from app.gamification.models import CustomUser
 from app.gamification.serializers import UserSerializer
+from app.gamification.views.api.artifact_review import ArtifactReviewDetails, ArtifactReviewList
 from app.gamification.views.api.artifacts import SubmitArtifact
 from .user import Users, UserDetail, Login, Register
 from .course import CourseList
 from .assignment import AssignmentList
 from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo,  SurveySectionList, TemplateSectionList
-from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList, ArtifactReviewList, CheckAllDone, CreateArtifactAnswer, FeedbackDetail, SurveyComplete, ArtifactAnswerKeywordList, AnswerDetails
+from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList,  CheckAllDone, CreateArtifactAnswer, FeedbackDetail, SurveyComplete, ArtifactAnswerKeywordList
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
 from .feedback_survey import SurveyList, SurveyDetail
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
@@ -69,7 +70,7 @@ urlpatterns = [
     path('courses/', CourseList.as_view(), name='course-list'),
     # assignment 
     path('courses/<str:course_id>/assignments/', AssignmentList.as_view(), name='assignment-list'),
-    # TODO: assignment report 
+
     # Entity/member
     path('courses/<str:course_id>/members/', MemberList.as_view(), name='member-list'),
 
@@ -78,28 +79,29 @@ urlpatterns = [
 
     # Get the  feedback_surveys, Post a new survey,update a survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/', SurveyList.as_view(), name='survey-list'),
-
-    # Get detail of a survey, Delete a survey, Update a survey
-    #path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/<int:feedback_survey_pk>/', SurveyDetail.as_view(), name='survey-detail'),
     
     # get all sections, questions, options of a survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/surveys/', SurveyGetInfo.as_view(), name='survey-get-info'),
 
-    # get survey details with answers, patch answers
+     # get all artifact reviews
+     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/',
+           ArtifactReviewList.as_view(), name="artifact-review-list"),
 
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/<str:artifact_review_pk>/', AnswerDetails.as_view(), name='survey-detail'),
+    # get survey details with answers, patch answers for an artifact review survey
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/<str:artifact_review_pk>/', ArtifactReviewDetails.as_view(), name='survey-detail'),
+
+#     # post or get an artifact
+#     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/',
+#          SubmitArtifact.as_view(), name="submit-artifact"),
 
 
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/',
-         SubmitArtifact.as_view(), name="submit-artifact"),
+#     # Get answers keywords of artifact review
+#     path('artifacts/<int:artifact_pk>/answers/keywords',
+#          ArtifactAnswerKeywordList.as_view(), name='artifact-answer-keyword'),
 
-    # Get answers keywords of artifact review
-    path('artifacts/<int:artifact_pk>/answers/keywords',
-         ArtifactAnswerKeywordList.as_view(), name='artifact-answer-keyword'),
-
-    # Get answers statistics for statistics bar chart
-    path('artifacts/<int:artifact_pk>/answers/statistics',
-         ArtifactAnswerMultipleChoiceList.as_view(), name='artifact-answer-statistics'),
+#     # Get answers statistics for statistics bar chart
+#     path('artifacts/<int:artifact_pk>/answers/statistics',
+#          ArtifactAnswerMultipleChoiceList.as_view(), name='artifact-answer-statistics'),
 
 #     # Get list of constraints
 #     path('constraints/', ConstraintList.as_view(), name='constraint-list'),
