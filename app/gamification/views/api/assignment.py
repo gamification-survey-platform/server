@@ -87,9 +87,9 @@ class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
                 else:
                     latest_artifact_filename = ""
                 # return info with assignment and artifact
-                info = {'user_role':userRole,'assignment': assignment, 'latest_artifact' : latest_artifact, 'latest_artifact_filename': latest_artifact_filename}
-                data = json.dumps(info)
-                return Response(data)
+                info = {'user_role':userRole,'assignment': model_to_dict(assignment)}
+
+                return Response(info)
                 # return HttpResponse(info, content_type="application/json")
             elif userRole == Registration.UserRole.Instructor or userRole == Registration.UserRole.TA:
                 assignment = get_object_or_404(Assignment, pk=assignment_id)
