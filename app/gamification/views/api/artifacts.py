@@ -1,6 +1,7 @@
 import collections
 import json
-from django.http import FileResponse
+from wsgiref.util import FileWrapper
+from django.http import FileResponse, HttpResponse
 import yake
 import spacy
 import re
@@ -116,12 +117,10 @@ class SubmitArtifact(generics.ListCreateAPIView):
         # get an open file handle (I'm just using a file attached to the model for this example):
         file_handle = artifact.file.open()
         # send file
-        response = FileResponse(file_handle, content_type='whatever')
-        print(type(artifact.file))
-        response['Content-Length'] = artifact.file.size
-        response['Content-Disposition'] = 'attachment; filename="%s"' % artifact.file.name
-
+        response = HttpResponse(FileWrapper(file_handle), content_type='application/pdf')
         return response
+
+
 
 
 
