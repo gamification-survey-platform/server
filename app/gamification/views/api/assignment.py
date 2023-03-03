@@ -36,9 +36,13 @@ class AssignmentList(generics.ListCreateAPIView):
     permission_classes = [permissions.AllowAny] # [permissions.IsAuthenticated]
 
     def get(self, request, course_id, *args, **kwargs):
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
+        user_rule = Registration.objects.get(users=user, courses=course_id).userRole
         course = get_object_or_404(Course, pk=course_id)
         assignments = Assignment.objects.filter(course=course)
-        data = [model_to_dict(assignment) for assignment in assignments]
+        assignment_dict = [model_to_dict(assignment) for assignment in assignments]
+        data = {'user_rule': user_rule, 'assignments': assignment_dict}
         return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request, course_id, *args, **kwargs):
@@ -72,8 +76,13 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, course_id, assignment_id,  *args, **kwargs):
+        course = get_object_or_404(Course, pk=course_id)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
+        userRole = Registration.objects.get(users=user, courses=course).userRole
         assignment = get_object_or_404(Assignment, pk=assignment_id)
-        data = model_to_dict(assignment)
+        assignment_dict = [model_to_dict(assignment)]
+        data = {'user_rule': userRole, 'assignment': assignment_dict}
         return Response(data, status=status.HTTP_200_OK)
     
     def patch(self, request, course_id, assignment_id,  *args, **kwargs):
