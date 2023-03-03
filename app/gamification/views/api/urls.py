@@ -11,7 +11,7 @@ from app.gamification.views.api.artifact_review import ArtifactReviewDetails, Ar
 from app.gamification.views.api.artifacts import SubmitArtifact
 from .user import Users, UserDetail, Login, Register
 from .course import CourseList
-from .assignment import AssignmentList
+from .assignment import AssignmentList, AssignmentDetail
 from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo,  SurveySectionList, TemplateSectionList
 from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList,  CheckAllDone, CreateArtifactAnswer, FeedbackDetail, SurveyComplete, ArtifactAnswerKeywordList
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
@@ -68,8 +68,12 @@ urlpatterns = [
 
     # course
     path('courses/', CourseList.as_view(), name='course-list'),
+
     # assignment 
     path('courses/<str:course_id>/assignments/', AssignmentList.as_view(), name='assignment-list'),
+
+    # assignment detail
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/', AssignmentDetail.as_view(), name='assignment-detail'),
 
     # Entity/member
     path('courses/<str:course_id>/members/', MemberList.as_view(), name='member-list'),
@@ -92,7 +96,8 @@ urlpatterns = [
            ArtifactReviewList.as_view(), name="artifact-review-list"),
 
     # get survey details with answers, patch answers for an artifact review survey
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/<str:artifact_review_pk>/', ArtifactReviewDetails.as_view(), name='survey-detail'),
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/<str:artifact_review_pk>/', 
+         ArtifactReviewDetails.as_view(), name='survey-detail'),
 
 
 
