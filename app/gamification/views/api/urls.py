@@ -77,9 +77,8 @@ urlpatterns = [
 
     # Entity/member
     path('courses/<str:course_id>/members/', MemberList.as_view(), name='member-list'),
-
     # Report
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/<andrew_id>', ViewReport.as_view(), name='artifact-review-list'),
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/', ViewReport.as_view(), name='artifact-review-list'),
 
     # Get the  feedback_surveys, Post a new survey,update a survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/', SurveyList.as_view(), name='survey-list'),
