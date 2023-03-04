@@ -32,7 +32,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 class ViewReport(generics.ListCreateAPIView):
     # queryset = Entity.objects.all()
     serializer_class = EntitySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
     
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         if 'andrew_id' in request.query_params:
@@ -142,5 +142,3 @@ class ViewReport(generics.ListCreateAPIView):
                 # permission denied
                 return Response("Permission denied", status=status.HTTP_403_FORBIDDEN)
             
-
-# TODO: team_list
