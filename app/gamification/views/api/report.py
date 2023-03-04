@@ -54,21 +54,21 @@ class ViewReport(generics.ListCreateAPIView):
                 team_name = entity.name
 
             artifact_id = None
-            artifact_url = None
-            artifact_answers_url = None
+            # artifact_url = None
+            # artifact_answers_url = None
             try:
                 artifact = Artifact.objects.get(assignment=assignment, entity=entity)
                 artifact_id = artifact.pk
-                artifact_url = r"/api/artifacts/" + str(artifact_id) + "/"
-                artifact_answers_url = r"/api/artifacts/" + str(artifact_id) + r"/answers/statistics"
+                # artifact_url = r"/api/artifacts/" + str(artifact_id) + "/"
+                # artifact_answers_url = r"/api/artifacts/" + str(artifact_id) + r"/answers/statistics"
             except Artifact.DoesNotExist:
                 return Response("Artifact does not exist", status=status.HTTP_404_NOT_FOUND)
 
             context = {'andrew_id': user.andrew_id,
                     'course_name': course.course_name,
                     'team_name': team_name,
-                    'artifact_url': artifact_url, # api to retrive artifact url
-                    "artifact_answers_url": artifact_answers_url # api to retrive answers url
+                    # 'artifact_url': artifact_url, # api to retrive artifact url
+                    # "artifact_answers_url": artifact_answers_url # api to retrive answers url
             }
             return Response(context, status=status.HTTP_200_OK)
         else:
