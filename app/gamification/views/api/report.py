@@ -36,6 +36,7 @@ class ViewReport(generics.ListCreateAPIView):
     
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         if 'andrew_id' in request.query_params:
+            # individual report
             andrew_id = request.query_params['andrew_id']
             user = get_object_or_404(CustomUser, andrew_id=andrew_id)
             course = get_object_or_404(Course, pk=course_id)
@@ -43,29 +44,14 @@ class ViewReport(generics.ListCreateAPIView):
                 Registration, users=user, courses=course)
             assignment = get_object_or_404(Assignment, pk=assignment_id)
             assignment_type = assignment.assignment_type
+            
             if assignment_type == "Individual":
-                try:
-                    entity = Individual.objects.get(
-                        registration=registration, course=course)
-                    team_name = str(andrew_id)
-                except Individual.DoesNotExist:
-                    # Create an Individual entity for the user
-                    individual = Individual(course=course)
-                    individual.save()
-                    membership = Membership(student=registration, entity=individual)
-                    membership.save()
-                    entity = Individual.objects.get(
-                        registration=registration, course=course)
-                    team_name = str(andrew_id)
+                entity = Individual.objects.get(
+                    registration=registration, course=course)
+                team_name = str(andrew_id)
             elif assignment_type == "Team":
-                try:
-                    entity = Team.objects.get(registration=registration, course=course)
-                    team_name = entity.name
-                except Team.DoesNotExist:
-                    # Alert: you need to be a member of the team to upload the artifact, forbidden
-                    return Response("You are not a member of the team", status=status.HTTP_403_FORBIDDEN)
-            else:
-                return Response("Assignment type is not valid", status=status.HTTP_400_BAD_REQUEST)
+                entity = Team.objects.get(registration=registration, course=course)
+                team_name = entity.name
 
             artifact_id = None
             artifact_url = None
@@ -84,8 +70,7 @@ class ViewReport(generics.ListCreateAPIView):
                     'artifact_url': artifact_url, # api to retrive artifact url
                     "artifact_answers_url": artifact_answers_url # api to retrive answers url
             }
-            data = json.dumps(context)
-            return Response(data)
+            return Response(context, status=status.HTTP_200_OK)
         else:
             # assignment report
             course = get_object_or_404(Course, pk=course_id)
@@ -94,51 +79,39 @@ class ViewReport(generics.ListCreateAPIView):
             user_id = get_user_pk(request)
             user = get_object_or_404(CustomUser, id=user_id)
             userRole = Registration.objects.get(users=user, courses=course).userRole
-
-            if userRole == Registration.UserRole.Instructor or userRole == Registration.UserRole.TA:
-                assignment_id = assignment.id
-                students = []
-                teams = []
-                if assignment_type == "Individual":
-                    is_individual = True
-                    registrations = Registration.objects.filter(courses=course_id, userRole = Registration.UserRole.Student)
-                    counter = 0
-                    student_row = []
-                    for registration in registrations:
-                        student_row.append(registration.users.andrew_id)
-                        counter += 1
-                        if counter == 4:
-                            students.append(student_row)
-                            counter = 0
-                            student_row = []
-                    students.append(student_row)
-                        
-                elif assignment_type == "Team":
-                    is_individual = False
-                    all_teams = Team.objects.filter(course = course)
-                    team_row = []
-                    counter = 0
-                    for team in all_teams:
-                        team_row.append(team.name)
-                        counter += 1
-                        if counter == 4:
-                            teams.append(team_row)
-                            counter = 0
-                            team_row = []
-                    teams.append(team_row)
-                else:
-                    # assignment type not found, internal error 500
-                    return Response("Assignment type is not valid", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-                
-                context = {
-                        'is_individual': is_individual,
-                        'students': students,
-                        'teams': teams
-                        }
-                print(context)
-                data = json.dumps(context)
-                return Response(data)
-            else:
-                # permission denied
-                return Response("Permission denied", status=status.HTTP_403_FORBIDDEN)
+            students = []
+            teams = []
+            if assignment_type == "Individual":
+                registrations = Registration.objects.filter(courses=course_id, userRole = Registration.UserRole.Student)
+                counter = 0
+                student_row = []
+                for registration in registrations:
+                    student_row.append(registration.users.andrew_id)
+                    counter += 1
+                    if counter == 4:
+                        students.append(student_row)
+                        counter = 0
+                        student_row = []
+                students.append(student_row)
+                    
+            elif assignment_type == "Team":
+                all_teams = Team.objects.filter(course = course)
+                team_row = []
+                counter = 0
+                for team in all_teams:
+                    team_row.append(team.name)
+                    counter += 1
+                    if counter == 4:
+                        teams.append(team_row)
+                        counter = 0
+                        team_row = []
+                teams.append(team_row)
+            
+            # students or teams is an empty list
+            context = {
+                'userRole': userRole,
+                'students': students,
+                'teams': teams
+            }
+            return Response(context, status=status.HTTP_200_OK)
             
