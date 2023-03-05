@@ -81,8 +81,8 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
         user = get_object_or_404(CustomUser, id=user_id)
         userRole = Registration.objects.get(users=user, courses=course).userRole
         assignment = get_object_or_404(Assignment, pk=assignment_id)
-        assignment_dict = [model_to_dict(assignment)]
-        data = {'user_rule': userRole, 'assignment': assignment_dict}
+        data = model_to_dict(assignment)
+        data['user_role'] = userRole
         return Response(data, status=status.HTTP_200_OK)
     
     def patch(self, request, course_id, assignment_id,  *args, **kwargs):
