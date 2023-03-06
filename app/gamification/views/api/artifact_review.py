@@ -9,13 +9,12 @@ from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
-
 from app.gamification.models.assignment import Assignment
 from app.gamification.models.course import Course
 from app.gamification.models.entity import Team
 from app.gamification.models.membership import Membership
 from app.gamification.models.user import CustomUser
-from app.gamification.utils import get_user_pk
+from app.gamification.utils import get_user_pk, check_survey_status
 from ...models.feedback_survey import FeedbackSurvey
 from app.gamification.models.option_choice import OptionChoice
 from app.gamification.models.artifact import Artifact
@@ -50,7 +49,8 @@ class ArtifactReviewList(generics.RetrieveAPIView):
                 artifact_review = ArtifactReview.objects.get(
                     artifact=artifact, user=registration)
             except ArtifactReview.DoesNotExist:
-                artifact_review = ArtifactReview(artifact=artifact, user=registration)
+                artifact_review = ArtifactReview(
+                    artifact=artifact, user=registration)
                 artifact_review.save()
             artifact_review_dict = model_to_dict(artifact_review)
             if assignment.assignment_type == 'Individual':
@@ -58,18 +58,16 @@ class ArtifactReviewList(generics.RetrieveAPIView):
                     entity=artifact.entity).student.users.name_or_andrew_id()
             else:
                 artifact_review_dict['reviewing'] = artifact.entity.team.name
-            artifact_reviews.append(artifact_review_dict)        
+            artifact_reviews.append(artifact_review_dict)
         return Response(artifact_reviews, status=status.HTTP_200_OK)
-
-
-        
 
 
 class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, course_id, assignment_id,  artifact_review_pk, *args, **kwargs):
-        artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_pk)
+        artifact_review = get_object_or_404(
+            ArtifactReview, id=artifact_review_pk)
         assignment = get_object_or_404(Assignment, id=assignment_id)
         survey_template = assignment.survey_template
         if not survey_template:
@@ -94,7 +92,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 curr_question['question_type'] = question.question_type
                 curr_question['answer'] = []
                 answers = Answer.objects.filter(
-                        artifact_review_id=artifact_review_pk, question_option__question=question)
+                    artifact_review_id=artifact_review_pk, question_option__question=question)
                 for answer in answers:
                     curr_question['answer'].append(
                         answer.answer_text)
@@ -106,7 +104,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                         curr_option_choice['text'] = option_choice.option_choice.text
                         curr_question['option_choices'].append(
                             curr_option_choice)
-                    
+
                 elif question.question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
                     curr_question['number_of_scale'] = question.number_of_scale
                 else:
@@ -116,12 +114,17 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 curr_section['questions'].append(curr_question)
             data['sections'].append(curr_section)
         return Response(data)
-    
+
     def patch(self, request, course_id, assignment_id, artifact_review_pk, *args, **kwargs):
+        assignment = get_object_or_404(Assignment, id=assignment_id)
+        artifact_status = check_survey_status(assignment)
         artifact_review_detail = request.data.get('artifact_review_detail')
-        artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_pk)
+        artifact_review = get_object_or_404(
+            ArtifactReview, id=artifact_review_pk)
         # delete old answers
         Answer.objects.filter(artifact_review_id=artifact_review_pk).delete()
+        artifact_review.status = artifact_status
+        artifact_review.save()
         for answer in artifact_review_detail:
             question_pk = answer["question_pk"]
             answer_text = answer["answer_text"]
