@@ -1,4 +1,9 @@
+import pytz
+from app.gamification.models.survey_template import SurveyTemplate
+from app.gamification.models.feedback_survey import FeedbackSurvey
+from app.gamification.models.artifact_review import ArtifactReview
 import datetime
+from datetime import datetime
 
 from django.forms.fields import DateTimeFormatsIterator
 import time
@@ -8,10 +13,12 @@ from django.core import signing
 import hashlib
 from django.core.cache import cache
 
+
 def get_user_pk(request):
     token = request.META.get('HTTP_AUTHORIZATION').split()[1]
     token_data = jwt.decode(token, os.getenv('SECRET_KEY'), algorithm='HS256')
     return token_data['id']
+
 
 def parse_datetime(value):
     for format in DateTimeFormatsIterator():
@@ -20,8 +27,6 @@ def parse_datetime(value):
         except (ValueError, TypeError):
             pass
     raise ValueError('Invalid datetime string')
-
-
 
 
 HEADER = {'typ': 'JWP', 'alg': 'default'}
@@ -61,7 +66,6 @@ def get_payload(token):
     return payload
 
 
-
 def get_username(token):
     payload = get_payload(token)
     return payload['username']
@@ -74,3 +78,16 @@ def check_token(token):
         return last_token == token
     return False
 
+
+def check_survey_status(assignment):
+    try:
+        feedback_survey = FeedbackSurvey.objects.get(assignment=assignment)
+    except FeedbackSurvey.DoesNotExist:
+        return "feedback_survey_not_exist"
+    due_date = feedback_survey.date_due.astimezone(
+        pytz.timezone('America/Los_Angeles'))
+    now = datetime.now().astimezone(pytz.timezone('America/Los_Angeles'))
+    if due_date < now:
+        return ArtifactReview.ArtifactReviewType.LATE
+    else:
+        return ArtifactReview.ArtifactReviewType.COMPLETED
