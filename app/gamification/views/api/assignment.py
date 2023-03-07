@@ -38,12 +38,13 @@ class AssignmentList(generics.ListCreateAPIView):
     def get(self, request, course_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
-        user_rule = Registration.objects.get(users=user, courses=course_id).userRole
+        user_role = Registration.objects.get(users=user, courses=course_id).userRole
         course = get_object_or_404(Course, pk=course_id)
         assignments = Assignment.objects.filter(course=course)
-        assignment_dict = [model_to_dict(assignment) for assignment in assignments]
-        data = {'user_rule': user_rule, 'assignments': assignment_dict}
-        return Response(data, status=status.HTTP_200_OK)
+        assignments = [model_to_dict(assignment) for assignment in assignments]
+        for assignment in assignments:
+            assignment['user_role'] = user_role
+        return Response(assignments, status=status.HTTP_200_OK)
 
     def post(self, request, course_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
