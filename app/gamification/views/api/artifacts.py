@@ -118,6 +118,8 @@ class SubmitArtifact(generics.ListCreateAPIView):
         file_handle = artifact.file.open()
         # send file
         response = HttpResponse(FileWrapper(file_handle), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename=artifact_{artifact.pk}.pdf'
+        response['Access-Control-Expose-Headers'] = 'Content-Disposition'
         return response
 
 
