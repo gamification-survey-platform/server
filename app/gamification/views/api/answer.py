@@ -388,6 +388,7 @@ class ArtifactAnswerMultipleChoiceList(generics.ListCreateAPIView):
     # data = {"label":["a", "b", "c", "d"], "sections":{"section_name": {"question_name": [2,3,1,4]}}}
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
+    permission_classes = [permissions.AllowAny]
     def get(self, request, artifact_pk, *args, **kwargs):
         answers = []
         artifacts_reviews = ArtifactReview.objects.filter(artifact_id = artifact_pk)
