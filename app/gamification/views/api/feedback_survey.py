@@ -36,7 +36,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 
 class SurveyList(generics.ListCreateAPIView):
     serializer_class = SurveySerializer
-    permission_classes = [permissions.AllowAny] # [IsAdminOrReadOnly]
+    permission_classes = [permissions.AllowAny]  # [IsAdminOrReadOnly]
 
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         assignment = get_object_or_404(Assignment, pk=assignment_id)
@@ -55,13 +55,16 @@ class SurveyList(generics.ListCreateAPIView):
             'feedback_survey_date_due': feedback_survey.date_due
         }
         return Response(context, status=status.HTTP_200_OK)
-    
+
     def post(self, request, assignment_id, *args, **kwargs):
         assignment = get_object_or_404(Assignment, pk=assignment_id)
         survey_template_name = request.data.get('template_name').strip()
         survey_template_instruction = request.data.get('instructions')
         survey_template_other_info = request.data.get('other_info')
-        feedback_survey_date_released = parse_datetime(request.data.get('date_released'))
+        print(1111)
+        print(request.data.get('date_released'))
+        feedback_survey_date_released = parse_datetime(
+            request.data.get('date_released'))
         feedback_survey_date_due = parse_datetime(request.data.get('date_due'))
         feedback_survey = FeedbackSurvey.objects.filter(assignment=assignment)
         if len(feedback_survey) > 0:
@@ -75,7 +78,7 @@ class SurveyList(generics.ListCreateAPIView):
             feedback_survey[0].date_due = feedback_survey_date_due
             feedback_survey[0].save()
             return Response({"messages": "success"}, status=status.HTTP_200_OK)
-            
+
         survey_template = SurveyTemplate(
             name=survey_template_name, instructions=survey_template_instruction, other_info=survey_template_other_info)
         survey_template.save()
@@ -130,9 +133,7 @@ class SurveyList(generics.ListCreateAPIView):
             QuestionOption.objects.create(
                 question=artifact_question, option_choice=empty_option)
             self.serializer_class(survey_template)
-        return Response({"messages":"success"}, status=status.HTTP_201_CREATED)
-    
-        
+        return Response({"messages": "success"}, status=status.HTTP_201_CREATED)
 
 
 class SurveyDetail(generics.RetrieveUpdateDestroyAPIView):
