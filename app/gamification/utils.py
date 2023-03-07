@@ -2,7 +2,6 @@ import pytz
 from app.gamification.models.survey_template import SurveyTemplate
 from app.gamification.models.feedback_survey import FeedbackSurvey
 from app.gamification.models.artifact_review import ArtifactReview
-import datetime
 from datetime import datetime
 
 from django.forms.fields import DateTimeFormatsIterator
@@ -23,7 +22,7 @@ def get_user_pk(request):
 def parse_datetime(value):
     for format in DateTimeFormatsIterator():
         try:
-            return datetime.datetime.strptime(value, format)
+            return datetime.strptime(value, format)
         except (ValueError, TypeError):
             pass
     raise ValueError('Invalid datetime string')

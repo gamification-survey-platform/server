@@ -126,7 +126,7 @@ PostgreSQL server database.
 
 6. Install fixtures
 
-   Run command `python manage.py loaddata assignments courses entities membership registration survey users artifact constraint rule rule_constraint`
+   Run command `python manage.py loaddata app/gamification/fixtures/initial_data.json --app app.model_name`
 
 7. Django Migration
 
