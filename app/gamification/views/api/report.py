@@ -168,6 +168,9 @@ class ViewReport(generics.ListCreateAPIView):
                         result["sections_scale"][answer.question_option.question.section.title][answer.question_option.question.text][option_index] += 1
                 return result
             
+            def retrive_grade(artifact_pk):
+                return 95.0 # TODO: implement this function
+            
             # individual report
             andrew_id = request.query_params['andrew_id']
             user = get_object_or_404(CustomUser, andrew_id=andrew_id)
@@ -197,7 +200,7 @@ class ViewReport(generics.ListCreateAPIView):
                     'team_name': team_name,
                     'artifact_result_ret': artifact_result(artifact_id),
                     'artifact_answer_multiple_choice_list_ret': artifact_answer_multiple_choice_list(artifact_id),
-                    'point': 95.0, # dummy data preserved for pointing system
+                    'point': retrive_grade(artifact_id), # dummy data preserved for pointing system
             }
             return Response(context, status=status.HTTP_200_OK)
         else:
