@@ -169,7 +169,12 @@ class ViewReport(generics.ListCreateAPIView):
                 return result
             
             def retrive_grade(artifact_pk):
-                return 95.0 # TODO: implement this function
+                dummy_data = {
+                    'user_index': 0,
+                    'data': [[95.0, 80.0, 88.0, 90,0], [90.0, 85.0, 90.0, 95.0], [85.0, 90.0, 95.0, 100.0], [85.0, 90.0, 95.0, 100.0]]
+                    }
+                
+                return dummy_data # TODO: implement this function
             
             # individual report
             andrew_id = request.query_params['andrew_id']
