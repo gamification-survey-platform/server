@@ -6,12 +6,18 @@ from rest_framework.response import Response
 from django.contrib import messages
 from app.gamification.serializers import EntitySerializer, UserSerializer, CourseSerializer
 from django.shortcuts import get_object_or_404
-from app.gamification.models import Assignment, Course, CustomUser, Registration, Team, Membership, Artifact, ArtifactReview, Entity, Team, Individual
+from app.gamification.models import Assignment, Course, CustomUser, Registration, Team, Membership, Artifact, ArtifactReview, Entity, Team, Individual, Answer
+from app.gamification.models.question_option import QuestionOption
+from app.gamification.models.question import Question
+from app.gamification.models.answer import Answer, ArtifactFeedback
+
 import pytz
 import json
 from pytz import timezone
 from datetime import datetime
 from app.gamification.utils import get_user_pk
+from collections import defaultdict
+
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     '''
@@ -36,6 +42,132 @@ class ViewReport(generics.ListCreateAPIView):
     
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         if 'andrew_id' in request.query_params:
+            def artifact_result(artifact_pk):
+                artifact = get_object_or_404(Artifact, pk=artifact_pk)
+                assignment = artifact.assignment
+                survey_template = assignment.survey_template
+                sections = survey_template.sections
+
+                confidence = dict()
+                confidence['sum'] = 0
+                artifact_reviews = ArtifactReview.objects.filter(
+                    artifact=artifact)
+                for artifact_review in artifact_reviews:
+                    answers = Answer.objects.filter(
+                        artifact_review=artifact_review)
+                    for answer in answers:
+                        if answer.question_option.question.text == 'Your confidence' and answer.question_option.question.question_type == Question.QuestionType.NUMBER:
+                            confidence[artifact_review.pk] = answer.answer_text
+                            confidence['sum'] += int(answer.answer_text)
+                answers = {}
+                for section in sections:
+                    answers[section.title] = dict()
+                    for question in section.questions:
+                        if question.question_type == Question.QuestionType.NUMBER and question.text == 'Your confidence':
+                            continue
+                        answers[section.title][question.text] = dict()
+                        answers[section.title][question.text]['question_type'] = question.question_type
+                        answers[section.title][question.text]['answers'] = []
+                        artifact_reviews = ArtifactReview.objects.filter(
+                            artifact=artifact)
+
+                        if question.question_type == Question.QuestionType.MULTIPLECHOICE or question.question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
+                            question_options = question.options
+                            for question_option in question_options:
+                                answer_text = question_option.option_choice.text
+                                count = Answer.objects.filter(
+                                    artifact_review__in=artifact_reviews, question_option=question_option).count()
+                                if count > 0:
+                                    answers[section.title][question.text]['answers'].append(
+                                        {answer_text: count}
+                                    )
+                        elif question.question_type == Question.QuestionType.NUMBER and question.text != 'Your confidence':
+                            question_option = get_object_or_404(
+                                QuestionOption, question=question)
+
+                            count = 0
+                            res = 0
+                            for artifact_review in artifact_reviews:
+                                text_answers = Answer.objects.filter(
+                                    artifact_review=artifact_review, question_option=question_option)
+                                if text_answers.count() > 0:
+                                    count += 1
+                                    res += int(text_answers[0].answer_text) * \
+                                        int(confidence[artifact_review.pk])
+                            if confidence['sum'] != 0:
+                                answers[section.title][question.text]['answers'].append(
+                                    str(round(res/(confidence['sum']), 1)))
+
+                        elif question.question_type == Question.QuestionType.SLIDEREVIEW:
+                            answers[section.title][question.text]['answers'] = defaultdict(
+                                list)
+                            question_option = get_object_or_404(
+                                QuestionOption, question=question)
+                            for artifact_review in artifact_reviews:
+                                text_answers = ArtifactFeedback.objects.filter(
+                                    artifact_review=artifact_review, question_option=question_option)
+                                for answer in text_answers:
+                                    answers[section.title][question.text]['answers'][answer.page].append(
+                                        answer.answer_text)
+
+                        else:
+                            question_option = get_object_or_404(
+                                QuestionOption, question=question)
+                            for artifact_review in artifact_reviews:
+                                text_answers = Answer.objects.filter(
+                                    artifact_review=artifact_review, question_option=question_option)
+                                for answer in text_answers:
+                                    answers[section.title][question.text]['answers'].append(
+                                        answer.answer_text)
+                return answers
+            
+            def artifact_answer_multiple_choice_list(artifact_pk):
+                # data = {"label":["a", "b", "c", "d"], "sections":{"section_name": {"question_name": [2,3,1,4]}}}
+                answers = []
+                artifacts_reviews = ArtifactReview.objects.filter(artifact_id = artifact_pk)
+                for artifact_review in artifacts_reviews:
+                    answer = Answer.objects.filter(
+                        artifact_review_id=artifact_review.pk).order_by('pk')
+                    answers.extend(answer)
+                
+                choice_labels = set()
+                scale_list_7 = ['strongly disagree', 'disagree', 'weakly disagree', 'neutral', 'weakly agree', 'agree', 'strongly agree']
+                scale_list_5 = ['strongly disagree', 'disagree', 'neutral', 'agree', 'strongly agree']
+                scale_list_3 = ['disagree', 'neutral', 'agree']
+
+                choice_labels_scale = set()
+                number_of_scale = 0
+                for answer in answers:
+                    if answer.question_option.question.question_type == 'SCALEMULTIPLECHOICE':
+                        number_of_scale = answer.question_option.question.number_of_scale
+                    elif answer.question_option.question.question_type == 'MULTIPLECHOICE':
+                        choice_labels.add(answer.question_option.option_choice.text)
+                scale_list_input = []
+                if number_of_scale == 7:
+                    scale_list_input = scale_list_7
+                elif number_of_scale == 5:
+                    scale_list_input = scale_list_5
+                elif number_of_scale == 3:
+                    scale_list_input = scale_list_3
+                else:
+                    pass
+                for scale_answer in scale_list_input:
+                    choice_labels_scale.add(scale_answer)
+                    
+                result = {"label": list(choice_labels), "label_scale": scale_list_input, "sections": defaultdict(dict), "sections_scale": defaultdict(dict), "number_of_scale": number_of_scale}
+                for answer in answers:
+                    if answer.question_option.question.question_type == 'MULTIPLECHOICE':
+                        if answer.question_option.question.text not in result["sections"][answer.question_option.question.section.title].keys():
+                            result["sections"][answer.question_option.question.section.title][answer.question_option.question.text]= [0 for i in range(len(choice_labels))]
+                        option_index = list(choice_labels).index(answer.question_option.option_choice.text)
+                        result["sections"][answer.question_option.question.section.title][answer.question_option.question.text][option_index] += 1
+                    elif answer.question_option.question.question_type == 'SCALEMULTIPLECHOICE':
+                        if answer.question_option.question.text not in result["sections_scale"][answer.question_option.question.section.title].keys():
+                            result["sections_scale"][answer.question_option.question.section.title][answer.question_option.question.text]= [0 for i in range(len(choice_labels_scale))]
+                        option_index = list(choice_labels_scale).index(answer.question_option.option_choice.text)
+                        result["sections_scale"][answer.question_option.question.section.title][answer.question_option.question.text][option_index] += 1
+                return result
+            
             # individual report
             andrew_id = request.query_params['andrew_id']
             user = get_object_or_404(CustomUser, andrew_id=andrew_id)
@@ -54,21 +186,18 @@ class ViewReport(generics.ListCreateAPIView):
                 team_name = entity.name
 
             artifact_id = None
-            artifact_url = None
-            artifact_answers_url = None
             try:
                 artifact = Artifact.objects.get(assignment=assignment, entity=entity)
                 artifact_id = artifact.pk
-                artifact_url = r"/api/artifacts/" + str(artifact_id) + "/"
-                artifact_answers_url = r"/api/artifacts/" + str(artifact_id) + r"/answers/statistics"
             except Artifact.DoesNotExist:
                 return Response("Artifact does not exist", status=status.HTTP_404_NOT_FOUND)
 
             context = {'andrew_id': user.andrew_id,
                     'course_name': course.course_name,
                     'team_name': team_name,
-                    'artifact_url': artifact_url, # api to retrive artifact url
-                    "artifact_answers_url": artifact_answers_url # api to retrive answers url
+                    'artifact_result_ret': artifact_result(artifact_id),
+                    'artifact_answer_multiple_choice_list_ret': artifact_answer_multiple_choice_list(artifact_id),
+                    'point': 95.0, # dummy data preserved for pointing system
             }
             return Response(context, status=status.HTTP_200_OK)
         else:
