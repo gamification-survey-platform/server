@@ -1,32 +1,20 @@
-import collections
-import json
 from django.forms import model_to_dict
-import yake
-import spacy
-import re
-from django.utils import timezone
-from rest_framework import generics, mixins, permissions, status
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from django.contrib import messages
 from django.shortcuts import get_object_or_404
 from app.gamification.models.assignment import Assignment
 from app.gamification.models.course import Course
-from app.gamification.models.entity import Team
 from app.gamification.models.membership import Membership
 from app.gamification.models.user import CustomUser
 from app.gamification.utils import get_user_pk, check_survey_status
-from ...models.feedback_survey import FeedbackSurvey
-from app.gamification.models.option_choice import OptionChoice
 from app.gamification.models.artifact import Artifact
 from app.gamification.models.answer import Answer, ArtifactFeedback
 from app.gamification.models.artifact_review import ArtifactReview
 from app.gamification.models.question import Question
 from app.gamification.models.question_option import QuestionOption
 from app.gamification.models.registration import Registration
-from app.gamification.serializers.answer import AnswerSerializer, ArtifactReviewSerializer, ArtifactFeedbackSerializer, CreateAnswerSerializer
-from collections import defaultdict
-import pytz
-from datetime import datetime
+from app.gamification.serializers.answer import ArtifactReviewSerializer
+
 
 
 class ArtifactReviewList(generics.RetrieveAPIView):
@@ -66,8 +54,6 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, course_id, assignment_id,  artifact_review_pk, *args, **kwargs):
-        artifact_review = get_object_or_404(
-            ArtifactReview, id=artifact_review_pk)
         assignment = get_object_or_404(Assignment, id=assignment_id)
         survey_template = assignment.survey_template
         if not survey_template:
@@ -90,12 +76,23 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 curr_question['text'] = question.text
                 curr_question['is_required'] = question.is_required
                 curr_question['question_type'] = question.question_type
+
                 curr_question['answer'] = []
-                answers = Answer.objects.filter(
-                    artifact_review_id=artifact_review_pk, question_option__question=question)
+                answer_filter = {
+                    'artifact_review_id': artifact_review_pk,
+                    'question_option__question': question
+                }
+                answers = Answer.objects.filter(**answer_filter) if question.question_type != Question.QuestionType.SLIDEREVIEW else ArtifactFeedback.objects.filter(
+                    **answer_filter)
+        
                 for answer in answers:
+                    curr_answer = dict()
+                    
+                    curr_answer['page'] = answer.page if question.question_type == Question.QuestionType.SLIDEREVIEW else None
+                    
+                    curr_answer['text'] = answer.answer_text
                     curr_question['answer'].append(
-                        answer.answer_text)
+                        curr_answer)
                 if question.question_type == Question.QuestionType.MULTIPLECHOICE:
                     curr_question['option_choices'] = []
                     for option_choice in question.options:
@@ -135,8 +132,8 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 return Response({"error": "Please answer all required questions."}, status=status.HTTP_400_BAD_REQUEST)
             if answer_text == "":
                 continue
+            question_options = question.options.all()
             if question_type == Question.QuestionType.MULTIPLECHOICE or question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
-                question_options = question.options.all()
                 for question_option in question_options:
                     if question_option.option_choice.text == answer_text:
                         answer = Answer()
@@ -147,13 +144,23 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                         break
 
             elif question_type == Question.QuestionType.FIXEDTEXT or question_type == Question.QuestionType.MULTIPLETEXT or question_type == Question.QuestionType.TEXTAREA or question_type == Question.QuestionType.NUMBER:
-                question_option = question.options[0]
+                question_option = question_options[0]
                 answer = Answer()
                 answer.question_option = question_option
                 answer.artifact_review = artifact_review
                 answer.answer_text = answer_text
                 answer.save()
             else:
-                # question type: slide review
-                pass
+                # question type: slide 
+                question_option = question_options[0]
+                artifact_feedback = ArtifactFeedback()
+                artifact_feedback.artifact_review = artifact_review
+
+                artifact_feedback.question_option = question_option
+                artifact_feedback.answer_text = answer_text
+                page = answer['page']
+                
+                artifact_feedback.page = page
+                artifact_feedback.save()
+        
         return Response(status=status.HTTP_200_OK)
