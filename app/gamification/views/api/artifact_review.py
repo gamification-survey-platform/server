@@ -16,7 +16,6 @@ from app.gamification.models.registration import Registration
 from app.gamification.serializers.answer import ArtifactReviewSerializer
 
 
-
 class ArtifactReviewList(generics.RetrieveAPIView):
     queryset = ArtifactReview.objects.all()
     serializer_class = ArtifactReviewSerializer
@@ -54,6 +53,9 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, course_id, assignment_id,  artifact_review_pk, *args, **kwargs):
+        artifact_review = get_object_or_404(
+            ArtifactReview, id=artifact_review_pk)
+        artifact = artifact_review.artifact
         assignment = get_object_or_404(Assignment, id=assignment_id)
         survey_template = assignment.survey_template
         if not survey_template:
@@ -61,6 +63,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         data = dict()
         data['pk'] = survey_template.pk
         data['name'] = survey_template.name
+        data['artifact_pk'] = artifact.pk
         data['instructions'] = survey_template.instructions
         data['other_info'] = survey_template.other_info
         data['sections'] = []
@@ -84,12 +87,12 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 }
                 answers = Answer.objects.filter(**answer_filter) if question.question_type != Question.QuestionType.SLIDEREVIEW else ArtifactFeedback.objects.filter(
                     **answer_filter)
-        
+
                 for answer in answers:
                     curr_answer = dict()
-                    
+
                     curr_answer['page'] = answer.page if question.question_type == Question.QuestionType.SLIDEREVIEW else None
-                    
+
                     curr_answer['text'] = answer.answer_text
                     curr_question['answer'].append(
                         curr_answer)
@@ -151,7 +154,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 answer.answer_text = answer_text
                 answer.save()
             else:
-                # question type: slide 
+                # question type: slide
                 question_option = question_options[0]
                 artifact_feedback = ArtifactFeedback()
                 artifact_feedback.artifact_review = artifact_review
@@ -159,8 +162,8 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 artifact_feedback.question_option = question_option
                 artifact_feedback.answer_text = answer_text
                 page = answer['page']
-                
+
                 artifact_feedback.page = page
                 artifact_feedback.save()
-        
+
         return Response(status=status.HTTP_200_OK)
