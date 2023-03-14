@@ -86,8 +86,8 @@ urlpatterns = [
     # Grade
     path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/', GradeList.as_view(), name='grade-review-list'),
     
-    # Deduction(adjustment)
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/_grade_id/deductions/', DeductionList.as_view(), name='deduction-review-list'),
+    # Deduction(or grade adjustment)
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/<str:grade_id>/deductions/', DeductionList.as_view(), name='deduction-review-list'),
 
     # Get the  feedback_surveys, Post a new survey,update a survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/', SurveyList.as_view(), name='survey-list'),

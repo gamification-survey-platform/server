@@ -36,7 +36,33 @@ class DeductionList(generics.ListCreateAPIView):
     permission_classes = [permissions.AllowAny]
     
     def get(self, request, course_id, assignment_id, grade_id, *args, **kwargs):
-        
+        def get_deductions_with_grade(grade):
+                deductions = []
+                for deduction in grade.deductions.all():
+                    deductions.append(model_to_dict(deduction))
+                return deductions
+        try:
+            grade = Grade.objects.get(pk=grade_id)
+        except Grade.DoesNotExist:
+            return Response('Grade does not exist', status=status.HTTP_404_NOT_FOUND)
+        context = {'deduction': get_deductions_with_grade(grade)}
+        return Response(context, status=status.HTTP_200_OK)
             
     def post(self, request, course_id, assignment_id, grade_id, *args, **kwargs):
+        course = get_object_or_404(Course, pk=course_id)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
+        userRole = Registration.objects.get(users=user, courses=course).userRole
         
+        grade = get_object_or_404(Grade, pk=grade_id)
+        deduction_score = request.data['deduction_score']
+        title = request.data['title']
+        description = request.data['description']
+        if userRole == Registration.UserRole.Instructor:
+            deduction = Deduction.objects.create(grade=grade, deduction_score=deduction_score, title=title, description=description)
+            deduction.save()
+            data = model_to_dict(deduction)
+            return Response(data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+            

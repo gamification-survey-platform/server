@@ -74,7 +74,8 @@ class GradeList(generics.ListCreateAPIView):
             except Grade.DoesNotExist:
                 return Response("Grade does not exist", status=status.HTTP_404_NOT_FOUND)
             
-            context = {'score': grade.score,
+            context = {'grade_id': grade.pk,
+                       'score': grade.score,
                        'timestamp': grade.timestamp,
                        'deduction': get_deductions_with_grade(grade)
             }
