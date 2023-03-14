@@ -22,3 +22,5 @@ from .user_reward import *
 from .course_rule import *
 from .progress import *
 from .rule_constraint import *
+from .grade import *
+from .deduction import *
