@@ -12,7 +12,7 @@ from app.gamification.models import Assignment, Course, Registration, Team, Memb
 import pytz
 from pytz import timezone
 from datetime import datetime
-
+from django.utils.timezone import now
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     '''
@@ -80,5 +80,29 @@ class GradeList(generics.ListCreateAPIView):
             # TODO: return all grades for a course
             return Response("Andrew ID is required", status=status.HTTP_400_BAD_REQUEST)
             
+    def post(self, request, course_id, assignment_id, *args, **kwargs):
+        course = get_object_or_404(Course, pk=course_id)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
+        userRole = Registration.objects.get(users=user, courses=course).userRole
+        
+        artifact_id = request.data.get('artifact_id')
+        score = request.data.get('score')
+        timestamp = now
+        Artifact = get_object_or_404(Artifact, pk=artifact_id)
+        
+        if userRole == Registration.UserRole.Instructor:
+            # if grade already exists, don't update it (we should use patch/put instead of post)
+            data = None
+            try:
+                grade = Grade.objects.get(artifact=Artifact)
+                grade.score = score
+                grade.timestamp = timestamp
+            except Grade.DoesNotExist:
+                grade = Grade.objects.create(artifact=Artifact, score=score, timestamp=timestamp)
             
-            
+            grade.save()
+            data = model_to_dict(grade)
+            return Response(data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
