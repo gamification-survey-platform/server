@@ -109,3 +109,16 @@ class DeductionDetail(generics.RetrieveUpdateDestroyAPIView):
             return Response(data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    def delete(self, request, course_id, assignment_id, grade_id, deduction_id, *args, **kwargs):
+        course = get_object_or_404(Course, pk=course_id)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
+        userRole = Registration.objects.get(users=user, courses=course).userRole
+        
+        if userRole == Registration.UserRole.Instructor:
+            deduction = get_object_or_404(Deduction, pk=deduction_id)
+            deduction.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
