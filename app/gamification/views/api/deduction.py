@@ -6,7 +6,7 @@ from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
 from app.gamification.utils import get_user_pk
 
-from app.gamification.serializers import CourseSerializer, AssignmentSerializer, GradeSerializer
+from app.gamification.serializers import CourseSerializer, AssignmentSerializer
 from django.shortcuts import get_object_or_404
 from app.gamification.models import Assignment, Course, Registration, Team, Membership, Artifact, Individual, FeedbackSurvey, CustomUser, Grade
 import pytz
@@ -30,9 +30,9 @@ class IsAdminOrReadOnly(permissions.BasePermission):
             return True
         return request.user.is_staff
 
-class GradeList(generics.ListCreateAPIView):
-    queryset = Grade.objects.all()
-    serializer_class = GradeSerializer
+class DeductionList(generics.ListCreateAPIView):
+    queryset = Assignment.objects.all()
+    serializer_class = AssignmentSerializer
     permission_classes = [permissions.AllowAny]
     
     def get(self, request, course_id, assignment_id, *args, **kwargs):
