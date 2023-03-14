@@ -92,7 +92,7 @@ class GradeList(generics.ListCreateAPIView):
         Artifact = get_object_or_404(Artifact, pk=artifact_id)
         
         if userRole == Registration.UserRole.Instructor:
-            # if grade already exists, don't update it (we should use patch/put instead of post)
+            # if grade already exists, update it (restful: usually we should use patch/put instead of post)
             data = None
             try:
                 grade = Grade.objects.get(artifact=Artifact)
