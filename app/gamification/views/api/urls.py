@@ -20,7 +20,7 @@ from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
 from .member import MemberList
 from .report import ViewReport
 from .grade import GradeList
-from .deduction import DeductionList
+from .deduction import DeductionList, DeductionDetail
 
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
@@ -89,6 +89,9 @@ urlpatterns = [
     # Deduction(or grade adjustment)
     path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/<str:grade_id>/deductions/', DeductionList.as_view(), name='deduction-review-list'),
 
+    # Deduction Detail
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/<str:grade_id>/deductions/<str:deduction_id>/', DeductionDetail.as_view(), name='deduction-detail'),
+    
     # Get the  feedback_surveys, Post a new survey,update a survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/', SurveyList.as_view(), name='survey-list'),
     
