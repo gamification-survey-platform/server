@@ -67,9 +67,12 @@ class GradeList(generics.ListCreateAPIView):
                 # TODO: we might need an 'Artifact' placeholder for all students after we create an assignment, 
                 # cause sometimes we don't have to upload an artifact for an assignment (e.g. final exam presentation without slides or video)
                 return Response("Artifact does not exist", status=status.HTTP_404_NOT_FOUND)
-                
-            # get grade with artifact_id
-            grade = get_object_or_404(Grade, artifact=artifact)
+
+            try:
+                # get grade with artifact_id
+                grade = Grade.objects.get(artifact=artifact)
+            except Grade.DoesNotExist:
+                return Response("Grade does not exist", status=status.HTTP_404_NOT_FOUND)
             
             context = {'score': grade.score,
                        'timestamp': grade.timestamp,
@@ -88,18 +91,18 @@ class GradeList(generics.ListCreateAPIView):
         
         artifact_id = request.data.get('artifact_id')
         score = request.data.get('score')
-        timestamp = now
-        Artifact = get_object_or_404(Artifact, pk=artifact_id)
+        grade_title = request.data.get('grade_title')
+        artifact = get_object_or_404(Artifact, pk=artifact_id)
         
         if userRole == Registration.UserRole.Instructor:
             # if grade already exists, update it (restful: usually we should use patch/put instead of post)
             data = None
             try:
-                grade = Grade.objects.get(artifact=Artifact)
+                grade = Grade.objects.get(artifact=artifact)
                 grade.score = score
-                grade.timestamp = timestamp
+                grade.grade_title = grade_title
             except Grade.DoesNotExist:
-                grade = Grade.objects.create(artifact=Artifact, score=score, timestamp=timestamp)
+                grade = Grade.objects.create(artifact=artifact, score=score, grade_title=grade_title)
             
             grade.save()
             data = model_to_dict(grade)
