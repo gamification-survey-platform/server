@@ -66,3 +66,46 @@ class DeductionList(generics.ListCreateAPIView):
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
             
+
+class DeductionDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Deduction.objects.all()
+    serializer_class = DeductionSerializer
+    permission_classes = [permissions.AllowAny]
+    
+    def get(self, request, course_id, assignment_id, grade_id, deduction_id, *args, **kwargs):
+        deduction = get_object_or_404(Deduction, pk=deduction_id)
+        
+        course = get_object_or_404(Course, pk=course_id)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
+        userRole = Registration.objects.get(users=user, courses=course).userRole
+        
+        data = model_to_dict(deduction)
+        data['user_role'] = userRole
+        return Response(data, status=status.HTTP_200_OK)
+    
+    def patch(self, request, course_id, assignment_id, grade_id, deduction_id,  *args, **kwargs):
+        course = get_object_or_404(Course, pk=course_id)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
+        userRole = Registration.objects.get(users=user, courses=course).userRole
+        
+        deduction = get_object_or_404(Deduction, pk=deduction_id)
+        
+        deduction_score = request.data['deduction_score']
+        title = request.data['title']
+        description = request.data['description']
+        
+        if userRole == Registration.UserRole.Instructor:
+            try:
+                deduction = Deduction.objects.get(pk=deduction_id)
+            except Deduction.DoesNotExist:
+                deduction = Deduction()
+            deduction.deduction_score = deduction_score
+            deduction.title = title
+            deduction.description = description
+            deduction.save()
+            data = model_to_dict(deduction)
+            return Response(data, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
