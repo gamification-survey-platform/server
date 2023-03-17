@@ -36,14 +36,15 @@ class SubmitArtifact(generics.ListCreateAPIView):
     serializer_class = ArtifactReviewSerializer
     permission_classes = [permissions.AllowAny]
 
-    def create_artifact(self, request, assignment, registration,entity):
+    def create_artifact(self, request, assignment, registration, entity):
         try:
-            artifact = Artifact.objects.get(assignment=assignment, entity=entity)
+            artifact = Artifact.objects.get(
+                assignment=assignment, entity=entity)
         except Artifact.DoesNotExist:
             artifact = Artifact()
         artifact.assignment = assignment
         artifact.upload_time = datetime.now().astimezone(
-        pytz.timezone('America/Los_Angeles'))
+            pytz.timezone('America/Los_Angeles'))
         artifact.file = request.FILES.get('artifact')
         artifact.entity = entity
         artifact.save()
@@ -69,7 +70,6 @@ class SubmitArtifact(generics.ListCreateAPIView):
                         artifact=artifact, user=single_registration)
                     artifact_review.save()
 
-
     def post(self, request, course_id, assignment_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, pk=user_id)
@@ -84,32 +84,38 @@ class SubmitArtifact(generics.ListCreateAPIView):
             except Individual.DoesNotExist:
                 individual = Individual(course=course)
                 individual.save()
-                membership = Membership(student=registration, entity=individual)
+                membership = Membership(
+                    student=registration, entity=individual)
                 membership.save()
                 entity = Individual.objects.get(
                     registration=registration, course=course)
         elif assignment_type == "Team":
             try:
-                entity = Team.objects.get(registration=registration, course=course)
+                entity = Team.objects.get(
+                    registration=registration, course=course)
             except Team.DoesNotExist:
                 return Response({"messages": "No team found"}, status=status.HTTP_404_NOT_FOUND)
-            
-        artifact = self.create_artifact(request, assignment, registration,entity)
-        self.create_artifact_review(artifact, registration, course, assignment_type, entity)
+
+        artifact = self.create_artifact(
+            request, assignment, registration, entity)
+        self.create_artifact_review(
+            artifact, registration, course, assignment_type, entity)
         return Response(status=status.HTTP_201_CREATED)
-    
-    
+
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, pk=user_id)
         assignment = get_object_or_404(Assignment, pk=assignment_id)
         if assignment.assignment_type == "Individual":
-            entity = Individual.objects.get(registration__users=user, course__id=course_id)
+            entity = Individual.objects.get(
+                registration__users=user, course__id=course_id)
         elif assignment.assignment_type == "Team":
-            entity = Team.objects.get(registration__users=user, course__id=course_id)
-        
+            entity = Team.objects.get(
+                registration__users=user, course__id=course_id)
+
         try:
-            artifact = Artifact.objects.get(assignment=assignment, entity=entity)
+            artifact = Artifact.objects.get(
+                assignment=assignment, entity=entity)
         except Artifact.DoesNotExist:
             return Response({"messages": "No submission"}, status=status.HTTP_404_NOT_FOUND)
         data = dict()
@@ -117,12 +123,25 @@ class SubmitArtifact(generics.ListCreateAPIView):
         # get an open file handle (I'm just using a file attached to the model for this example):
         file_handle = artifact.file.open()
         # send file
-        response = HttpResponse(FileWrapper(file_handle), content_type='application/pdf')
+        response = HttpResponse(FileWrapper(
+            file_handle), content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename=artifact_{artifact.pk}.pdf'
         response['Access-Control-Expose-Headers'] = 'Content-Disposition'
         return response
 
 
+class GetArtifact (generics.RetrieveAPIView):
+    queryset = ArtifactReview.objects.all()
+    serializer_class = ArtifactReviewSerializer
+    permission_classes = [permissions.AllowAny]
 
-
-
+    def get(self, request, course_id, assignment_id, artifact_id, *args, **kwargs):
+        artifact = get_object_or_404(Artifact, pk=artifact_id)
+        data = dict()
+        data['create_date'] = artifact.upload_time
+        file_handle = artifact.file.open()
+        response = HttpResponse(FileWrapper(
+            file_handle), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename=artifact_{artifact.pk}.pdf'
+        response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+        return response
