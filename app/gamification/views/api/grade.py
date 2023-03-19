@@ -81,8 +81,13 @@ class GradeList(generics.ListCreateAPIView):
             }
             return Response(context, status=status.HTTP_200_OK)
         else:
-            # TODO: return all grades for a course
-            return Response("Andrew ID is required", status=status.HTTP_400_BAD_REQUEST)
+            # get artifact by assignment, and get grade by artifact
+            assignment = get_object_or_404(Assignment, pk=assignment_id)
+            grades = Grade.objects.filter(artifact__assignment=assignment)
+            print(grades)
+            serializer = GradeSerializer(grades, many=True)
+            return Response(serializer.data)
+
             
     def post(self, request, course_id, assignment_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
