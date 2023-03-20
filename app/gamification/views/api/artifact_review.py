@@ -13,6 +13,7 @@ from app.gamification.models.artifact_review import ArtifactReview
 from app.gamification.models.question import Question
 from app.gamification.models.question_option import QuestionOption
 from app.gamification.models.registration import Registration
+from app.gamification.models.grade import Grade
 from app.gamification.serializers.answer import ArtifactReviewSerializer
 
 
@@ -198,3 +199,16 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
                    'matrix':matrix
                    }
         return Response(context, status=status.HTTP_200_OK)
+    
+    def patch(self, request, course_id, assignment_id, *args, **kwargs):
+        # upgrade 'grade' in Grade table
+        # e.g.: {1:80, 2:90, 3:100} ({id:score})
+        artifacts_id_and_scores_dict = request.data.get('artifacts_id_and_scores_dict')
+        print(artifacts_id_and_scores_dict)
+        for artifact_id, score in artifacts_id_and_scores_dict.items():
+            artifact_id = int(artifact_id)
+            grade = Grade.objects.get(artifact_id=artifact_id)
+            grade.score = score
+            grade.save()
+        
+        return Response(status=status.HTTP_200_OK)
