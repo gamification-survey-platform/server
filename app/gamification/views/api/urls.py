@@ -7,7 +7,7 @@ from rest_framework import status
 
 from app.gamification.models import CustomUser
 from app.gamification.serializers import UserSerializer
-from app.gamification.views.api.artifact_review import ArtifactReviewDetails, ArtifactReviewList
+from app.gamification.views.api.artifact_review import ArtifactReviewDetails, ArtifactReviewList, ArtifactReviewIpsatization
 from app.gamification.views.api.artifacts import SubmitArtifact
 from .user import Users, UserDetail, Login, Register
 from .course import CourseList
@@ -87,7 +87,7 @@ urlpatterns = [
     # Grade
     path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/', GradeList.as_view(), name='grade-review-list'),
     
-    # Deduction (form: max_score - deduction / max_score)
+    # Deduction (form: (max_score - deduction) / max_score)
     path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/<str:grade_id>/deductions/', DeductionList.as_view(), name='deduction-review-list'),
 
     # Deduction Detail
@@ -106,7 +106,11 @@ urlpatterns = [
     # get all artifact reviews
     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/',
            ArtifactReviewList.as_view(), name="artifact-review-list"),
-
+    
+    # calculate ipsatized values from artifact_reviews and saved to 'score' in Grade
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/ipsatization/',
+           ArtifactReviewIpsatization.as_view(), name="artifact-review-list"),
+    
     # get survey details with answers, patch answers for an artifact review survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/<str:artifact_review_pk>/', 
          ArtifactReviewDetails.as_view(), name='survey-detail'),

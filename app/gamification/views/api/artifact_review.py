@@ -167,3 +167,34 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 artifact_feedback.save()
 
         return Response(status=status.HTTP_200_OK)
+
+
+class ArtifactReviewIpsatization(generics.RetrieveAPIView):
+    queryset = ArtifactReview.objects.all()
+    serializer_class = ArtifactReviewSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, course_id, assignment_id, *args, **kwargs):
+        # pointing-system
+        # get artifact_reviews by assignment_id
+        artifact_reviews = ArtifactReview.objects.filter(artifact__assignment_id=assignment_id)
+        # get all artifacts in the course
+        artifacts = Artifact.objects.filter(assignment_id=assignment_id)
+        # get all registrations in the course
+        registrations = Registration.objects.filter(courses_id=course_id)
+        # create a list of registrations id
+        registrations_id_list = [registration.id for registration in registrations]
+        # create a list of artifacts id
+        artifacts_id_list = [artifact.id for artifact in artifacts]
+        
+        # create a 2d matrix of artifact_reviews by artifacts and registrations
+        matrix = [[None for j in range(len(artifacts_id_list))] for i in range(len(registrations_id_list))]
+        for artifact_review in artifact_reviews:
+            artifact = artifact_review.artifact
+            user = artifact_review.user
+            matrix[registrations_id_list.index(user.id)][artifacts_id_list.index(artifact.id)] = artifact_review.artifact_review_score
+        context = {'registrations_id_list':registrations_id_list,
+                   'artifacts_id_list':artifacts_id_list,
+                   'matrix':matrix
+                   }
+        return Response(context, status=status.HTTP_200_OK)
