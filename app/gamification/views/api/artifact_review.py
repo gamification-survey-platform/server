@@ -256,10 +256,12 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
         # e.g.: {1:80, 2:90, 3:100} ({id:score})
         artifacts_id_and_scores_dict = request.data.get('artifacts_id_and_scores_dict')
         print(artifacts_id_and_scores_dict)
+        grades = []
         for artifact_id, score in artifacts_id_and_scores_dict.items():
             artifact_id = int(artifact_id)
             grade = Grade.objects.get(artifact_id=artifact_id)
             grade.score = score
             grade.save()
+            grades.append(model_to_dict(grade))
         
-        return Response(status=status.HTTP_200_OK)
+        return Response(grades, status=status.HTTP_200_OK)
