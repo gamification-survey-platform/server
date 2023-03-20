@@ -75,18 +75,36 @@ class GradeList(generics.ListCreateAPIView):
                 return Response("Grade does not exist", status=status.HTTP_404_NOT_FOUND)
             
             context = {'grade_id': grade.pk,
+                       'grade_title': grade.grade_title,
                        'score': grade.score,
+                       'curved_score': grade.curved_score,
                        'timestamp': grade.timestamp,
                        'deduction': get_deductions_with_grade(grade)
             }
             return Response(context, status=status.HTTP_200_OK)
         else:
+            def get_deductions_with_grade(grade):
+                deductions = []
+                for deduction in grade.deductions.all():
+                    deductions.append(model_to_dict(deduction))
+                return deductions
+            
             # get artifact by assignment, and get grade by artifact
             assignment = get_object_or_404(Assignment, pk=assignment_id)
             grades = Grade.objects.filter(artifact__assignment=assignment)
-            # print(grades)
-            serializer = GradeSerializer(grades, many=True)
-            return Response(serializer.data)
+            # and retrive all deductions for each grade
+            context = []
+            for grade in grades:
+                context.append({'grade_id': grade.pk,
+                                'grade_title': grade.grade_title,
+                                'score': grade.score,
+                                'curved_score': grade.curved_score,
+                                'timestamp': grade.timestamp,
+                                'deduction': get_deductions_with_grade(grade)
+                })
+            return Response(context, status=status.HTTP_200_OK)
+            # serializer = GradeSerializer(grades, many=True)
+            # return Response(serializer.data)
 
             
     def post(self, request, course_id, assignment_id, *args, **kwargs):

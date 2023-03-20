@@ -87,7 +87,7 @@ urlpatterns = [
     # Grade
     path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/', GradeList.as_view(), name='grade-review-list'),
     
-    # Deduction(or grade adjustment)
+    # Deduction (form: max_score - deduction / max_score)
     path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/<str:grade_id>/deductions/', DeductionList.as_view(), name='deduction-review-list'),
 
     # Deduction Detail
