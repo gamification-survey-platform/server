@@ -4,6 +4,7 @@ This project aims to provide a platform where students can give feedback to
 their classmates' presentation assignments, with specially designed gamification
 elements to encourage students' engagement. It is based on Django 3.2 and
 PostgreSQL server database.
+You can access the application here https://gamification-client.onrender.com/.
 
 # Developer Environment Setup
 
