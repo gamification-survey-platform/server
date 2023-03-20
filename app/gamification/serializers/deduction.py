@@ -6,4 +6,4 @@ from app.gamification.models import Deduction
 class DeductionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Deduction
-        fields = ['pk', 'grade', 'deduction_score', 'title', 'description', 'timestamp']
+        fields = ['pk', 'grade', 'deduction_score','max_score', 'title', 'description', 'timestamp']

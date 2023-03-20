@@ -84,7 +84,7 @@ class GradeList(generics.ListCreateAPIView):
             # get artifact by assignment, and get grade by artifact
             assignment = get_object_or_404(Assignment, pk=assignment_id)
             grades = Grade.objects.filter(artifact__assignment=assignment)
-            print(grades)
+            # print(grades)
             serializer = GradeSerializer(grades, many=True)
             return Response(serializer.data)
 
@@ -94,24 +94,28 @@ class GradeList(generics.ListCreateAPIView):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
         userRole = Registration.objects.get(users=user, courses=course).userRole
-        
-        artifact_id = request.data.get('artifact_id')
-        score = request.data.get('score')
-        grade_title = request.data.get('grade_title')
-        artifact = get_object_or_404(Artifact, pk=artifact_id)
-        
-        if userRole == Registration.UserRole.Instructor:
-            # if grade already exists, update it (restful: usually we should use patch/put instead of post)
-            data = None
-            try:
-                grade = Grade.objects.get(artifact=artifact)
-                grade.score = score
-                grade.grade_title = grade_title
-            except Grade.DoesNotExist:
-                grade = Grade.objects.create(artifact=artifact, score=score, grade_title=grade_title)
+        # if artifact_id in request.data:
+        if 'artifact_id' in request.data:
+            artifact_id = request.data.get('artifact_id')
+            score = request.data.get('score')
+            grade_title = request.data.get('grade_title')
+            artifact = get_object_or_404(Artifact, pk=artifact_id)
             
-            grade.save()
-            data = model_to_dict(grade)
-            return Response(data, status=status.HTTP_201_CREATED)
+            if userRole == Registration.UserRole.Instructor:
+                # if grade already exists, update it (restful: usually we should use patch/put instead of post)
+                data = None
+                try:
+                    grade = Grade.objects.get(artifact=artifact)
+                    grade.score = score
+                    grade.grade_title = grade_title
+                except Grade.DoesNotExist:
+                    grade = Grade.objects.create(artifact=artifact, score=score, grade_title=grade_title)
+                
+                grade.save()
+                data = model_to_dict(grade)
+                return Response(data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(status=status.HTTP_401_UNAUTHORIZED)
         else:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+            # manage grades for all artifacts in an assignment
+            return Response(status=status.HTTP_400_BAD_REQUEST)

@@ -9,6 +9,8 @@ class Grade(models.Model):
 
     score = models.IntegerField(null=True, blank=True)
     
+    curved_score = models.IntegerField(null=True, blank=True)
+    
     grade_title = models.CharField(max_length=255, null=True, blank=True)
     
     timestamp = models.DateTimeField(

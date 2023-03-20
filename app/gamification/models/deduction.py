@@ -9,6 +9,8 @@ class Deduction(models.Model):
 
     deduction_score = models.IntegerField(null=True, blank=True)
     
+    max_score = models.IntegerField(null=True, blank=True)
+    
     title = models.CharField(_('title'), max_length=150, blank=True)
     
     description = models.TextField(_('description'), blank=True)
