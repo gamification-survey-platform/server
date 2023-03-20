@@ -238,15 +238,12 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
                 final_means = [score * ipsatization_range + ipsatization_MIN for score in normalized_means]
                 return final_means
             
-            df = pd.DataFrame(matrix, columns = artifacts_id_list,
-                                           dtype = float)
+            df = pd.DataFrame(matrix, columns = artifacts_id_list, dtype = float)
             ipsatizated_data = ipsatization(df, ipsatization_MAX, ipsatization_MIN)
-            print(ipsatizated_data)
-            context = {
-                'artifacts_id_list':artifacts_id_list,
-                'ipsatizated_data':ipsatizated_data
-            }
-            return Response(context, status=status.HTTP_200_OK)    
+            # final result
+            artifacts_id_and_scores_dict = dict(zip(artifacts_id_list, ipsatizated_data))
+
+            return Response(artifacts_id_and_scores_dict, status=status.HTTP_200_OK)
         else:
             context = {'registrations_id_list':registrations_id_list,
                     'artifacts_id_list':artifacts_id_list,
