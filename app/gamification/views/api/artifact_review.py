@@ -16,6 +16,7 @@ from app.gamification.models.registration import Registration
 from app.gamification.models.grade import Grade
 from app.gamification.serializers.answer import ArtifactReviewSerializer
 
+import pandas as pd
 
 class ArtifactReviewList(generics.RetrieveAPIView):
     queryset = ArtifactReview.objects.all()
@@ -183,9 +184,9 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
         artifacts = Artifact.objects.filter(assignment_id=assignment_id)
         # get all registrations in the course
         registrations = Registration.objects.filter(courses_id=course_id)
-        # create a list of registrations id
+        # create a list of registrations id (row)
         registrations_id_list = [registration.id for registration in registrations]
-        # create a list of artifacts id
+        # create a list of artifacts id (column)
         artifacts_id_list = [artifact.id for artifact in artifacts]
         
         # create a 2d matrix of artifact_reviews by artifacts and registrations
@@ -194,11 +195,64 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
             artifact = artifact_review.artifact
             user = artifact_review.user
             matrix[registrations_id_list.index(user.id)][artifacts_id_list.index(artifact.id)] = artifact_review.artifact_review_score
-        context = {'registrations_id_list':registrations_id_list,
-                   'artifacts_id_list':artifacts_id_list,
-                   'matrix':matrix
-                   }
-        return Response(context, status=status.HTTP_200_OK)
+        
+        if 'ipsatization_MAX' in request.query_params and 'ipsatization_MIN' in request.query_params:
+            ipsatization_MAX = int(request.query_params['ipsatization_MAX'])
+            ipsatization_MIN = int(request.query_params['ipsatization_MIN'])
+            # calculate ipsatizated score at backend
+            def ipsatization(data, ipsatization_MAX, ipsatization_MIN):
+                def convert(score):
+                    if score == 1: return -1
+                    if score == 2: return -0.5
+                    if score == 3: return 0
+                    if score == 4: return 0.5
+                    if score == 5: return 1
+
+                def min_max_scale(data):
+                    min_value = min(data)
+                    max_value = max(data)
+                    normalized_data = []
+                    for value in data:
+                        normalized_value = (value - min_value) / (max_value - min_value)
+                        normalized_data.append(normalized_value)
+                    return normalized_data
+                # Calculate the mean and standard deviation of each survey
+                means = data.mean(axis=1)
+                stds = data.std(axis=1)
+
+                # Perform ipsatization on the data
+                i_data = data.copy()
+                for i in range(len(data)):
+                    for j in range(len(data.columns)):
+                        i_data.iloc[i, j] = (data.iloc[i, j] - means[i]) / stds[i] if stds[i] != 0 else convert(data.iloc[i, j])
+
+                # Calculate the means of each survey as their score 
+                i_means = i_data.mean()
+                i_stds = i_data.std()
+
+                # Normalize the scores
+                normalized_means = min_max_scale(i_means)
+
+                # Convert scores to desired range
+                ipsatization_range = ipsatization_MAX - ipsatization_MIN
+                final_means = [score * ipsatization_range + ipsatization_MIN for score in normalized_means]
+                return final_means
+            
+            df = pd.DataFrame(matrix, columns = artifacts_id_list,
+                                           dtype = float)
+            ipsatizated_data = ipsatization(df, ipsatization_MAX, ipsatization_MIN)
+            print(ipsatizated_data)
+            context = {
+                'artifacts_id_list':artifacts_id_list,
+                'ipsatizated_data':ipsatizated_data
+            }
+            return Response(context, status=status.HTTP_200_OK)    
+        else:
+            context = {'registrations_id_list':registrations_id_list,
+                    'artifacts_id_list':artifacts_id_list,
+                    'matrix':matrix
+                    }
+            return Response(context, status=status.HTTP_200_OK)
     
     def patch(self, request, course_id, assignment_id, *args, **kwargs):
         # upgrade 'grade' in Grade table
