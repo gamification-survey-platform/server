@@ -101,6 +101,15 @@ urlpatterns = [
     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/<str:artifact_id>/',
          GetArtifact.as_view(), name="submit-artifact"),
 
+    # Get answers keywords of artifact review
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/<int:artifact_pk>/keywords',
+         ArtifactAnswerKeywordList.as_view(), name='artifact-answer-keyword'),
+
+    # Get answers statistics for statistics bar chart
+    # courses/course_id/assignments/assignment_id/artifacts/artifact_id/report
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/<int:artifact_pk>/statistics',
+         ArtifactAnswerMultipleChoiceList.as_view(), name='artifact-answer-statistics'),
+
     # get all artifact reviews
     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/',
          ArtifactReviewList.as_view(), name="artifact-review-list"),
@@ -110,16 +119,6 @@ urlpatterns = [
          ArtifactReviewDetails.as_view(), name='survey-detail'),
 
 
-
-
-    # Get answers keywords of artifact review
-    path('artifacts/<int:artifact_pk>/answers/keywords',
-         ArtifactAnswerKeywordList.as_view(), name='artifact-answer-keyword'),
-
-    # Get answers statistics for statistics bar chart
-    # courses/course_id/assignments/assignment_id/artifacts/artifact_id/report
-    path('artifacts/<int:artifact_pk>/answers/statistics',
-         ArtifactAnswerMultipleChoiceList.as_view(), name='artifact-answer-statistics'),
 
     #     # Get list of constraints
     #     path('constraints/', ConstraintList.as_view(), name='constraint-list'),
