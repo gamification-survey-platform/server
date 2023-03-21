@@ -112,9 +112,9 @@ urlpatterns = [
 
 
 
-    #     # Get answers keywords of artifact review
-    #     path('artifacts/<int:artifact_pk>/answers/keywords',
-    #          ArtifactAnswerKeywordList.as_view(), name='artifact-answer-keyword'),
+    # Get answers keywords of artifact review
+    path('artifacts/<int:artifact_pk>/answers/keywords',
+         ArtifactAnswerKeywordList.as_view(), name='artifact-answer-keyword'),
 
     # Get answers statistics for statistics bar chart
     # courses/course_id/assignments/assignment_id/artifacts/artifact_id/report

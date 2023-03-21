@@ -23,6 +23,7 @@ from collections import defaultdict
 import pytz
 from datetime import datetime
 
+
 class IsAdminOrReadOnly(permissions.BasePermission):
     '''
     Custom permission to only allow users to view read-only information.
@@ -38,6 +39,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return request.user.is_staff
+
 
 class AnswerList(generics.ListAPIView):
     queryset = Answer.objects.all()
@@ -154,7 +156,7 @@ class CreateArtifactAnswer(generics.RetrieveUpdateAPIView):
             if len(answer_texts) == 0:
                 return Response()
             question_options = question.options.all()
-            
+
             # question_options = ['a', 'b', 'c', 'd']
             for question_option in question_options:
                 if len(answer_texts) == 0:
@@ -316,7 +318,7 @@ class ArtifactResult(generics.ListAPIView):
 
 class SurveyComplete(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
-    
+
     def post(self, request, artifact_review_pk, *args, **kwargs):
         artifact_review = get_object_or_404(
             ArtifactReview, id=artifact_review_pk)
@@ -347,6 +349,7 @@ class CheckAllDone(generics.GenericAPIView):
 
         return Response(status=200)
 
+
 class ArtifactAnswerKeywordList(generics.ListCreateAPIView):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
@@ -355,7 +358,8 @@ class ArtifactAnswerKeywordList(generics.ListCreateAPIView):
     def get(self, request, artifact_pk, *args, **kwargs):
         nlp = spacy.load("en_core_web_sm")
         answers = []
-        artifacts_reviews = ArtifactReview.objects.filter(artifact_id = artifact_pk)
+        artifacts_reviews = ArtifactReview.objects.filter(
+            artifact_id=artifact_pk)
         for artifact_review in artifacts_reviews:
             answer = Answer.objects.filter(
                 artifact_review_id=artifact_review.pk).order_by('pk')
@@ -364,7 +368,7 @@ class ArtifactAnswerKeywordList(generics.ListCreateAPIView):
         for answer in answers:
             number_answers = ['MULTIPLECHOICE', 'NUMBER']
             if answer.question_option.question.question_type not in number_answers:
-                answer_content = " "+ answer.answer_text + ". "
+                answer_content = " " + answer.answer_text + ". "
                 text += answer_content
         doc = nlp(text)
         nouns = [token.lemma_ for token in doc if token.pos_ == "NOUN"]
@@ -374,30 +378,34 @@ class ArtifactAnswerKeywordList(generics.ListCreateAPIView):
         language = "en"
         max_ngram_size = 3
         deduplication_threshold = 0.9
-        numOfKeywords = 10
+        numOfKeywords = 50
         custom_kw_extractor = yake.KeywordExtractor()
-        custom_kw_extractor = yake.KeywordExtractor(lan=language, n=max_ngram_size, dedupLim=deduplication_threshold, top=numOfKeywords, features=None)
+        custom_kw_extractor = yake.KeywordExtractor(
+            lan=language, n=max_ngram_size, dedupLim=deduplication_threshold, top=numOfKeywords, features=None)
         keywords = custom_kw_extractor.extract_keywords(text)
         result = {}
         for word in keywords:
-            if bool(re.search(r"\s", word[0]))==False and word[0] not in nouns and word[0] not in verbs or bool(re.search(r"\s", word[0]))==True:
+            if bool(re.search(r"\s", word[0])) == False and word[0] not in nouns and word[0] not in verbs or bool(re.search(r"\s", word[0])) == True:
                 result[word[0]] = int((1 - word[1]) * 10)
         return Response(result)
+
 
 class ArtifactAnswerMultipleChoiceList(generics.ListCreateAPIView):
     # data = {"label":["a", "b", "c", "d"], "sections":{"section_name": {"question_name": [2,3,1,4]}}}
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
     permission_classes = [permissions.AllowAny]
+
     def get(self, request, artifact_pk, *args, **kwargs):
         answers = []
-        artifacts_reviews = ArtifactReview.objects.filter(artifact_id = artifact_pk)
+        artifacts_reviews = ArtifactReview.objects.filter(
+            artifact_id=artifact_pk)
         for artifact_review in artifacts_reviews:
             answer = Answer.objects.filter(
                 artifact_review_id=artifact_review.pk).order_by('pk')
             answers.extend(answer)
         # choice_labels = set()
-        #[section_title][MULTIPLECHOICE/SCALEMULTIPLECHOICE][label/answer_text]
+        # [section_title][MULTIPLECHOICE/SCALEMULTIPLECHOICE][label/answer_text]
         # for answer in answers:
         #     section_name = answer.question_option.question.section
         #     if answer.question_option.question.question_type == 'SCALEMULTIPLECHOICE':
@@ -409,13 +417,14 @@ class ArtifactAnswerMultipleChoiceList(generics.ListCreateAPIView):
         # for section_name, choice in choice_labels_list:
         #     result[section_name].append(choice)
         # return Response(result)
-        
+
         choice_labels = set()
-        scale_list_7 = ['strongly disagree', 'disagree', 'weakly disagree', 'neutral', 'weakly agree', 'agree', 'strongly agree']
-        scale_list_5 = ['strongly disagree', 'disagree', 'neutral', 'agree', 'strongly agree']
+        scale_list_7 = ['strongly disagree', 'disagree', 'weakly disagree',
+                        'neutral', 'weakly agree', 'agree', 'strongly agree']
+        scale_list_5 = ['strongly disagree', 'disagree',
+                        'neutral', 'agree', 'strongly agree']
         scale_list_3 = ['disagree', 'neutral', 'agree']
 
-        
         # choice_labels_scale = set('agree', 'weakly agree', 'disagree', 'neutral', 'strongly disagree', 'strongly agree', 'weakly disagree')
         choice_labels_scale = set()
         number_of_scale = 0
@@ -438,23 +447,22 @@ class ArtifactAnswerMultipleChoiceList(generics.ListCreateAPIView):
             pass
         for scale_answer in scale_list_input:
             choice_labels_scale.add(scale_answer)
-            
-        result = {"label": list(choice_labels), "label_scale": scale_list_input, "sections": collections.defaultdict(dict), "sections_scale": collections.defaultdict(dict), "number_of_scale": number_of_scale}
+
+        result = {"label": list(choice_labels), "label_scale": scale_list_input, "sections": collections.defaultdict(
+            dict), "sections_scale": collections.defaultdict(dict), "number_of_scale": number_of_scale}
         for answer in answers:
             if answer.question_option.question.question_type == 'MULTIPLECHOICE':
                 if answer.question_option.question.text not in result["sections"][answer.question_option.question.section.title].keys():
-                    result["sections"][answer.question_option.question.section.title][answer.question_option.question.text]= [0 for i in range(len(choice_labels))]
-                option_index = list(choice_labels).index(answer.question_option.option_choice.text)
+                    result["sections"][answer.question_option.question.section.title][answer.question_option.question.text] = [
+                        0 for i in range(len(choice_labels))]
+                option_index = list(choice_labels).index(
+                    answer.question_option.option_choice.text)
                 result["sections"][answer.question_option.question.section.title][answer.question_option.question.text][option_index] += 1
             elif answer.question_option.question.question_type == 'SCALEMULTIPLECHOICE':
                 if answer.question_option.question.text not in result["sections_scale"][answer.question_option.question.section.title].keys():
-                    result["sections_scale"][answer.question_option.question.section.title][answer.question_option.question.text]= [0 for i in range(len(choice_labels_scale))]
-                option_index = list(choice_labels_scale).index(answer.question_option.option_choice.text)
+                    result["sections_scale"][answer.question_option.question.section.title][answer.question_option.question.text] = [
+                        0 for i in range(len(choice_labels_scale))]
+                option_index = list(choice_labels_scale).index(
+                    answer.question_option.option_choice.text)
                 result["sections_scale"][answer.question_option.question.section.title][answer.question_option.question.text][option_index] += 1
         return Response(result)
-    
-
-
-
-        
-
