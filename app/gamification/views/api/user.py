@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework import permissions
 import json
@@ -17,6 +18,8 @@ from django.conf import settings
 import jwt
 import os
 
+from app.gamification.utils import get_user_pk
+
 
 # class IsAdminUser(permissions.BasePermission):
 #     def has_permission(self, request, view):
@@ -29,13 +32,18 @@ class Users(generics.ListCreateAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, *args, **kwargs):
+        user_id = get_user_pk(request)
+        user = CustomUser.objects.get(id=user_id)
+        if not user.is_superuser:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
         data = CustomUser.objects.all()
         serializer = UserSerializer(
             data, context={'request': request}, many=True)
         return Response(serializer.data)
 
 
-class UserDetail(generics.RetrieveAPIView):
+class UserDetail(generics.RetrieveUpdateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
@@ -49,6 +57,18 @@ class UserDetail(generics.RetrieveAPIView):
             return Response(serializer.data)
         except CustomUser.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def patch(self, request, andrew_id, *args, **kwargs):
+        user_id = get_user_pk(request)
+        user = CustomUser.objects.get(id=user_id)
+        if not user.is_superuser:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        modify_user = get_object_or_404(CustomUser, andrew_id=andrew_id)
+        is_staff = request.data.get('is_staff')
+        if is_staff is not None:
+            modify_user.is_staff = True if is_staff == "true" else False
+            modify_user.save()
+        return Response(status=status.HTTP_200_OK)
 
 
 class Login(generics.CreateAPIView):
@@ -80,7 +100,7 @@ class Login(generics.CreateAPIView):
 class Register(generics.ListCreateAPIView):
 
     permission_classes = [permissions.AllowAny]
-    
+
     def post(self, request, *args, **kwargs):
 
         andrew_id = request.data.get('andrew_id')
