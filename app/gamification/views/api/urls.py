@@ -14,6 +14,7 @@ from .course import CourseList
 from .assignment import AssignmentList, AssignmentDetail
 from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo,  SurveySectionList, TemplateSectionList
 from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList,  CheckAllDone, CreateArtifactAnswer, FeedbackDetail, SurveyComplete, ArtifactAnswerKeywordList
+from .profile import UserProfile
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
 from .feedback_survey import SurveyList, SurveyDetail
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
@@ -60,11 +61,20 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc',
          cache_timeout=0), name='schema-redoc'),
 
-    #     # User API
+    # get all users
     path('users/', Users.as_view(), name='user-list'),
+
+    # get user detail or update user.is_staff
     path('users/<str:andrew_id>/', UserDetail.as_view(), name='user-detail'),
+
+    # login
     path('login/', Login.as_view(), name='user-login'),
+
+    # register
     path('register/', Register.as_view(), name='user-register'),
+
+    # get user profile, or update user profile
+    path('profile/', UserProfile.as_view(), name='user-profile'),
 
     # course
     path('courses/', CourseList.as_view(), name='course-list'),
