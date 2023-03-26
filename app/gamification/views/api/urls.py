@@ -15,6 +15,7 @@ from .assignment import AssignmentList, AssignmentDetail
 from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo,  SurveySectionList, TemplateSectionList
 from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList,  CheckAllDone, CreateArtifactAnswer, FeedbackDetail, SurveyComplete, ArtifactAnswerKeywordList
 from .profile import UserProfile
+from .reward import RewardList, RewardDetail, courseRewardList, courseRewardDetail
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
 from .feedback_survey import SurveyList, SurveyDetail
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
@@ -128,6 +129,24 @@ urlpatterns = [
     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/<str:artifact_review_pk>/',
          ArtifactReviewDetails.as_view(), name='survey-detail'),
 
+    # superuser get all rewards
+    path('rewards/', RewardList.as_view(), name='reward-list'),
+
+    # superuser patch reward
+    path('rewards/<str:reward_id>/', RewardDetail.as_view(), name='reward-detail'),
+
+    # get course rewards
+    path('courses/<str:course_id>/rewards/',
+         courseRewardList.as_view(), name='reward-list'),
+
+    # get reward detail by reward_id, update a reward, delete a reward
+    path('courses/<str:course_id>/rewards/<str:reward_id>/',
+         courseRewardDetail.as_view(), name='reward-detail'),
+
+
+    # get reward in course by course_id or post a new reward
+    #     path('courses/<str:course_id>/rewards/',
+    #          courseRewardList.as_view(), name='reward-list'),
 
 
     #     # Get list of constraints
