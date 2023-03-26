@@ -156,8 +156,10 @@ class courseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
             if picture:
                 reward.picture = picture
         else:
-            return Response(message="Invalid reward type", status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         reward.save()
+        serializer = self.get_serializer(reward)
+        return Response(serializer.data)
 
     def delete(self, request, course_id, reward_id, *args, **kwargs):
         user_id = get_user_pk(request)
