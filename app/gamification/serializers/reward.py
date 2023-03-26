@@ -8,7 +8,7 @@ class RewardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reward
         fields = ('pk', 'name', 'description', 'course', 'type',
-                  'inventory', 'is_active', 'quantity', 'theme', 'exp_point')
+                  'inventory', 'is_active', 'picture', 'quantity', 'theme', 'exp_point')
 
     def to_representation(self, instance):
         return self.type_serializer(instance)
@@ -27,13 +27,11 @@ class RewardSerializer(serializers.ModelSerializer):
         else:
             data['inventory'] = reward.inventory
         if reward.type == 'Badge':
-            with reward.picture.open('rb') as f:
-                data['icon'] = f.read()
+            data['icon'] = reward.picture.url
         elif reward.type == 'Bonus' or Reward.type == 'Late Submission':
             data['quantity'] = reward.quantity
         elif reward.type == 'Theme':
             data['theme'] = reward.theme
         elif reward.type == 'Other':
-            with reward.picture.open('rb') as f:
-                data['picture'] = reward.picture
+            data['picture'] = reward.picture.url
         return data
