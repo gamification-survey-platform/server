@@ -127,7 +127,8 @@ You can access the application here https://gamification-client.onrender.com/.
 
 6. Install fixtures
 
-   Run command `python manage.py loaddata app/gamification/fixtures/initial_data.json --app app.model_name`
+   - load data for dev env: `python manage.py loaddata app/gamification/fixtures/initial_data_dev.json --app app.model_name`
+   - load data for prd env: `python manage.py loaddata app/gamification/fixtures/initial_data_prod.json --app app.model_name`
 
 7. Django Migration
 
