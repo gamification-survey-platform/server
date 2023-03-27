@@ -136,4 +136,15 @@ class GradeList(generics.ListCreateAPIView):
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
         else:
             # manage grades for all artifacts in an assignment
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            # upgrade 'grade' in Grade table
+            # e.g.: {1:80, 2:90, 3:100} ({id:score})
+            artifacts_id_and_scores_dict = request.data.get('artifacts_id_and_scores_dict')
+            grades = []
+            for artifact_id, score in artifacts_id_and_scores_dict.items():
+                artifact_id = int(artifact_id)
+                grade = Grade.objects.get(artifact_id=artifact_id)
+                grade.score = score
+                grade.save()
+                grades.append(model_to_dict(grade))
+            
+            return Response(grades, status=status.HTTP_200_OK)

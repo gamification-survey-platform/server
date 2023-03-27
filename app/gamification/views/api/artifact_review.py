@@ -170,7 +170,6 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
 
         return Response(status=status.HTTP_200_OK)
 
-
 class ArtifactReviewIpsatization(generics.RetrieveAPIView):
     queryset = ArtifactReview.objects.all()
     serializer_class = ArtifactReviewSerializer
@@ -219,13 +218,13 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
                 # Calculate the mean and standard deviation of each survey
                 means = data.mean(axis=1)
                 stds = data.std(axis=1)
-
+                print(stds)
                 # Perform ipsatization on the data
                 i_data = data.copy()
                 for i in range(len(data)):
                     for j in range(len(data.columns)):
                         i_data.iloc[i, j] = (data.iloc[i, j] - means[i]) / stds[i] if stds[i] != 0 else convert(data.iloc[i, j])
-
+                print(i_data)
                 # Calculate the means of each survey as their score 
                 i_means = i_data.mean()
                 i_stds = i_data.std()
@@ -251,17 +250,29 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
                     }
             return Response(context, status=status.HTTP_200_OK)
     
+    # update an artiafct_review 
     def patch(self, request, course_id, assignment_id, *args, **kwargs):
-        # upgrade 'grade' in Grade table
-        # e.g.: {1:80, 2:90, 3:100} ({id:score})
-        artifacts_id_and_scores_dict = request.data.get('artifacts_id_and_scores_dict')
-        print(artifacts_id_and_scores_dict)
-        grades = []
-        for artifact_id, score in artifacts_id_and_scores_dict.items():
-            artifact_id = int(artifact_id)
-            grade = Grade.objects.get(artifact_id=artifact_id)
-            grade.score = score
-            grade.save()
-            grades.append(model_to_dict(grade))
+        course = get_object_or_404(Course, pk=course_id)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
+        userRole = Registration.objects.get(users=user, courses=course).userRole
         
-        return Response(grades, status=status.HTTP_200_OK)
+        # if userRole != 'Instructor':
+        #     return Response(status=status.HTTP_403_FORBIDDEN)
+        # else:
+        #     if 'artifact_review_id' in request.data and 'artifact_review_score' in request.data:
+        #         artifact_review_id = request.data['artifact_review_id']
+        #         artifact_review_score = request.data['artifact_review_score']
+        #         if 'max_artifact_review_score' in request.data:
+        #             max_artifact_review_score = request.data['max_artifact_review_score']
+        #         else:
+        #             max_artifact_review_score = None
+                
+        #         artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_id)
+        #         artifact_review.artifact_review_score = artifact_review_score
+        #         artifact_review.max_artifact_review_score = max_artifact_review_score
+        #         artifact_review.save()
+        #         return Response(status=status.HTTP_200_OK)
+        #     else:
+        #         # return error message
+        #         return Response(status=status.HTTP_400_BAD_REQUEST)
