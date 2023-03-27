@@ -250,29 +250,29 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
                     }
             return Response(context, status=status.HTTP_200_OK)
     
-    # update an artiafct_review 
+    # update an artiafct_review's score
     def patch(self, request, course_id, assignment_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
         userRole = Registration.objects.get(users=user, courses=course).userRole
         
-        # if userRole != 'Instructor':
-        #     return Response(status=status.HTTP_403_FORBIDDEN)
-        # else:
-        #     if 'artifact_review_id' in request.data and 'artifact_review_score' in request.data:
-        #         artifact_review_id = request.data['artifact_review_id']
-        #         artifact_review_score = request.data['artifact_review_score']
-        #         if 'max_artifact_review_score' in request.data:
-        #             max_artifact_review_score = request.data['max_artifact_review_score']
-        #         else:
-        #             max_artifact_review_score = None
+        if userRole != 'Instructor':
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        else:
+            if 'artifact_review_id' in request.data and 'artifact_review_score' in request.data:
+                artifact_review_id = request.data['artifact_review_id']
+                artifact_review_score = request.data['artifact_review_score']
+                if 'max_artifact_review_score' in request.data:
+                    max_artifact_review_score = request.data['max_artifact_review_score']
+                else:
+                    max_artifact_review_score = None
                 
-        #         artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_id)
-        #         artifact_review.artifact_review_score = artifact_review_score
-        #         artifact_review.max_artifact_review_score = max_artifact_review_score
-        #         artifact_review.save()
-        #         return Response(status=status.HTTP_200_OK)
-        #     else:
-        #         # return error message
-        #         return Response(status=status.HTTP_400_BAD_REQUEST)
+                artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_id)
+                artifact_review.artifact_review_score = artifact_review_score
+                artifact_review.max_artifact_review_score = max_artifact_review_score
+                artifact_review.save()
+                return Response(status=status.HTTP_200_OK)
+            else:
+                # return error message
+                return Response(status=status.HTTP_400_BAD_REQUEST)
