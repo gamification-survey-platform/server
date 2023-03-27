@@ -243,13 +243,11 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
                 # Calculate the mean and standard deviation of each survey
                 means = data.mean(axis=1)
                 stds = data.std(axis=1)
-                print(stds)
                 # Perform ipsatization on the data
                 i_data = data.copy()
                 for i in range(len(data)):
                     for j in range(len(data.columns)):
                         i_data.iloc[i, j] = (data.iloc[i, j] - means[i]) / stds[i] if stds[i] != 0 else convert(data.iloc[i, j])
-                print(i_data)
                 # Calculate the means of each survey as their score 
                 i_means = i_data.mean()
                 i_stds = i_data.std()
@@ -263,10 +261,13 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
                 return final_means
             
             df = pd.DataFrame(matrix, columns = artifacts_id_list, dtype = float)
+            # handle None value in matrix with mean value of each row
+            m = df.mean(axis=1)
+            for i, col in enumerate(df):
+                df.iloc[:, i] = df.iloc[:, i].fillna(m)
             ipsatizated_data = ipsatization(df, ipsatization_MAX, ipsatization_MIN)
             # final result
             artifacts_id_and_scores_dict = dict(zip(artifacts_id_list, ipsatizated_data))
-
             return Response(artifacts_id_and_scores_dict, status=status.HTTP_200_OK)
         else:
             context = {'registrations_id_list':registrations_id_list,
