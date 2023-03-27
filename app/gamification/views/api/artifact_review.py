@@ -161,8 +161,11 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                         answer.answer_text = answer_text
                         answer.save()
                         # update grade and max_grade
-                        grade += grading_rule[answer_text]
-                        max_grade += MAX_GRADE_FOR_EACH_QUESTION
+                        if answer_text in grading_rule:
+                            grade += grading_rule[answer_text]
+                            max_grade += MAX_GRADE_FOR_EACH_QUESTION
+                        else:
+                            print("Error: grading rule does not contain this answer text, update grading rule ASAP")
                         break
 
             elif question_type == Question.QuestionType.FIXEDTEXT or question_type == Question.QuestionType.MULTIPLETEXT or question_type == Question.QuestionType.TEXTAREA or question_type == Question.QuestionType.NUMBER:
