@@ -272,7 +272,8 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
                 artifact_review.artifact_review_score = artifact_review_score
                 artifact_review.max_artifact_review_score = max_artifact_review_score
                 artifact_review.save()
-                return Response(status=status.HTTP_200_OK)
+                # respond 200 and return the updated artifact_review
+                return Response(ArtifactReviewSerializer(artifact_review).data, status=status.HTTP_200_OK)
             else:
                 # return error message
                 return Response(status=status.HTTP_400_BAD_REQUEST)
