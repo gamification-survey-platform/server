@@ -227,10 +227,11 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
             def ipsatization(data, ipsatization_MAX, ipsatization_MIN):
                 def convert(score):
                     if score == 1: return -1
-                    if score == 2: return -0.5
-                    if score == 3: return 0
-                    if score == 4: return 0.5
-                    if score == 5: return 1
+                    elif score == 2: return -0.5
+                    elif score == 3: return 0
+                    elif score == 4: return 0.5
+                    elif score == 5: return 1
+                    else: return 0
 
                 def min_max_scale(data):
                     min_value = min(data)
