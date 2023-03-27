@@ -125,8 +125,13 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             ArtifactReview, id=artifact_review_pk)
         # delete old answers
         Answer.objects.filter(artifact_review_id=artifact_review_pk).delete()
-        artifact_review.status = artifact_status
-        artifact_review.save()
+        grade = 0
+        max_grade = 0
+        # for now, here we only consider about five scale SCALEMULTIPLECHOICE question for grading
+        # grading rule: {'strongly disagree': 0, 'disagree': 1, 'neutral': 2, 'agree': 3, 'strongly agree': 4} and max_grade add 4
+        grading_rule = {'strongly disagree': 0, 'disagree': 1, 'neutral': 2, 'agree': 3, 'strongly agree': 4}
+        MAX_GRADE_FOR_EACH_QUESTION = 4
+        
         for answer in artifact_review_detail:
             question_pk = answer["question_pk"]
             answer_text = answer["answer_text"]
@@ -138,7 +143,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             if answer_text == "":
                 continue
             question_options = question.options.all()
-            if question_type == Question.QuestionType.MULTIPLECHOICE or question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
+            if question_type == Question.QuestionType.MULTIPLECHOICE:
                 for question_option in question_options:
                     if question_option.option_choice.text == answer_text:
                         answer = Answer()
@@ -146,6 +151,18 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                         answer.artifact_review = artifact_review
                         answer.answer_text = answer_text
                         answer.save()
+                        break
+            elif question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
+                for question_option in question_options:
+                    if question_option.option_choice.text == answer_text:
+                        answer = Answer()
+                        answer.question_option = question_option
+                        answer.artifact_review = artifact_review
+                        answer.answer_text = answer_text
+                        answer.save()
+                        # update grade and max_grade
+                        grade += grading_rule[answer_text]
+                        max_grade += MAX_GRADE_FOR_EACH_QUESTION
                         break
 
             elif question_type == Question.QuestionType.FIXEDTEXT or question_type == Question.QuestionType.MULTIPLETEXT or question_type == Question.QuestionType.TEXTAREA or question_type == Question.QuestionType.NUMBER:
@@ -167,6 +184,11 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
 
                 artifact_feedback.page = page
                 artifact_feedback.save()
+        
+        artifact_review.status = artifact_status
+        artifact_review.artifact_review_score = grade
+        artifact_review.max_artifact_review_score = max_grade
+        artifact_review.save()
 
         return Response(status=status.HTTP_200_OK)
 
