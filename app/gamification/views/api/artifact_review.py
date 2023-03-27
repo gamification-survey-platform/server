@@ -189,6 +189,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 artifact_feedback.save()
         
         artifact_review.status = artifact_status
+        # convert max_grade to 
         artifact_review.artifact_review_score = grade
         artifact_review.max_artifact_review_score = max_grade
         artifact_review.save()
@@ -218,7 +219,8 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
         for artifact_review in artifact_reviews:
             artifact = artifact_review.artifact
             user = artifact_review.user
-            matrix[registrations_id_list.index(user.id)][artifacts_id_list.index(artifact.id)] = artifact_review.artifact_review_score
+            # fill in the matrix with artifact_review_score / max_artifact_review_score
+            matrix[registrations_id_list.index(user.id)][artifacts_id_list.index(artifact.id)] = artifact_review.artifact_review_score / artifact_review.max_artifact_review_score
         
         if 'ipsatization_MAX' in request.query_params and 'ipsatization_MIN' in request.query_params:
             ipsatization_MAX = int(request.query_params['ipsatization_MAX'])
@@ -226,12 +228,8 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
             # calculate ipsatizated score at backend
             def ipsatization(data, ipsatization_MAX, ipsatization_MIN):
                 def convert(score):
-                    if score == 1: return -1
-                    elif score == 2: return -0.5
-                    elif score == 3: return 0
-                    elif score == 4: return 0.5
-                    elif score == 5: return 1
-                    else: return 0
+                    # 0 <= score <= 1, convert to -1 to 1
+                    return (score - 0.5) * 2
 
                 def min_max_scale(data):
                     min_value = min(data)
