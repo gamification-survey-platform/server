@@ -21,13 +21,13 @@ class RewardSerializer(serializers.ModelSerializer):
         data['belong_to'] = reward.course.course_name
         data['type'] = reward.type
         data['is_active'] = reward.is_active
-        data['exp_point'] = reward.exp_point
+        data['exp_points'] = reward.exp_point
         if reward.inventory == -1:
             data['inventory'] = 'Unlimited'
         else:
             data['inventory'] = reward.inventory
         if reward.type == 'Badge':
-            data['icon'] = reward.picture.url
+            data['picture'] = reward.picture.url
         elif reward.type == 'Bonus' or Reward.type == 'Late Submission':
             data['quantity'] = reward.quantity
         elif reward.type == 'Theme':

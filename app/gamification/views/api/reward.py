@@ -88,7 +88,7 @@ class courseRewardList(generics.ListCreateAPIView):
         type = request.data.get('type')
         inventory = request.data.get('inventory')
         is_active = request.data.get('is_active')
-        exp_point = request.data.get('exp_point')
+        exp_point = request.data.get('exp_points')
         reward = Reward.objects.create()
         if exp_point:
             reward.exp_point = exp_point
@@ -137,10 +137,13 @@ class courseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
         type = request.data.get('type')
         inventory = request.data.get('inventory')
         is_active = request.data.get('is_active')
+        exp_point = request.data.get('exp_points')
         if name:
             reward.name = name
         if description:
             reward.description = description
+        if exp_point:
+            reward.exp_point = exp_point
         if type:
             reward.type = type
         if inventory:
