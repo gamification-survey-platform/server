@@ -15,6 +15,11 @@ class ArtifactReview(models.Model):
     status = models.TextField(
         choices=ArtifactReviewType.choices, default=ArtifactReviewType.INCOMPLETE)
 
+    artifact_review_score = models.IntegerField(default=None, null=True)
+    
+    max_artifact_review_score = models.IntegerField(default=None, null=True)
+    
+    
     class Meta:
         db_table = 'artifact_review'
         verbose_name = _('artifact_review')

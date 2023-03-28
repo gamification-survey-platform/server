@@ -13,8 +13,10 @@ from app.gamification.models.artifact_review import ArtifactReview
 from app.gamification.models.question import Question
 from app.gamification.models.question_option import QuestionOption
 from app.gamification.models.registration import Registration
+from app.gamification.models.grade import Grade
 from app.gamification.serializers.answer import ArtifactReviewSerializer
 
+import pandas as pd
 
 class ArtifactReviewList(generics.RetrieveAPIView):
     queryset = ArtifactReview.objects.all()
@@ -123,8 +125,13 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             ArtifactReview, id=artifact_review_pk)
         # delete old answers
         Answer.objects.filter(artifact_review_id=artifact_review_pk).delete()
-        artifact_review.status = artifact_status
-        artifact_review.save()
+        grade = 0
+        max_grade = 0
+        # for now, here we only consider about five scale SCALEMULTIPLECHOICE question for grading
+        # grading rule: {'strongly disagree': 0, 'disagree': 1, 'neutral': 2, 'agree': 3, 'strongly agree': 4} and max_grade add 4
+        grading_rule = {'strongly disagree': 0, 'disagree': 1, 'neutral': 2, 'agree': 3, 'strongly agree': 4}
+        MAX_GRADE_FOR_EACH_QUESTION = 4
+        
         for answer in artifact_review_detail:
             question_pk = answer["question_pk"]
             answer_text = answer["answer_text"]
@@ -136,7 +143,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             if answer_text == "":
                 continue
             question_options = question.options.all()
-            if question_type == Question.QuestionType.MULTIPLECHOICE or question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
+            if question_type == Question.QuestionType.MULTIPLECHOICE:
                 for question_option in question_options:
                     if question_option.option_choice.text == answer_text:
                         answer = Answer()
@@ -144,6 +151,21 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                         answer.artifact_review = artifact_review
                         answer.answer_text = answer_text
                         answer.save()
+                        break
+            elif question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
+                for question_option in question_options:
+                    if question_option.option_choice.text == answer_text:
+                        answer = Answer()
+                        answer.question_option = question_option
+                        answer.artifact_review = artifact_review
+                        answer.answer_text = answer_text
+                        answer.save()
+                        # update grade and max_grade
+                        if answer_text in grading_rule:
+                            grade += grading_rule[answer_text]
+                            max_grade += MAX_GRADE_FOR_EACH_QUESTION
+                        else:
+                            print("Error: grading rule does not contain this answer text, update grading rule ASAP")
                         break
 
             elif question_type == Question.QuestionType.FIXEDTEXT or question_type == Question.QuestionType.MULTIPLETEXT or question_type == Question.QuestionType.TEXTAREA or question_type == Question.QuestionType.NUMBER:
@@ -165,5 +187,118 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
 
                 artifact_feedback.page = page
                 artifact_feedback.save()
+        
+        artifact_review.status = artifact_status
+        # convert max_grade to 
+        artifact_review.artifact_review_score = grade
+        artifact_review.max_artifact_review_score = max_grade
+        artifact_review.save()
 
         return Response(status=status.HTTP_200_OK)
+
+class ArtifactReviewIpsatization(generics.RetrieveAPIView):
+    queryset = ArtifactReview.objects.all()
+    serializer_class = ArtifactReviewSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, course_id, assignment_id, *args, **kwargs):
+        # pointing-system
+        # get artifact_reviews by assignment_id
+        artifact_reviews = ArtifactReview.objects.filter(artifact__assignment_id=assignment_id)
+        # get all artifacts in the course
+        artifacts = Artifact.objects.filter(assignment_id=assignment_id)
+        # get all registrations in the course
+        registrations = Registration.objects.filter(courses_id=course_id)
+        # create a list of registrations id (row)
+        registrations_id_list = [registration.id for registration in registrations]
+        # create a list of artifacts id (column)
+        artifacts_id_list = [artifact.id for artifact in artifacts]
+        
+        # create a 2d matrix of artifact_reviews by artifacts and registrations
+        matrix = [[None for j in range(len(artifacts_id_list))] for i in range(len(registrations_id_list))]
+        for artifact_review in artifact_reviews:
+            artifact = artifact_review.artifact
+            user = artifact_review.user
+            # fill in the matrix with artifact_review_score / max_artifact_review_score
+            matrix[registrations_id_list.index(user.id)][artifacts_id_list.index(artifact.id)] = artifact_review.artifact_review_score / artifact_review.max_artifact_review_score
+        
+        if 'ipsatization_MAX' in request.query_params and 'ipsatization_MIN' in request.query_params:
+            ipsatization_MAX = int(request.query_params['ipsatization_MAX'])
+            ipsatization_MIN = int(request.query_params['ipsatization_MIN'])
+            # calculate ipsatizated score at backend
+            def ipsatization(data, ipsatization_MAX, ipsatization_MIN):
+                def convert(score):
+                    # 0 <= score <= 1, convert to -1 to 1
+                    return (score - 0.5) * 2
+
+                def min_max_scale(data):
+                    min_value = min(data)
+                    max_value = max(data)
+                    normalized_data = []
+                    for value in data:
+                        normalized_value = (value - min_value) / (max_value - min_value)
+                        normalized_data.append(normalized_value)
+                    return normalized_data
+                # Calculate the mean and standard deviation of each survey
+                means = data.mean(axis=1)
+                stds = data.std(axis=1)
+                # Perform ipsatization on the data
+                i_data = data.copy()
+                for i in range(len(data)):
+                    for j in range(len(data.columns)):
+                        i_data.iloc[i, j] = (data.iloc[i, j] - means[i]) / stds[i] if stds[i] != 0 else convert(data.iloc[i, j])
+                # Calculate the means of each survey as their score 
+                i_means = i_data.mean()
+                i_stds = i_data.std()
+
+                # Normalize the scores
+                normalized_means = min_max_scale(i_means)
+
+                # Convert scores to desired range
+                ipsatization_range = ipsatization_MAX - ipsatization_MIN
+                final_means = [score * ipsatization_range + ipsatization_MIN for score in normalized_means]
+                return final_means
+            
+            df = pd.DataFrame(matrix, columns = artifacts_id_list, dtype = float)
+            # handle None value in matrix with mean value of each row
+            m = df.mean(axis=1)
+            for i, col in enumerate(df):
+                df.iloc[:, i] = df.iloc[:, i].fillna(m)
+            ipsatizated_data = ipsatization(df, ipsatization_MAX, ipsatization_MIN)
+            # final result
+            artifacts_id_and_scores_dict = dict(zip(artifacts_id_list, ipsatizated_data))
+            return Response(artifacts_id_and_scores_dict, status=status.HTTP_200_OK)
+        else:
+            context = {'registrations_id_list':registrations_id_list,
+                    'artifacts_id_list':artifacts_id_list,
+                    'matrix':matrix
+                    }
+            return Response(context, status=status.HTTP_200_OK)
+    
+    # update an artiafct_review's score
+    def patch(self, request, course_id, assignment_id, *args, **kwargs):
+        course = get_object_or_404(Course, pk=course_id)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
+        userRole = Registration.objects.get(users=user, courses=course).userRole
+        
+        if userRole != 'Instructor':
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        else:
+            if 'artifact_review_id' in request.data and 'artifact_review_score' in request.data:
+                artifact_review_id = request.data['artifact_review_id']
+                artifact_review_score = request.data['artifact_review_score']
+                if 'max_artifact_review_score' in request.data:
+                    max_artifact_review_score = request.data['max_artifact_review_score']
+                else:
+                    max_artifact_review_score = None
+                
+                artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_id)
+                artifact_review.artifact_review_score = artifact_review_score
+                artifact_review.max_artifact_review_score = max_artifact_review_score
+                artifact_review.save()
+                # respond 200 and return the updated artifact_review
+                return Response(ArtifactReviewSerializer(artifact_review).data, status=status.HTTP_200_OK)
+            else:
+                # return error message
+                return Response(status=status.HTTP_400_BAD_REQUEST)

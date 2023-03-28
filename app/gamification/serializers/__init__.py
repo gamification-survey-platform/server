@@ -7,3 +7,5 @@ from .constraint import *
 from .assignment import *
 from .entity import *
 from .registration import *
+from .grade import *
+from .deduction import *

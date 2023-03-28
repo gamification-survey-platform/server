@@ -7,7 +7,7 @@ from rest_framework import status
 
 from app.gamification.models import CustomUser
 from app.gamification.serializers import UserSerializer
-from app.gamification.views.api.artifact_review import ArtifactReviewDetails, ArtifactReviewList
+from app.gamification.views.api.artifact_review import ArtifactReviewDetails, ArtifactReviewList, ArtifactReviewIpsatization
 from app.gamification.views.api.artifacts import SubmitArtifact, GetArtifact
 from .user import Users, UserDetail, Login, Register
 from .course import CourseList
@@ -21,6 +21,9 @@ from .feedback_survey import SurveyList, SurveyDetail
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
 from .member import MemberList
 from .report import ViewReport
+from .grade import GradeList
+from .deduction import DeductionList, DeductionDetail
+
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from drf_yasg import openapi
@@ -85,17 +88,29 @@ urlpatterns = [
          AssignmentList.as_view(), name='assignment-list'),
 
     # assignment detail
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/',
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/', 
          AssignmentDetail.as_view(), name='assignment-detail'),
-
+    
     # Entity/member
-    path('courses/<str:course_id>/members/',
+    path('courses/<str:course_id>/members/', 
          MemberList.as_view(), name='member-list'),
-
+    
     # Report
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/',
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/', 
          ViewReport.as_view(), name='artifact-review-list'),
+    
+    # Grade
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/', 
+         GradeList.as_view(), name='grade-review-list'),
+    
+    # Deduction
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/<str:grade_id>/deductions/', 
+         DeductionList.as_view(), name='deduction-review-list'),
 
+    # Deduction Detail
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/<str:grade_id>/deductions/<str:deduction_id>/', 
+         DeductionDetail.as_view(), name='deduction-detail'),
+    
     # Get the  feedback_surveys, Post a new survey,update a survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/',
          SurveyList.as_view(), name='survey-list'),
@@ -123,8 +138,12 @@ urlpatterns = [
 
     # get all artifact reviews
     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/',
-         ArtifactReviewList.as_view(), name="artifact-review-list"),
-
+           ArtifactReviewList.as_view(), name="artifact-review-list"),
+    
+    # calculate ipsatized values from artifact_reviews and saved to 'score' in Grade
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/ipsatization/',
+           ArtifactReviewIpsatization.as_view(), name="artifact-review-list"),
+    
     # get survey details with answers, patch answers for an artifact review survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/<str:artifact_review_pk>/',
          ArtifactReviewDetails.as_view(), name='survey-detail'),
