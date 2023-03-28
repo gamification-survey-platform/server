@@ -16,4 +16,10 @@ Pipfile.lock
 .DS_Store
 
 get-pip.py
+
+# Terraform
 *.tfvars
+terraform/.terraform.lock.hcl
+terraform/.terraform/
+terraform/terraform.tfstate*
+

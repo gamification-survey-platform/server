@@ -1,18 +1,17 @@
 provider "aws" {
   region = var.region
+  # profile = var.profile
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
 }
 
 locals {
   common_tags = {
-    Project = var.project_tag_name
+    project = var.project_tag_name
   }
 }
-resource "aws_s3_bucket" "static_content" {
-  bucket = "artifacts_file"
-  acl    = "private"
-  versioning {
-    enabled = true
-  }
+resource "aws_s3_bucket" "gamification_bucket" {
+  bucket = "gamification-bucket2023"
   tags = merge(
     local.common_tags,
     {
@@ -22,12 +21,7 @@ resource "aws_s3_bucket" "static_content" {
   )
 }
 
-# resource "aws_s3_bucket" "bucket_name" {
-#   bucket = "my-bucket-name"
-#   acl    = "private"
-
-#   tags = {
-#     Terraform   = "True"
-#     Environment = "Dev"
-#   }
-# }
+resource "aws_s3_bucket_acl" "gamification_bucket_acl" {
+  bucket = aws_s3_bucket.gamification_bucket.id
+  acl = "private"
+}

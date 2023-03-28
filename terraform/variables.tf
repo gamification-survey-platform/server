@@ -8,5 +8,12 @@ variable "zone" {
 
 variable "project_tag_name" {
   description = "The project to deploy to, if not set the default provider project is used."
-  default     = ""
+}
+
+variable "aws_access_key" {
+  description = "The AWS access key to use for the provider."
+}
+
+variable "aws_secret_key" {
+  description = "The AWS secret key to use for the provider."
 }
