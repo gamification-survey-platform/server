@@ -114,12 +114,13 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
             course = get_object_or_404(Course, pk=int(course_id))
             user_pk = get_user_pk(request)
             user = CustomUser.objects.get(pk=user_pk)
-            registration = get_object_or_404(
-                Registration, users=user, courses=course)
-            if registration.userRole == Registration.UserRole.Student:
-                # return 403 and error message
-                content = {'message': 'Permission denied'}
-                return Response(content, status=status.HTTP_403_FORBIDDEN)
+            if not user.is_staff:
+                registration = get_object_or_404(
+                    Registration, users=user, courses=course)
+                if registration.userRole == Registration.UserRole.Student:
+                    # return 403 and error message
+                    content = {'message': 'Permission denied'}
+                    return Response(content, status=status.HTTP_403_FORBIDDEN)
             course.delete()
             # return Response(status=status.HTTP_204_NO_CONTENT
             return Response(status=status.HTTP_200_OK)
