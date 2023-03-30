@@ -71,10 +71,7 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
                 serializer = CourseSerializer(courses, many=True)
                 return Response(serializer.data)
             else:
-                if user.is_staff:
-                    registrations = Registration.objects.all()
-                else:
-                    registrations = get_registrations(user)
+                registrations = get_registrations(user)
                 courses = registrations_to_courses(registrations)
                 serializer = CourseSerializer(courses, many=True)
                 data = []

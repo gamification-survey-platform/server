@@ -71,8 +71,8 @@ class courseRewardList(generics.ListCreateAPIView):
     def get(self, request, course_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
-        if not user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        #if not user.is_staff:
+        #    return Response(status=status.HTTP_403_FORBIDDEN)
         rewards = Reward.objects.filter(course_id=course_id)
         serializer = self.get_serializer(rewards, many=True)
         return Response(serializer.data)
