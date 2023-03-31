@@ -121,6 +121,7 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
                 if not user.is_staff:
                     registration = get_object_or_404(
                         Registration, users=user, courses=course)
+                    print('got registration', registration)
                     if registration.userRole == Registration.UserRole.Student:
                         # return 403 and error message
                         content = {'message': 'Permission denied'}
