@@ -126,7 +126,11 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
                         # return 403 and error message
                         content = {'message': 'Permission denied'}
                         return Response(content, status=status.HTTP_403_FORBIDDEN)
+                all_course_registrations = Registration.objects.filter(courses=course)
                 print('attempting to delete course')
+                for registration in all_course_registrations:
+                    registration.delete()
+                print(all_course_registrations)
                 course.delete()
                 # return Response(status=status.HTTP_204_NO_CONTENT
                 return Response(status=status.HTTP_200_OK)
