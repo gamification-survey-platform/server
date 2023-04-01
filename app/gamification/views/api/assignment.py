@@ -53,6 +53,7 @@ class AssignmentList(generics.ListCreateAPIView):
         userRole = Registration.objects.get(users=user, courses=course).userRole
         assignment_name = request.data.get('assignment_name')
         assignment_type = request.data.get('assignment_type')
+        date_released = request.data.get('date_released')
         date_due = request.data.get('date_due')
         description = request.data.get('description')
         submission_type = request.data.get('submission_type')
@@ -61,7 +62,8 @@ class AssignmentList(generics.ListCreateAPIView):
         review_assign_policy = request.data.get('review_assign_policy')
         if userRole == Registration.UserRole.Instructor:
             assignment = Assignment.objects.create(course=course, assignment_name=assignment_name, 
-                                                   assignment_type=assignment_type, date_due=date_due, 
+                                                   assignment_type=assignment_type, 
+                                                   date_released=date_released, date_due=date_due, 
                                                    description=description, submission_type=submission_type, 
                                                    total_score=total_score, weight=weight, 
                                                    review_assign_policy=review_assign_policy)
@@ -123,8 +125,7 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
         course = get_object_or_404(Course, pk=course_id)
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
-        userRole = Registration.objects.get(users=user, courses=course).userRole
-        if userRole == Registration.UserRole.Instructor:
+        if user.is_staff or Registration.objects.get(users=user, courses=course).userRole == Registration.UserRole.Instructor:
             assignment = get_object_or_404(Assignment, pk=assignment_id)
             assignment.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
