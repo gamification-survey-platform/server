@@ -111,27 +111,24 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         return Response(serializer.data)
 
     def delete(self, request, *args, **kwargs):
-        print("0000")
         if 'course_id' in request.query_params:
             # delete course
-            print("111:", request.query_params)
             course_id = request.query_params['course_id']
-            print("222:")
             course = get_object_or_404(Course, pk=int(course_id))
-            print("333")
             user_pk = get_user_pk(request)
-            print("444")
             user = CustomUser.objects.get(pk=user_pk)
-            print("555")
             registration = get_object_or_404(
                 Registration, users=user, courses=course)
-            print("666")
             if registration.userRole == Registration.UserRole.Student:
                 # return 403 and error message
                 content = {'message': 'Permission denied'}
                 return Response(content, status=status.HTTP_403_FORBIDDEN)
             print("777")
-            course.delete()
+            try :
+                course.delete()
+            except Exception as error:
+                print(error)
+            # course.delete()
             # return Response(status=status.HTTP_204_NO_CONTENT
             print("888")
             return Response(status=status.HTTP_200_OK)
