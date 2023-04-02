@@ -1,15 +1,11 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from app.gamification.models.course import Course
+from app.gamification.models.reward_type import RewardType
+from app.gamification.models.user_reward import UserReward
 
 
 class Reward(models.Model):
-    class RewardType(models.TextChoices):
-        Badge = 'Badge'
-        Bonus = 'Bonus'
-        lateSubmission = 'Late Submission'
-        theme = 'Theme'
-        other = 'Other'
 
     class Theme(models.TextChoices):
         dark = 'Dark'
@@ -17,11 +13,11 @@ class Reward(models.Model):
 
     name = models.CharField(_('name'), max_length=255, default='', blank=False)
     description = models.TextField(_('description'), default='', blank=False)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, default=0)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
     exp_point = models.IntegerField(
         _('exp_point'), default=0, null=True, blank=False)
-    type = models.TextField(
-        choices=RewardType.choices, default=RewardType.other, blank=False)
+    reward_type = models.ForeignKey(
+        RewardType, on_delete=models.CASCADE)
     inventory = models.IntegerField(
         _('inventory'), default=-1, null=True, blank=True)
     is_active = models.BooleanField(
@@ -47,3 +43,12 @@ class Reward(models.Model):
     def inactive(self):
         self.is_active = False
         self.save()
+
+    @property
+    def owner(self):
+        owners = UserReward.objects.filter(reward=self)
+        return list(owners)
+
+    @property
+    def consumed(self):
+        return self.inventory - self.owner.count()
