@@ -24,3 +24,4 @@ from .progress import *
 from .rule_constraint import *
 from .grade import *
 from .deduction import *
+from .reward_type import *

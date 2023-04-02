@@ -1,5 +1,6 @@
 from app.gamification.models.course import Course
 from app.gamification.models.reward import Reward
+from app.gamification.models.reward_type import RewardType
 from rest_framework import generics
 from rest_framework import permissions
 from rest_framework.response import Response
@@ -71,7 +72,7 @@ class courseRewardList(generics.ListCreateAPIView):
     def get(self, request, course_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
-        #if not user.is_staff:
+        # if not user.is_staff:
         #    return Response(status=status.HTTP_403_FORBIDDEN)
         rewards = Reward.objects.filter(course_id=course_id)
         serializer = self.get_serializer(rewards, many=True)
@@ -85,28 +86,33 @@ class courseRewardList(generics.ListCreateAPIView):
         course = get_object_or_404(Course, pk=course_id)
         name = request.data.get('name')
         description = request.data.get('description')
-        type = request.data.get('type')
+        type_string = request.data.get('type')
+        type = get_object_or_404(RewardType, type=type_string)
         inventory = request.data.get('inventory')
         is_active = request.data.get('is_active')
         exp_point = request.data.get('exp_points')
-        reward = Reward.objects.create()
+        reward = Reward.objects.create(
+            course=course,
+            reward_type=type,
+        )
         if exp_point:
             reward.exp_point = exp_point
         if inventory:
             reward.inventory = inventory
-        if type:
-            reward.type = type
         if is_active:
             reward.is_active = True if is_active == 'true' else False
-        reward.course = course
-        reward.name = name
-        reward.description = description
-        if type == 'Bonus' or type == 'Late Submission':
+        if name:
+            reward.name = name
+        if description:
+            reward.description = description
+        if type.type == 'Bonus' or type == 'Late Submission':
             reward.quantity = request.data.get('quantity')
-        elif type == 'Badge' or type == 'Other':
+        elif type.type == 'Badge' or type == 'Other':
             reward.picture = request.data.get('picture')
+        elif type.type == 'Theme':
+            reward.theme = request.data.get('theme')
         else:
-            return Response(message="Invalid reward type", status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         reward.save()
         serializer = self.get_serializer(reward)
         return Response(serializer.data)
@@ -134,7 +140,8 @@ class courseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
         reward = Reward.objects.get(pk=reward_id)
         name = request.data.get('name')
         description = request.data.get('description')
-        type = request.data.get('type')
+        type_string = request.data.get('type')
+        type = get_object_or_404(RewardType, type=type_string)
         inventory = request.data.get('inventory')
         is_active = request.data.get('is_active')
         exp_point = request.data.get('exp_points')
@@ -145,7 +152,7 @@ class courseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
         if exp_point:
             reward.exp_point = exp_point
         if type:
-            reward.type = type
+            reward.reward_type = type
         if inventory:
             reward.inventory = inventory
         if is_active:
