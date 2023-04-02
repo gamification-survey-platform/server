@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from app.gamification.models.course import Course
 from app.gamification.models.reward_type import RewardType
+from app.gamification.models.user_reward import UserReward
 
 
 class Reward(models.Model):
@@ -42,3 +43,12 @@ class Reward(models.Model):
     def inactive(self):
         self.is_active = False
         self.save()
+
+    @property
+    def owner(self):
+        owners = UserReward.objects.filter(reward=self)
+        return list(owners)
+
+    @property
+    def consumed(self):
+        return self.inventory - self.owner.count()

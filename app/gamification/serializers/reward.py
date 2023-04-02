@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from app.gamification.models import Reward
+from app.gamification.models import UserReward
 
 
 class RewardSerializer(serializers.ModelSerializer):
@@ -14,6 +15,7 @@ class RewardSerializer(serializers.ModelSerializer):
         return self.type_serializer(instance)
 
     def type_serializer(self, reward):
+        owner = UserReward.objects.filter(reward=reward)
         data = {}
         data['pk'] = reward.pk
         data['name'] = reward.name
@@ -22,6 +24,8 @@ class RewardSerializer(serializers.ModelSerializer):
         data['type'] = reward.reward_type.type
         data['is_active'] = reward.is_active
         data['exp_points'] = reward.exp_point
+        data['owner'] = [i.user.andrew_id for i in owner]
+        data['consumed'] = len(owner)
         if reward.inventory == -1:
             data['inventory'] = 'Unlimited'
         else:
