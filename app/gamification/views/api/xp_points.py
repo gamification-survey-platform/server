@@ -83,7 +83,7 @@ class XpPointsDetail(generics.RetrieveUpdateDestroyAPIView):
             xp_points.points = points
         exp = request.data.get('exp')
         if exp:
-            xp_points.exp = exp
+            xp_points.exp = int(exp)
             # upgrade if exp is enough, level up for every 1000 exp
             cur_level = xp_points.level
             if xp_points.exp >= 1000:
