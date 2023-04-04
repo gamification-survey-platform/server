@@ -167,7 +167,7 @@ urlpatterns = [
     path('xp_points/', XpPointsList.as_view(), name='xp-point-list'),
     
     # get xp_points detail
-    path('xp_points/<str:course_id>/', XpPointsDetail.as_view(), name='xp-point-detail'),
+    path('xp_points/<str:xp_points_id>/', XpPointsDetail.as_view(), name='xp-point-detail'),
     
     # get reward in course by course_id or post a new reward
     #     path('courses/<str:course_id>/rewards/',

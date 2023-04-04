@@ -25,6 +25,35 @@ class XpPointsList(generics.ListCreateAPIView):
         xp_points = XpPoints.objects.all()
         serializer = self.get_serializer(xp_points, many=True)
         return Response(serializer.data)
+    
+    # create a new xp_points
+    def post(self, request, *args, **kwargs):
+        user_id = get_user_pk(request)
+        user = CustomUser.objects.get(pk=user_id)
+        if not user.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        user = CustomUser.objects.get(pk=request.data.get('user_id'))
+        points = request.data.get('points')
+        exp = request.data.get('exp')
+        level = request.data.get('level')
+        # if user already has xp_points, update the xp_points
+        if XpPoints.objects.filter(user=user).exists():
+            xp_points = XpPoints.objects.get(user=user)
+            xp_points.points = points
+            xp_points.exp = exp
+            xp_points.level = level
+            xp_points.save()
+            serializer = self.get_serializer(xp_points)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        xp_points = XpPoints.objects.create(
+            user=user,
+            points=points,
+            exp=exp,
+            level=level
+        )
+        serializer = self.get_serializer(xp_points)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class XpPointsDetail(generics.RetrieveUpdateDestroyAPIView):

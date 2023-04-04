@@ -6,4 +6,4 @@ from app.gamification.models import XpPoints
 class XpPointsSerializer(serializers.ModelSerializer):
     class Meta:
         model = XpPoints
-        fields = ['pk', 'user', 'ponits', 'exp', 'level']
+        fields = ['pk', 'user', 'points', 'exp', 'level']
