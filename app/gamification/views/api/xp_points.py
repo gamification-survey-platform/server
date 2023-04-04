@@ -78,17 +78,15 @@ class XpPointsDetail(generics.RetrieveUpdateDestroyAPIView):
             return Response(status=status.HTTP_403_FORBIDDEN)
         
         xp_points = get_object_or_404(XpPoints, pk=xp_points_id)
-        points = None
-        exp = None
-        level = None
-        if points in request.data:
-            points = request.data.get('points')
+
+        points = request.data.get('points')
+        if points:
             xp_points.points = points
-        if exp in request.data:
-            exp = request.data.get('exp')
+        exp = request.data.get('exp')
+        if exp:
             xp_points.exp = exp
-        if level in request.data:
-            level = request.data.get('level')
+        level = request.data.get('level')
+        if level:
             xp_points.level = level
         
         xp_points.save()
