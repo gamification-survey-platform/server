@@ -76,7 +76,6 @@ class XpPointsDetail(generics.RetrieveUpdateDestroyAPIView):
         user = CustomUser.objects.get(pk=user_id)
         if not user.is_staff:
             return Response(status=status.HTTP_403_FORBIDDEN)
-        
         xp_points = get_object_or_404(XpPoints, pk=xp_points_id)
 
         points = request.data.get('points')
@@ -85,6 +84,14 @@ class XpPointsDetail(generics.RetrieveUpdateDestroyAPIView):
         exp = request.data.get('exp')
         if exp:
             xp_points.exp = exp
+            # upgrade if exp is enough, level up for every 1000 exp
+            cur_level = xp_points.level
+            if xp_points.exp >= 1000:
+                cur_level += 1
+                xp_points.exp -= 1000
+                xp_points.level = cur_level
+                
+        # also allow staff to manually change level if needed
         level = request.data.get('level')
         if level:
             xp_points.level = level
