@@ -25,3 +25,4 @@ from .rule_constraint import *
 from .grade import *
 from .deduction import *
 from .reward_type import *
+from .xp_points import *

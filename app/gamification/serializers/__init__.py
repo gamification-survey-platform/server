@@ -9,3 +9,4 @@ from .entity import *
 from .registration import *
 from .grade import *
 from .deduction import *
+from .xp_points import *
