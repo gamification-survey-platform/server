@@ -105,9 +105,9 @@ class courseRewardList(generics.ListCreateAPIView):
             reward.name = name
         if description:
             reward.description = description
-        if type.type == 'Bonus' or type == 'Late Submission':
+        if type.type == 'Bonus' or type.type == 'Late Submission':
             reward.quantity = request.data.get('quantity')
-        elif type.type == 'Badge' or type == 'Other':
+        elif type.type == 'Badge' or type.type == 'Other':
             reward.picture = request.data.get('picture')
         elif type.type == 'Theme':
             reward.theme = request.data.get('theme')
@@ -157,11 +157,11 @@ class courseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
             reward.inventory = inventory
         if is_active:
             reward.is_active = True if is_active == 'true' else False
-        if type == 'Bonus' or type == 'Late Submission':
+        if type.type == 'Bonus' or type.type == 'Late Submission':
             quantity = request.data.get('quantity')
             if quantity:
                 reward.quantity = quantity
-        elif type == 'Badge' or type == 'Other':
+        elif type.type == 'Badge' or type.type == 'Other':
             picture = request.data.get('picture')
             if picture:
                 reward.picture = picture
