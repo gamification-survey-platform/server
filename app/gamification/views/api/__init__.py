@@ -6,3 +6,4 @@ from .rule import *
 from .report import *
 from .reward import *
 from .deduction import *
+from .xp_points import *

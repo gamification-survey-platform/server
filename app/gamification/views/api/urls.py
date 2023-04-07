@@ -16,6 +16,7 @@ from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, Ques
 from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList,  CheckAllDone, CreateArtifactAnswer, FeedbackDetail, SurveyComplete, ArtifactAnswerKeywordList
 from .profile import UserProfile
 from .reward import RewardList, RewardDetail, courseRewardList, courseRewardDetail
+from .xp_points import XpPointsList, XpPointsDetail
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
 from .feedback_survey import SurveyList, SurveyDetail
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
@@ -162,7 +163,12 @@ urlpatterns = [
     path('courses/<str:course_id>/rewards/<str:reward_id>/',
          courseRewardDetail.as_view(), name='reward-detail'),
 
-
+    # get xp_points list
+    path('xp_points/', XpPointsList.as_view(), name='xp-point-list'),
+    
+    # get xp_points detail
+    path('xp_points/<str:xp_points_id>/', XpPointsDetail.as_view(), name='xp-point-detail'),
+    
     # get reward in course by course_id or post a new reward
     #     path('courses/<str:course_id>/rewards/',
     #          courseRewardList.as_view(), name='reward-list'),
