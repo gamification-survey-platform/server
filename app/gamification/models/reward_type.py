@@ -16,4 +16,4 @@ class RewardType(models.Model):
 
     @property
     def valid_type(self):
-        return self.type in ['Badge', 'Bonus', 'Late Submission', 'Theme', 'Other']
+        return self.type in ['Bonus', 'Late Submission', 'Theme', 'Other']
