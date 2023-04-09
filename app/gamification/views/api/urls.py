@@ -15,7 +15,7 @@ from .assignment import AssignmentList, AssignmentDetail
 from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo,  SurveySectionList, TemplateSectionList
 from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList,  CheckAllDone, CreateArtifactAnswer, FeedbackDetail, SurveyComplete, ArtifactAnswerKeywordList
 from .profile import UserProfile
-from .reward import RewardList, RewardDetail, courseRewardList, courseRewardDetail
+from .reward import RewardList, RewardDetail, CourseRewardList, CourseRewardDetail
 from .xp_points import XpPointsList, XpPointsDetail
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
 from .feedback_survey import SurveyList, SurveyDetail
@@ -157,11 +157,11 @@ urlpatterns = [
 
     # get course rewards
     path('courses/<str:course_id>/rewards/',
-         courseRewardList.as_view(), name='reward-list'),
+         CourseRewardList.as_view(), name='reward-list'),
 
     # get reward detail by reward_id, update a reward, delete a reward
     path('courses/<str:course_id>/rewards/<str:reward_id>/',
-         courseRewardDetail.as_view(), name='reward-detail'),
+         CourseRewardDetail.as_view(), name='reward-detail'),
 
     # get xp_points list
     path('xp_points/', XpPointsList.as_view(), name='xp-point-list'),
