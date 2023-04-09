@@ -15,7 +15,10 @@ from app.gamification.utils import get_user_pk
 from app.gamification.serializers.reward import RewardSerializer
 from django.shortcuts import get_object_or_404
 
-
+"""
+GET all rewards
+Permission: Admin
+"""
 class RewardList(generics.ListCreateAPIView):
     queryset = Reward.objects.all()
     permission_classes = [permissions.AllowAny]
@@ -30,7 +33,10 @@ class RewardList(generics.ListCreateAPIView):
         serializer = self.get_serializer(rewards, many=True)
         return Response(serializer.data)
 
-
+"""
+GET, PATCH, DELETE specific Rewards
+Permissions: Admin
+"""
 class RewardDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Reward.objects.all()
     permission_classes = [permissions.AllowAny]
@@ -66,8 +72,12 @@ class RewardDetail(generics.RetrieveUpdateDestroyAPIView):
         reward.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-class courseRewardList(generics.ListCreateAPIView):
+"""
+GET, POST Reward for a specific course
+GET Permissions: Staff or Student
+POST Permissions: Staff
+"""
+class CourseRewardList(generics.ListCreateAPIView):
     queryset = Reward.objects.all()
     permission_classes = [permissions.AllowAny]
     serializer_class = RewardSerializer
@@ -75,21 +85,16 @@ class courseRewardList(generics.ListCreateAPIView):
     def get(self, request, course_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
-        if user.is_staff:
-            rewards = Reward.objects.filter(course_id=course_id)
+        # Course ID = -1 indicates System Level rewards
+        if course_id == -1:
+            SYSTEM_PK = 20230512
+            rewards = []
+            rewards.extend(Reward.objects.filter(
+            course=SYSTEM_PK, is_active=True))
             serializer = self.get_serializer(rewards, many=True)
             return Response(serializer.data)
-        elif user.is_superuser:
-            pass
         else:
-            SYSTEM_PK = 20230512
-            registrations = Registration.objects.filter(users=user)
-            rewards = []
-            for registration in registrations:
-                rewards.extend(Reward.objects.filter(
-                    course=registration.courses, is_active=True))
-            rewards.extend(Reward.objects.filter(
-                course=SYSTEM_PK, is_active=True))
+            rewards = Reward.objects.filter(course_id=course_id)
             serializer = self.get_serializer(rewards, many=True)
             return Response(serializer.data)
 
@@ -132,8 +137,12 @@ class courseRewardList(generics.ListCreateAPIView):
         serializer = self.get_serializer(reward)
         return Response(serializer.data)
 
-
-class courseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
+"""
+GET, PATCH, DELETE Reward for a specific course
+GET Permissions: Staff or Student
+PATCH, DELETE Permissions: Staff
+"""
+class CourseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Reward.objects.all()
     permission_classes = [permissions.AllowAny]
     serializer_class = RewardSerializer
