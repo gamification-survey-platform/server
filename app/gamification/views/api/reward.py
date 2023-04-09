@@ -27,11 +27,23 @@ class RewardList(generics.ListCreateAPIView):
     def get(self, request, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
-        if not user.is_superuser:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        rewards = Reward.objects.all()
-        serializer = self.get_serializer(rewards, many=True)
-        return Response(serializer.data)
+        if user.is_superuser:
+            rewards = Reward.objects.all()
+            serializer = self.get_serializer(rewards, many=True)
+            return Response(serializer.data)
+        elif user.is_staff:
+            pass
+        else:
+            SYSTEM_PK = 20230512
+            registrations = Registration.objects.filter(users=user)
+            rewards = []
+            for registration in registrations:
+                rewards.extend(Reward.objects.filter(
+                    course=registration.courses, is_active=True))
+            rewards.extend(Reward.objects.filter(
+                course_id=SYSTEM_PK, is_active=True))
+            serializer = self.get_serializer(rewards, many=True)
+            return Response(serializer.data)
 
 """
 GET, PATCH, DELETE specific Rewards
@@ -43,10 +55,6 @@ class RewardDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = RewardSerializer
 
     def get(self, request, reward_id, *args, **kwargs):
-        user_id = get_user_pk(request)
-        user = CustomUser.objects.get(pk=user_id)
-        if not user.is_superuser:
-            return Response(status=status.HTTP_403_FORBIDDEN)
         reward = Reward.objects.get(pk=reward_id)
         serializer = self.get_serializer(reward)
         return Response(serializer.data)
@@ -55,13 +63,40 @@ class RewardDetail(generics.RetrieveUpdateDestroyAPIView):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
         is_active = request.data.get('is_active')
-        if not user.is_superuser:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        reward = Reward.objects.get(pk=reward_id)
-        reward.is_active = True if is_active == 'true' else False
-        reward.save()
-        serializer = self.get_serializer(reward)
-        return Response(serializer.data)
+        if user.is_superuser:
+            reward = Reward.objects.get(pk=reward_id)
+            reward.is_active = True if is_active == 'true' else False
+            reward.save()
+            serializer = self.get_serializer(reward)
+            return Response(serializer.data)
+        elif user.is_staff:
+            pass
+        else:
+            reward = Reward.objects.get(pk=reward_id)
+            try:
+                xp_point = XpPoints.objects.get(
+                    user=user)
+            except XpPoints.DoesNotExist:
+                xp_point = XpPoints.objects.create(
+                    user=user,
+                    points=0
+                )
+            if reward.exp_point > xp_point.points:
+                return Response(data={"message": "Do not have enough points"}, status=status.HTTP_400_BAD_REQUEST)
+            if reward.inventory > 0 or reward.inventory == -1:
+                if reward.inventory != -1:
+                    reward.inventory -= 1
+                    reward.save()
+                xp_point.points -= reward.exp_point
+                xp_point.save()
+                user_reward = UserReward.objects.create(
+                    user=user,
+                    reward=reward
+                )
+                user_reward.save()
+                return Response(status=status.HTTP_200_OK)
+            else:
+                return Response(data={"message": "Reward is out of stock"}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, reward_id, *args, **kwargs):
         user_id = get_user_pk(request)
@@ -85,6 +120,7 @@ class CourseRewardList(generics.ListCreateAPIView):
     def get(self, request, course_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
+
         # Course ID = -1 indicates System Level rewards
         if course_id == -1:
             SYSTEM_PK = 20230512
@@ -196,31 +232,7 @@ class CourseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
         elif user.is_superuser:
             pass
         else:
-            reward = Reward.objects.get(pk=reward_id)
-            try:
-                xp_point = XpPoints.objects.get(
-                    user=user)
-            except XpPoints.DoesNotExist:
-                xp_point = XpPoints.objects.create(
-                    user=user,
-                    points=0
-                )
-            if reward.exp_point > xp_point.points:
-                return Response(data={"message": "Do not have enough points"}, status=status.HTTP_400_BAD_REQUEST)
-            if reward.inventory > 0 or reward.inventory == -1:
-                if reward.inventory != -1:
-                    reward.inventory -= 1
-                    reward.save()
-                xp_point.points -= reward.exp_point
-                xp_point.save()
-                user_reward = UserReward.objects.create(
-                    user=user,
-                    reward=reward
-                )
-                user_reward.save()
-                return Response(status=status.HTTP_200_OK)
-            else:
-                return Response(data={"message": "Reward is out of stock"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
     def delete(self, request, course_id, reward_id, *args, **kwargs):
         user_id = get_user_pk(request)
