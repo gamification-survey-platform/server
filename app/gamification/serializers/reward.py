@@ -30,9 +30,7 @@ class RewardSerializer(serializers.ModelSerializer):
             data['inventory'] = 'Unlimited'
         else:
             data['inventory'] = reward.inventory
-        if reward.reward_type.type == 'Badge':
-            data['picture'] = reward.picture.url
-        elif reward.reward_type.type == 'Bonus' or reward.reward_type.type == 'Late Submission':
+        if reward.reward_type.type == 'Bonus' or reward.reward_type.type == 'Late Submission':
             data['quantity'] = reward.quantity
         elif reward.reward_type.type == 'Theme':
             data['theme'] = reward.theme
