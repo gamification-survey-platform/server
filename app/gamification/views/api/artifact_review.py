@@ -275,7 +275,30 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
         ipsatizated_data = ipsatization(df, ipsatization_MAX, ipsatization_MIN)
         # final result
         artifacts_id_and_scores_dict = dict(zip(artifacts_id_list, ipsatizated_data))
-        return Response(artifacts_id_and_scores_dict, status=status.HTTP_200_OK)
+        # retrive entities with artifacts_id_list
+        entities = []
+        if assignment.assignment_type == 'Individual':
+            for artifact_id in artifacts_id_list:
+                artifact = get_object_or_404(Artifact, id=artifact_id)
+                entity = artifact.entity
+                name = entity.members.first().name
+                entities.append(name)
+        else:
+            # Group assignment
+            for artifact_id in artifacts_id_list:
+                artifact = get_object_or_404(Artifact, id=artifact_id)
+                entity = artifact.entity
+                group_name = entity.name
+                names = entity.members.all().values_list('name', flat=True)
+                entities.append(group_name + ' (' + ', '.join(names) + ')')
+
+        content = {'artifacts_id_and_scores_dict': artifacts_id_and_scores_dict, 
+                   'ipsatization_MAX': ipsatization_MAX, 
+                   'ipsatization_MIN': ipsatization_MIN,
+                   'assignment_type': assignment.assignment_type,
+                   'entities': entities
+                   }
+        return Response(content, status=status.HTTP_200_OK)
 
     
     # update an artiafct_review's score
