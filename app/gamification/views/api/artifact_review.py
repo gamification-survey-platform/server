@@ -224,6 +224,12 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
         
         ipsatization_MAX = 100
         ipsatization_MIN = 80
+        assignment = get_object_or_404(Assignment, id=assignment_id)
+        # get ipsatization_MAX and ipsatization_MIN from assignment
+        if assignment.ipsatization_MAX and assignment.ipsatization_MIN:
+            ipsatization_MAX = assignment.ipsatization_MAX
+            ipsatization_MIN = assignment.ipsatization_MIN
+        
         if 'ipsatization_MAX' in request.query_params and 'ipsatization_MIN' in request.query_params:
             ipsatization_MAX = int(request.query_params['ipsatization_MAX'])
             ipsatization_MIN = int(request.query_params['ipsatization_MIN'])
