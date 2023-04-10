@@ -226,9 +226,9 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
         ipsatization_MIN = 80
         assignment = get_object_or_404(Assignment, id=assignment_id)
         # get ipsatization_MAX and ipsatization_MIN from assignment
-        if assignment.ipsatization_MAX and assignment.ipsatization_MIN:
-            ipsatization_MAX = assignment.ipsatization_MAX
-            ipsatization_MIN = assignment.ipsatization_MIN
+        if assignment.ipsatization_max and assignment.ipsatization_min:
+            ipsatization_MAX = assignment.ipsatization_max
+            ipsatization_MIN = assignment.ipsatization_min
         
         if 'ipsatization_MAX' in request.query_params and 'ipsatization_MIN' in request.query_params:
             ipsatization_MAX = int(request.query_params['ipsatization_MAX'])
@@ -277,6 +277,7 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
         artifacts_id_and_scores_dict = dict(zip(artifacts_id_list, ipsatizated_data))
         # retrive entities with artifacts_id_list
         entities = []
+        print(assignment.assignment_type)
         if assignment.assignment_type == 'Individual':
             for artifact_id in artifacts_id_list:
                 artifact = get_object_or_404(Artifact, id=artifact_id)
@@ -284,13 +285,14 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
                 name = entity.members.first().name
                 entities.append(name)
         else:
-            # Group assignment
+            # Team assignment
             for artifact_id in artifacts_id_list:
                 artifact = get_object_or_404(Artifact, id=artifact_id)
                 entity = artifact.entity
-                group_name = entity.name
-                names = entity.members.all().values_list('name', flat=True)
-                entities.append(group_name + ' (' + ', '.join(names) + ')')
+                group_name = entity.team.name
+                members = entity.members
+                members_first_and_last_name = [member.first_name + ' ' + member.last_name for member in members]
+                entities.append(group_name + ' (' + ', '.join(members_first_and_last_name) + ')')
 
         content = {'artifacts_id_and_scores_dict': artifacts_id_and_scores_dict, 
                    'ipsatization_MAX': ipsatization_MAX, 
