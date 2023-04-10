@@ -17,7 +17,7 @@ from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswer
 from .profile import UserProfile
 from .reward import RewardList, RewardDetail, CourseRewardList, CourseRewardDetail
 from .levels import LevelList
-from .xp_points import XpPointsList, XpPointsDetail
+from .xp_points import XpPointsList, XpPointsDetail, UpdateExp
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
 from .feedback_survey import SurveyList, SurveyDetail
 from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
@@ -82,6 +82,9 @@ urlpatterns = [
     # get user profile, or update user profile
     path('profile/', UserProfile.as_view(), name='user-profile'),
 
+    # update exp_points, exp, level
+    path('exp/', UpdateExp.as_view(), name='xp-points-list'),
+
     # course
     path('courses/', CourseList.as_view(), name='course-list'),
 
@@ -90,29 +93,29 @@ urlpatterns = [
          AssignmentList.as_view(), name='assignment-list'),
 
     # assignment detail
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/', 
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/',
          AssignmentDetail.as_view(), name='assignment-detail'),
-    
+
     # Entity/member
-    path('courses/<str:course_id>/members/', 
+    path('courses/<str:course_id>/members/',
          MemberList.as_view(), name='member-list'),
-    
+
     # Report
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/', 
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/',
          ViewReport.as_view(), name='artifact-review-list'),
-    
+
     # Grade
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/', 
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/',
          GradeList.as_view(), name='grade-review-list'),
-    
+
     # Deduction
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/<str:grade_id>/deductions/', 
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/<str:grade_id>/deductions/',
          DeductionList.as_view(), name='deduction-review-list'),
 
     # Deduction Detail
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/<str:grade_id>/deductions/<str:deduction_id>/', 
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/<str:grade_id>/deductions/<str:deduction_id>/',
          DeductionDetail.as_view(), name='deduction-detail'),
-    
+
     # Get the  feedback_surveys, Post a new survey,update a survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/',
          SurveyList.as_view(), name='survey-list'),
@@ -140,12 +143,12 @@ urlpatterns = [
 
     # get all artifact reviews
     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/',
-           ArtifactReviewList.as_view(), name="artifact-review-list"),
-    
+         ArtifactReviewList.as_view(), name="artifact-review-list"),
+
     # calculate ipsatized values from artifact_reviews and saved to 'score' in Grade
     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/ipsatization/',
-           ArtifactReviewIpsatization.as_view(), name="artifact-review-list"),
-    
+         ArtifactReviewIpsatization.as_view(), name="artifact-review-list"),
+
     # get survey details with answers, patch answers for an artifact review survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/<str:artifact_review_pk>/',
          ArtifactReviewDetails.as_view(), name='survey-detail'),
@@ -166,13 +169,14 @@ urlpatterns = [
 
     # get xp_points list
     path('xp_points/', XpPointsList.as_view(), name='xp-point-list'),
-    
+
     # get xp_points detail
-    path('xp_points/<str:xp_points_id>/', XpPointsDetail.as_view(), name='xp-point-detail'),
+    path('xp_points/<str:xp_points_id>/',
+         XpPointsDetail.as_view(), name='xp-point-detail'),
 
     # get level detail
     path('levels/<str:level>/', LevelList.as_view(), name='level-detail')
-    
+
     # get reward in course by course_id or post a new reward
     #     path('courses/<str:course_id>/rewards/',
     #          courseRewardList.as_view(), name='reward-list'),

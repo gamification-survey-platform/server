@@ -14,10 +14,11 @@ from django.core.cache import cache
 
 
 def level_func(level):
-    BASE_POINTS = 0
-    GROWTH_FACTOR = 10
+    BASE_POINTS = 50
+    GROWTH_FACTOR = 2
 
-    return BASE_POINTS * (GROWTH_FACTOR ** (level -1))
+    return BASE_POINTS * (GROWTH_FACTOR ** (level - 1))
+
 
 def get_user_pk(request):
     token = request.META.get('HTTP_AUTHORIZATION').split()[1]
@@ -96,3 +97,7 @@ def check_survey_status(assignment):
         return ArtifactReview.ArtifactReviewType.LATE
     else:
         return ArtifactReview.ArtifactReviewType.COMPLETED
+
+
+ASSIGNMENT_POINTS = 20
+SURVEY_POINTS = 10
