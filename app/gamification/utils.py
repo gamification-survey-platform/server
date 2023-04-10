@@ -14,18 +14,10 @@ from django.core.cache import cache
 
 
 def level_func(level):
-    if level == 0:
-        return 0
-    elif level == 1:
-        return 10
-    elif level == 2:
-        return 25
-    elif level == 3:
-        return 75
-    elif level == 4:
-        return 125
-    return int(50 * level ** 2 - 200 * level)
+    BASE_POINTS = 0
+    GROWTH_FACTOR = 10
 
+    return BASE_POINTS * (GROWTH_FACTOR ** (level -1))
 
 def get_user_pk(request):
     token = request.META.get('HTTP_AUTHORIZATION').split()[1]
