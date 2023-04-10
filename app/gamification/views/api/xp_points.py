@@ -6,10 +6,10 @@ from rest_framework.reverse import reverse
 from rest_framework import status
 from rest_framework.decorators import api_view
 from app.gamification.models.user import CustomUser
-from app.gamification.utils import get_user_pk
+from app.gamification.utils import get_user_pk, ASSIGNMENT_POINTS, SURVEY_POINTS, level_func
 from app.gamification.serializers.xp_points import XpPointsSerializer
 from django.shortcuts import get_object_or_404
-
+from app.gamification.models.xp_points import XpPoints
 
 
 class XpPointsList(generics.ListCreateAPIView):
@@ -25,7 +25,7 @@ class XpPointsList(generics.ListCreateAPIView):
         xp_points = XpPoints.objects.all()
         serializer = self.get_serializer(xp_points, many=True)
         return Response(serializer.data)
-    
+
     # create a new xp_points
     def post(self, request, *args, **kwargs):
         user_id = get_user_pk(request)
@@ -45,7 +45,7 @@ class XpPointsList(generics.ListCreateAPIView):
             xp_points.save()
             serializer = self.get_serializer(xp_points)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        
+
         xp_points = XpPoints.objects.create(
             user=user,
             points=points,
@@ -90,12 +90,12 @@ class XpPointsDetail(generics.RetrieveUpdateDestroyAPIView):
                 cur_level += 1
                 xp_points.exp -= 1000
                 xp_points.level = cur_level
-                
+
         # also allow staff to manually change level if needed
         level = request.data.get('level')
         if level:
             xp_points.level = level
-        
+
         xp_points.save()
         serializer = self.get_serializer(xp_points)
         return Response(serializer.data)
@@ -108,3 +108,39 @@ class XpPointsDetail(generics.RetrieveUpdateDestroyAPIView):
         xp_points = get_object_or_404(XpPoints, pk=xp_points_id)
         xp_points.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UpdateExp(generics.RetrieveUpdateAPIView):
+    queryset = XpPoints.objects.all()
+    permission_classes = [permissions.AllowAny]
+    serializer_class = XpPointsSerializer
+
+    def patch(self, request, *args, **kwargs):
+        user_id = get_user_pk(request)
+        user = CustomUser.objects.get(pk=user_id)
+        action = request.data.get('action')
+        if action == 'assignment':
+            points = ASSIGNMENT_POINTS
+        elif action == 'survey':
+            points = SURVEY_POINTS
+        else:
+            return Response(data={"message": "Invalid action"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            xp_points = XpPoints.objects.get(user=user)
+        except XpPoints.DoesNotExist:
+            xp_points = XpPoints.objects.create(user=user)
+        xp_points.points += points
+        required_exp = level_func(xp_points.level)
+        if xp_points.exp + points >= required_exp:
+            xp_points.level += 1
+            xp_points.exp = xp_points.exp + points - required_exp
+        else:
+            xp_points.exp += points
+        xp_points.save()
+        serializer = self.get_serializer(xp_points)
+        data = serializer.data
+        data["earned_points"] = points
+        data["exp_to_level_up"] = level_func(xp_points.level)
+        data["action"] = action
+        return Response(data)
