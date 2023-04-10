@@ -16,6 +16,7 @@ from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, Ques
 from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList,  CheckAllDone, CreateArtifactAnswer, FeedbackDetail, SurveyComplete, ArtifactAnswerKeywordList
 from .profile import UserProfile
 from .reward import RewardList, RewardDetail, CourseRewardList, CourseRewardDetail
+from .levels import LevelList
 from .xp_points import XpPointsList, XpPointsDetail
 from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
 from .feedback_survey import SurveyList, SurveyDetail
@@ -168,6 +169,9 @@ urlpatterns = [
     
     # get xp_points detail
     path('xp_points/<str:xp_points_id>/', XpPointsDetail.as_view(), name='xp-point-detail'),
+
+    # get level detail
+    path('levels/<str:level>/', LevelList.as_view(), name='level-detail')
     
     # get reward in course by course_id or post a new reward
     #     path('courses/<str:course_id>/rewards/',
