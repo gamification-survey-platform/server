@@ -282,8 +282,9 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
             for artifact_id in artifacts_id_list:
                 artifact = get_object_or_404(Artifact, id=artifact_id)
                 entity = artifact.entity
-                name = entity.members.first().name
-                entities.append(name)
+                member = entity.members.first()
+                first_and_last_name = member.first_name + ' ' + member.last_name
+                entities.append(first_and_last_name)
         else:
             # Team assignment
             for artifact_id in artifacts_id_list:
