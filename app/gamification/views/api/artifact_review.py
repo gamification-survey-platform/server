@@ -222,58 +222,55 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
             # fill in the matrix with artifact_review_score / max_artifact_review_score
             matrix[registrations_id_list.index(user.id)][artifacts_id_list.index(artifact.id)] = artifact_review.artifact_review_score / artifact_review.max_artifact_review_score
         
+        ipsatization_MAX = 100
+        ipsatization_MIN = 80
         if 'ipsatization_MAX' in request.query_params and 'ipsatization_MIN' in request.query_params:
             ipsatization_MAX = int(request.query_params['ipsatization_MAX'])
             ipsatization_MIN = int(request.query_params['ipsatization_MIN'])
-            # calculate ipsatizated score at backend
-            def ipsatization(data, ipsatization_MAX, ipsatization_MIN):
-                def convert(score):
-                    # 0 <= score <= 1, convert to -1 to 1
-                    return (score - 0.5) * 2
+        # calculate ipsatizated score at backend
+        def ipsatization(data, ipsatization_MAX, ipsatization_MIN):
+            def convert(score):
+                # 0 <= score <= 1, convert to -1 to 1
+                return (score - 0.5) * 2
 
-                def min_max_scale(data):
-                    min_value = min(data)
-                    max_value = max(data)
-                    normalized_data = []
-                    for value in data:
-                        normalized_value = (value - min_value) / (max_value - min_value)
-                        normalized_data.append(normalized_value)
-                    return normalized_data
-                # Calculate the mean and standard deviation of each survey
-                means = data.mean(axis=1)
-                stds = data.std(axis=1)
-                # Perform ipsatization on the data
-                i_data = data.copy()
-                for i in range(len(data)):
-                    for j in range(len(data.columns)):
-                        i_data.iloc[i, j] = (data.iloc[i, j] - means[i]) / stds[i] if stds[i] != 0 else convert(data.iloc[i, j])
-                # Calculate the means of each survey as their score 
-                i_means = i_data.mean()
-                i_stds = i_data.std()
+            def min_max_scale(data):
+                min_value = min(data)
+                max_value = max(data)
+                normalized_data = []
+                for value in data:
+                    normalized_value = (value - min_value) / (max_value - min_value)
+                    normalized_data.append(normalized_value)
+                return normalized_data
+            # Calculate the mean and standard deviation of each survey
+            means = data.mean(axis=1)
+            stds = data.std(axis=1)
+            # Perform ipsatization on the data
+            i_data = data.copy()
+            for i in range(len(data)):
+                for j in range(len(data.columns)):
+                    i_data.iloc[i, j] = (data.iloc[i, j] - means[i]) / stds[i] if stds[i] != 0 else convert(data.iloc[i, j])
+            # Calculate the means of each survey as their score 
+            i_means = i_data.mean()
+            i_stds = i_data.std()
 
-                # Normalize the scores
-                normalized_means = min_max_scale(i_means)
+            # Normalize the scores
+            normalized_means = min_max_scale(i_means)
 
-                # Convert scores to desired range
-                ipsatization_range = ipsatization_MAX - ipsatization_MIN
-                final_means = [score * ipsatization_range + ipsatization_MIN for score in normalized_means]
-                return final_means
-            
-            df = pd.DataFrame(matrix, columns = artifacts_id_list, dtype = float)
-            # handle None value in matrix with mean value of each row
-            m = df.mean(axis=1)
-            for i, col in enumerate(df):
-                df.iloc[:, i] = df.iloc[:, i].fillna(m)
-            ipsatizated_data = ipsatization(df, ipsatization_MAX, ipsatization_MIN)
-            # final result
-            artifacts_id_and_scores_dict = dict(zip(artifacts_id_list, ipsatizated_data))
-            return Response(artifacts_id_and_scores_dict, status=status.HTTP_200_OK)
-        else:
-            context = {'registrations_id_list':registrations_id_list,
-                    'artifacts_id_list':artifacts_id_list,
-                    'matrix':matrix
-                    }
-            return Response(context, status=status.HTTP_200_OK)
+            # Convert scores to desired range
+            ipsatization_range = ipsatization_MAX - ipsatization_MIN
+            final_means = [score * ipsatization_range + ipsatization_MIN for score in normalized_means]
+            return final_means
+        
+        df = pd.DataFrame(matrix, columns = artifacts_id_list, dtype = float)
+        # handle None value in matrix with mean value of each row
+        m = df.mean(axis=1)
+        for i, col in enumerate(df):
+            df.iloc[:, i] = df.iloc[:, i].fillna(m)
+        ipsatizated_data = ipsatization(df, ipsatization_MAX, ipsatization_MIN)
+        # final result
+        artifacts_id_and_scores_dict = dict(zip(artifacts_id_list, ipsatizated_data))
+        return Response(artifacts_id_and_scores_dict, status=status.HTTP_200_OK)
+
     
     # update an artiafct_review's score
     def patch(self, request, course_id, assignment_id, *args, **kwargs):
