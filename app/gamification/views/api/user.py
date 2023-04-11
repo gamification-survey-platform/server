@@ -94,7 +94,7 @@ class Login(generics.CreateAPIView):
         except XpPoints.DoesNotExist:
             xp_points = XpPoints.objects.create(user=user)
             xp_points.save()
-        user_data['exp_points'] = xp_points.points
+        user_data['exp_points'] = xp_points.exp_points
         user_data['exp'] = xp_points.exp
         user_data['level'] = xp_points.level
         if user.check_password(password):

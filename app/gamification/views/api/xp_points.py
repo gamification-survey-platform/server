@@ -39,7 +39,7 @@ class XpPointsList(generics.ListCreateAPIView):
         # if user already has xp_points, update the xp_points
         if XpPoints.objects.filter(user=user).exists():
             xp_points = XpPoints.objects.get(user=user)
-            xp_points.points = points
+            xp_points.exp_points = points
             xp_points.exp = exp
             xp_points.level = level
             xp_points.save()
@@ -48,7 +48,7 @@ class XpPointsList(generics.ListCreateAPIView):
 
         xp_points = XpPoints.objects.create(
             user=user,
-            points=points,
+            exp_points=points,
             exp=exp,
             level=level
         )
@@ -78,9 +78,9 @@ class XpPointsDetail(generics.RetrieveUpdateDestroyAPIView):
             return Response(status=status.HTTP_403_FORBIDDEN)
         xp_points = get_object_or_404(XpPoints, pk=xp_points_id)
 
-        points = request.data.get('points')
+        points = request.data.get('exp_points')
         if points:
-            xp_points.points = points
+            xp_points.exp_points = points
         exp = request.data.get('exp')
         if exp:
             xp_points.exp = int(exp)
@@ -130,7 +130,7 @@ class UpdateExp(generics.RetrieveUpdateAPIView):
             xp_points = XpPoints.objects.get(user=user)
         except XpPoints.DoesNotExist:
             xp_points = XpPoints.objects.create(user=user)
-        xp_points.points += points
+        xp_points.exp_points += points
         required_exp = level_func(xp_points.level)
         if xp_points.exp + points >= required_exp:
             xp_points.level += 1
@@ -140,7 +140,5 @@ class UpdateExp(generics.RetrieveUpdateAPIView):
         xp_points.save()
         serializer = self.get_serializer(xp_points)
         data = serializer.data
-        data["earned_points"] = points
-        data["exp_to_level_up"] = level_func(xp_points.level)
         data["action"] = action
         return Response(data)
