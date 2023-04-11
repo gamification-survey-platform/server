@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from app.gamification.models import Reward
 from app.gamification.models import UserReward
+from django.conf import settings
 
 
 class RewardSerializer(serializers.ModelSerializer):
@@ -35,5 +36,7 @@ class RewardSerializer(serializers.ModelSerializer):
         elif reward.reward_type.type == 'Theme':
             data['theme'] = reward.theme
         elif reward.reward_type.type == 'Other':
-            data['picture'] = reward.picture.url
+            path = f'http://{settings.ALLOWED_HOSTS[1]}:8000{reward.picture.url}'
+            data['picture'] = reward.picture.url if settings.USE_S3 else path
+
         return data

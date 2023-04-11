@@ -29,6 +29,7 @@ from app.gamification.serializers.answer import AnswerSerializer, ArtifactReview
 from collections import defaultdict
 import pytz
 from datetime import datetime
+from django.conf import settings
 
 
 class SubmitArtifact(generics.ListCreateAPIView):
@@ -121,13 +122,10 @@ class SubmitArtifact(generics.ListCreateAPIView):
         data = dict()
         data['create_date'] = artifact.upload_time
         # get an open file handle (I'm just using a file attached to the model for this example):
-        file_handle = artifact.file.open()
-        # send file
-        response = HttpResponse(FileWrapper(
-            file_handle), content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename=artifact_{artifact.pk}.pdf'
-        response['Access-Control-Expose-Headers'] = 'Content-Disposition'
-        return response
+        path = f'http://{settings.ALLOWED_HOSTS[1]}:8000{artifact.file.url}'
+        
+        data['file_path'] = artifact.file.url if settings.USE_S3 else path
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class GetArtifact (generics.RetrieveAPIView):

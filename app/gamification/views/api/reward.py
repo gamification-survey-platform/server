@@ -14,6 +14,7 @@ from app.gamification.models.user import CustomUser
 from app.gamification.utils import get_user_pk
 from app.gamification.serializers.reward import RewardSerializer
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 
 """
 GET all rewards
@@ -123,10 +124,10 @@ class CourseRewardList(generics.ListCreateAPIView):
 
         # Course ID = -1 indicates System Level rewards
         if course_id == -1:
-            SYSTEM_PK = 20230512
+            sys_pk = settings.SYSTEM_PK
             rewards = []
             rewards.extend(Reward.objects.filter(
-            course=SYSTEM_PK, is_active=True))
+            course=sys_pk, is_active=True))
             serializer = self.get_serializer(rewards, many=True)
             return Response(serializer.data)
         else:
