@@ -120,6 +120,7 @@ You can access the application here https://gamification-client.onrender.com/.
    - `DB_PASSWORD`: default to `dbuser`, the password for `DB_USER`
    - `DB_HOST`: default to `localhost`, the host for the database
    - `DB_PORT`: default to `5432`, the port where MySQL server is on
+   - `USE_S3`: default to 'False', whether upload files to AWS
 
 5. Test if everything is working
 
