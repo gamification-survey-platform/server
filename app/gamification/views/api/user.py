@@ -88,7 +88,7 @@ class Login(generics.CreateAPIView):
             serializer = UserSerializer(user, context={'request': request})
             user_data = serializer.data
         except CustomUser.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(status=status.HTTP_404_NOT_FOUND, data={ 'error': 'Failed to login. Username does not exist.' })
         try:
             xp_points = XpPoints.objects.get(user=user)
         except XpPoints.DoesNotExist:
@@ -103,7 +103,7 @@ class Login(generics.CreateAPIView):
             user_data['token'] = jwt_token['token']
             return Response(user_data, status=status.HTTP_200_OK)
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={ 'error': 'Failed to login. Invalid password.' })
 
 
 class Register(generics.ListCreateAPIView):
@@ -122,5 +122,4 @@ class Register(generics.ListCreateAPIView):
             user.set_password(password)
             user.save()
             return Response(status=status.HTTP_200_OK)
-
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={ 'error': 'Failed to register. Username already taken.' })
