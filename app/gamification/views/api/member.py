@@ -237,7 +237,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
                 registration)
             get_users_team(registration, request)
         except CustomUser.DoesNotExist:
-            message_info = 'AndrewID does not exist'
+            return Response({'error': 'AndrewID does not exist'}, status=status.HTTP_400_BAD_REQUEST)
         messages.info(request, message_info)
         
         context = get_member_list(course_id)
