@@ -96,6 +96,7 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
         assignment_name = request.data.get('assignment_name')
         assignment_type = request.data.get('assignment_type')
         date_due = request.data.get('date_due')
+        date_released = request.data.get('date_released')
         description = request.data.get('description')
         submission_type = request.data.get('submission_type')
         total_score = request.data.get('total_score')
@@ -110,6 +111,7 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
             assignment.assignment_name = assignment_name
             assignment.assignment_type = assignment_type
             assignment.date_due = date_due
+            assignment.date_released = date_released
             assignment.description = description
             assignment.submission_type = submission_type
             assignment.total_score = total_score
