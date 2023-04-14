@@ -150,7 +150,11 @@ class GradeList(generics.ListCreateAPIView):
             grades = []
             for artifact_id, score in artifacts_id_and_scores_dict.items():
                 artifact_id = int(artifact_id)
-                grade = Grade.objects.get(artifact_id=artifact_id)
+                try:
+                    grade = Grade.objects.get(artifact_id=artifact_id)
+                except Grade.DoesNotExist:
+                    artifact = get_object_or_404(Artifact, pk=artifact_id)
+                    grade = Grade.objects.create(artifact=artifact, score=score)
                 grade.score = score
                 grade.save()
                 grades.append(model_to_dict(grade))
