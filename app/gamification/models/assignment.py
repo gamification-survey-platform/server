@@ -49,6 +49,10 @@ class Assignment(models.Model):
 
     review_assign_policy = models.TextField(
         choices=ReviewerAssignPolicy.choices, default=ReviewerAssignPolicy.A, blank=True)
+    
+    ipsatization_min = models.IntegerField(null=True, default=80, blank=True)
+    
+    ipsatization_max = models.IntegerField(null=True, default=100, blank=True)
 
     class Meta:
         db_table = 'assignment'

@@ -139,6 +139,14 @@ class GradeList(generics.ListCreateAPIView):
             # upgrade 'grade' in Grade table
             # e.g.: {1:80, 2:90, 3:100} ({id:score})
             artifacts_id_and_scores_dict = request.data.get('artifacts_id_and_scores_dict')
+            # also update ipsatization_max and ipsatization_min in Assignment table
+            ipsatization_max = request.data.get('ipsatization_max')
+            ipsatization_min = request.data.get('ipsatization_min')
+            assignment = get_object_or_404(Assignment, pk=assignment_id)
+            assignment.ipsatization_max = ipsatization_max
+            assignment.ipsatization_min = ipsatization_min
+            assignment.save()
+            
             grades = []
             for artifact_id, score in artifacts_id_and_scores_dict.items():
                 artifact_id = int(artifact_id)
