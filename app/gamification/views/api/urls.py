@@ -2,25 +2,19 @@ from django.urls import path
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-from rest_framework import status
 
-
-from app.gamification.models import CustomUser
-from app.gamification.serializers import UserSerializer
 from app.gamification.views.api.artifact_review import ArtifactReviewDetails, ArtifactReviewList, ArtifactReviewIpsatization
 from app.gamification.views.api.artifacts import SubmitArtifact, GetArtifact
 from .user import Users, UserDetail, Login, Register
-from .course import CourseList
+from .course import CourseList, CourseDetail
 from .assignment import AssignmentList, AssignmentDetail
-from .survey import OptionDetail, OptionList, QuestionDetail, QuestionList, QuestionOptionList, QuestionOptionDetail, SectionDetail, SectionList, SectionQuestionList, SurveyGetInfo,  SurveySectionList, TemplateSectionList
-from .answer import AnswerList, AnswerDetail, ArtifactAnswerList, ArtifactAnswerMultipleChoiceList,  CheckAllDone, CreateArtifactAnswer, FeedbackDetail, SurveyComplete, ArtifactAnswerKeywordList
+from .survey import SurveyGetInfo
+from .answer import ArtifactAnswerMultipleChoiceList, ArtifactAnswerKeywordList
 from .profile import UserProfile
 from .reward import RewardList, RewardDetail, CourseRewardList, CourseRewardDetail
 from .levels import LevelList
 from .xp_points import XpPointsList, XpPointsDetail, UpdateExp
-from .constraint import ConstraintDetail, ConstraintList, ActionConstraintProgressDetail, GradeConstraintProgressDetail, ConstraintProgress
-from .feedback_survey import SurveyList, SurveyDetail
-from .rule import getAllRuleProgress, getRulesProgressByContraint, getAllRules
+from .feedback_survey import SurveyList
 from .member import MemberList
 from .report import ViewReport
 from .grade import GradeList
@@ -55,7 +49,6 @@ def api_root(request, format=None):
         'answers': reverse('answer-list', request=request, format=format),
         'template_section': reverse('template-section-list', request=request, format=format),
         'artifact_reviews': reverse('artifact-review-list', request=request, format=format),
-        #    'rules': reverse('rule-list', request=request, format=format),
         'constraints': reverse('constraint-list', request=request, format=format),
     })
 
@@ -87,6 +80,9 @@ urlpatterns = [
 
     # course
     path('courses/', CourseList.as_view(), name='course-list'),
+
+     # course detail
+    path('courses/<str:course_id>/', CourseDetail.as_view(), name='course-detail'),
 
     # assignment
     path('courses/<str:course_id>/assignments/',
