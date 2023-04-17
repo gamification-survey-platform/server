@@ -120,7 +120,7 @@ class UpdateExp(generics.RetrieveUpdateAPIView):
     def patch(self, request, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
-        opeartion = request.data.get('opeartion')
+        operation = request.data.get('operation')
         method = request.data.get('method')
         api = request.data.get('api')
 
@@ -135,7 +135,7 @@ class UpdateExp(generics.RetrieveUpdateAPIView):
                 user=user, method=method, api=api)
             exp_history.save()
         try:
-            behavior = Behavior.objects.get(opeartion=opeartion)
+            behavior = Behavior.objects.get(operation=operation)
         except Behavior.DoesNotExist:
             return Response(data={'messages': 'behavior not found'}, status=status.HTTP_400_BAD_REQUEST)
         points = behavior.points
@@ -153,5 +153,6 @@ class UpdateExp(generics.RetrieveUpdateAPIView):
         xp_points.save()
         serializer = self.get_serializer(xp_points)
         data = serializer.data
-        data["opeartion"] = opeartion
+        data["operation"] = operation
+        data["gain"] = points
         return Response(data)
