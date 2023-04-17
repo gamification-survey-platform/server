@@ -6,6 +6,8 @@ from rest_framework.reverse import reverse
 from rest_framework import status
 from rest_framework.decorators import api_view
 from app.gamification.models.user import CustomUser
+from app.gamification.models.behavior import Behavior
+from app.gamification.models.exp_history import ExpHistory
 from app.gamification.utils import get_user_pk, ASSIGNMENT_POINTS, SURVEY_POINTS, level_func
 from app.gamification.serializers.xp_points import XpPointsSerializer
 from django.shortcuts import get_object_or_404
@@ -118,14 +120,25 @@ class UpdateExp(generics.RetrieveUpdateAPIView):
     def patch(self, request, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
-        action = request.data.get('action')
-        if action == 'assignment':
-            points = ASSIGNMENT_POINTS
-        elif action == 'survey':
-            points = SURVEY_POINTS
-        else:
-            return Response(data={"message": "Invalid action"},
-                            status=status.HTTP_400_BAD_REQUEST)
+        opeartion = request.data.get('opeartion')
+        method = request.data.get('method')
+        api = request.data.get('api')
+
+        # check if user has already gained exp by this operation
+        try:
+            exp_history = ExpHistory.objects.get(
+                user=user, method=method, api=api)
+            return Response(data={'messages': 'you have already gained exp by this operation'}, status=status.HTTP_400_BAD_REQUEST)
+        # if not, update the exp and create a new exp history
+        except ExpHistory.DoesNotExist:
+            exp_history = ExpHistory.objects.create(
+                user=user, method=method, api=api)
+            exp_history.save()
+        try:
+            behavior = Behavior.objects.get(opeartion=opeartion)
+        except Behavior.DoesNotExist:
+            return Response(data={'messages': 'behavior not found'}, status=status.HTTP_400_BAD_REQUEST)
+        points = behavior.points
         try:
             xp_points = XpPoints.objects.get(user=user)
         except XpPoints.DoesNotExist:
@@ -140,5 +153,5 @@ class UpdateExp(generics.RetrieveUpdateAPIView):
         xp_points.save()
         serializer = self.get_serializer(xp_points)
         data = serializer.data
-        data["action"] = action
+        data["opeartion"] = opeartion
         return Response(data)

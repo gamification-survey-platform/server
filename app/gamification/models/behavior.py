@@ -10,10 +10,14 @@ class Behavior(models.Model):
         PATCH = 'PATCH'
         DELETE = 'DELETE'
 
-    method = models.TextField(
-        choices=methodEnum.choices, default=methodEnum.GET)
+    # fields for customizing behavior points
 
-    api = models.TextField(_('api'), default='', blank=False)
+    # method = models.TextField(
+    #     choices=methodEnum.choices, default=methodEnum.GET)
+
+    # api = models.TextField(_('api'), default='', blank=False)
+
+    operation = models.TextField(_('operation'), default='', blank=False)
 
     points = models.IntegerField(
         _('points'), default=0, null=True, blank=False)
