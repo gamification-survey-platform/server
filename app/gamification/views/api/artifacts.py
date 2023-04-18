@@ -125,6 +125,7 @@ class SubmitArtifact(generics.ListCreateAPIView):
         path = f'http://{settings.ALLOWED_HOSTS[1]}:8000{artifact.file.url}'
         
         data['file_path'] = artifact.file.url if settings.USE_S3 else path
+        data['artifact_pk'] = artifact.pk
         return Response(data, status=status.HTTP_200_OK)
 
 
