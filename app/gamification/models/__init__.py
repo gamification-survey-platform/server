@@ -26,3 +26,5 @@ from .grade import *
 from .deduction import *
 from .reward_type import *
 from .xp_points import *
+from .exp_history import *
+from .behavior import *
