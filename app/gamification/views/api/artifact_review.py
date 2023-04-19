@@ -53,6 +53,8 @@ class ArtifactReviewList(generics.RetrieveAPIView):
 
 class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.AllowAny]
+    queryset = ArtifactReview.objects.all()
+    serializer_class = ArtifactReviewSerializer
 
     def get(self, request, course_id, assignment_id,  artifact_review_pk, *args, **kwargs):
         artifact_review = get_object_or_404(
@@ -219,6 +221,7 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
         for artifact_review in artifact_reviews:
             artifact = artifact_review.artifact
             user = artifact_review.user
+            print(artifact_review)
             # fill in the matrix with artifact_review_score / max_artifact_review_score
             matrix[registrations_id_list.index(user.id)][artifacts_id_list.index(artifact.id)] = artifact_review.artifact_review_score / artifact_review.max_artifact_review_score
         

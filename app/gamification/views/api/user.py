@@ -109,6 +109,8 @@ class Login(generics.CreateAPIView):
 class Register(generics.ListCreateAPIView):
 
     permission_classes = [permissions.AllowAny]
+    queryset = CustomUser.objects.all()
+    serializer_class = UserSerializer
 
     def post(self, request, *args, **kwargs):
 

@@ -128,7 +128,7 @@ class UpdateExp(generics.RetrieveUpdateAPIView):
         try:
             exp_history = ExpHistory.objects.get(
                 user=user, method=method, api=api)
-            return Response(data={'messages': 'you have already gained exp by this operation'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'error': 'User has gained points for this operation'}, status=status.HTTP_400_BAD_REQUEST)
         # if not, update the exp and create a new exp history
         except ExpHistory.DoesNotExist:
             exp_history = ExpHistory.objects.create(
@@ -137,7 +137,7 @@ class UpdateExp(generics.RetrieveUpdateAPIView):
         try:
             behavior = Behavior.objects.get(operation=operation)
         except Behavior.DoesNotExist:
-            return Response(data={'messages': 'behavior not found'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'error': 'Behavior not found'}, status=status.HTTP_400_BAD_REQUEST)
         points = behavior.points
         try:
             xp_points = XpPoints.objects.get(user=user)

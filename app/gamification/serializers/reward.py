@@ -9,7 +9,7 @@ class RewardSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reward
-        fields = ('pk', 'name', 'description', 'course', 'type',
+        fields = ('pk', 'name', 'description', 'course', 'reward_type',
                   'inventory', 'is_active', 'picture', 'quantity', 'theme', 'exp_point')
 
     def to_representation(self, instance):
