@@ -245,12 +245,20 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         return Response(context)
 
     def delete(self, request, course_id, *args, **kwargs):
+        def check_instructor_count(self, course_id):
+            instructor_count = Registration.objects.filter(courses=course_id, userRole='Instructor').count()
+            return instructor_count
+        
         if 'andrew_id' not in  request.query_params:
             return Response({'error': 'AndrewID is missing'}, status=status.HTTP_400_BAD_REQUEST)
         andrew_id = request.query_params['andrew_id']
         user = get_object_or_404(CustomUser, andrew_id=andrew_id)
         registration = get_object_or_404(
             Registration, users=user, courses=course_id)
+        
+        if registration.userRole == 'Instructor' and check_instructor_count(course_id) <= 1:
+            return Response({'error': 'Cannot delete the last instructor'}, status=status.HTTP_400_BAD_REQUEST)
+        
         membership = Membership.objects.filter(student=registration)
         membership.delete()
         registration.delete()
