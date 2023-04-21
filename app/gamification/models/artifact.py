@@ -42,3 +42,5 @@ class Artifact(models.Model):
         db_table = 'artifact'
         verbose_name = _('artifact')
         verbose_name_plural = _('artifacts')
+    def __str__(self):
+        return f'{self.assignment} - {self.entity} - {self.file}'

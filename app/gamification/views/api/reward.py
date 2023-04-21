@@ -7,14 +7,14 @@ from app.gamification.models.user_reward import UserReward
 from rest_framework import generics
 from rest_framework import permissions
 from rest_framework.response import Response
-from rest_framework.reverse import reverse
 from rest_framework import status
-from rest_framework.decorators import api_view
 from app.gamification.models.user import CustomUser
 from app.gamification.utils import get_user_pk
 from app.gamification.serializers.reward import RewardSerializer
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+from app.gamification.utils import generate_presigned_url, generate_presigned_post
+
 
 """
 GET all rewards
@@ -35,14 +35,13 @@ class RewardList(generics.ListCreateAPIView):
         elif user.is_staff:
             pass
         else:
-            SYSTEM_PK = 20230512
             registrations = Registration.objects.filter(users=user)
             rewards = []
             for registration in registrations:
                 rewards.extend(Reward.objects.filter(
                     course=registration.courses, is_active=True))
             rewards.extend(Reward.objects.filter(
-                course_id=SYSTEM_PK, is_active=True))
+                course_id=settings.SYSTEM_PK, is_active=True))
             serializer = self.get_serializer(rewards, many=True)
             return Response(serializer.data)
 
@@ -121,7 +120,6 @@ class CourseRewardList(generics.ListCreateAPIView):
     def get(self, request, course_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
-
         # Course ID = -1 indicates System Level rewards
         if course_id == -1:
             sys_pk = settings.SYSTEM_PK
@@ -134,7 +132,26 @@ class CourseRewardList(generics.ListCreateAPIView):
             rewards = Reward.objects.filter(course_id=course_id)
             serializer = self.get_serializer(rewards, many=True)
             return Response(serializer.data)
+    def create_reward_picture(self, request, course):
+        picture = request.FILES.get('picture')
+        if not picture:
+            return None
 
+        content_type = picture.content_type
+        if content_type == 'image/jpeg':
+            file_ext = 'jpg'
+        elif content_type == 'image/png':
+            file_ext = 'png'
+        else:
+            return None
+
+        if settings.USE_S3:
+            key = f'rewards/reward_{course.id}.{file_ext}'
+        else:
+            key = picture
+
+        return key
+    
     def post(self, request, course_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
@@ -165,14 +182,27 @@ class CourseRewardList(generics.ListCreateAPIView):
         if type.type == 'Bonus' or type.type == 'Late Submission':
             reward.quantity = request.data.get('quantity')
         elif type.type == 'Other':
-            reward.picture = request.data.get('picture')
+            picture_key = self.create_reward_picture(request, course)
+            reward.picture = picture_key
         elif type.type == 'Theme':
             reward.theme = request.data.get('theme')
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         reward.save()
-        serializer = self.get_serializer(reward)
-        return Response(serializer.data)
+        response_data = self.get_serializer(reward).data
+        if type.type == 'Other' and settings.USE_S3:
+            upload_url = generate_presigned_post(picture_key)
+            download_url = generate_presigned_url(picture_key, http_method='GET')
+        else:
+            upload_url = response_data['picture']
+            download_url = response_data['picture']
+        
+        response_data.pop('picture')
+        if upload_url:
+            response_data['upload_url'] = upload_url
+        if download_url:
+            response_data['download_url'] = download_url
+        return Response(response_data)
 
 """
 GET, PATCH, DELETE Reward for a specific course
@@ -185,13 +215,16 @@ class CourseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = RewardSerializer
 
     def get(self, request, course_id, reward_id, *args, **kwargs):
+        print("hhehehe")
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
         if not user.is_staff:
             return Response(status=status.HTTP_403_FORBIDDEN)
         reward = Reward.objects.get(pk=reward_id)
         serializer = self.get_serializer(reward)
-        return Response(serializer.data)
+        response_data = serializer.data
+
+        return Response(response_data)
 
     def patch(self, request, course_id, reward_id, *args, **kwargs):
         user_id = get_user_pk(request)

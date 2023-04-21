@@ -26,19 +26,19 @@ resource "aws_s3_bucket" "gamification_bucket" {
 #   acl = "private"
 # }
 
-resource "aws_s3_bucket_policy" "public_read" {
-  bucket = aws_s3_bucket.gamification_bucket.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = [
-          "s3:GetObject",
-        ]
-        Effect = "Allow"
-        Resource = "${aws_s3_bucket.gamification_bucket.arn}/*"
-        Principal = "*"
-      }
-    ]
-  })
-}
+# resource "aws_s3_bucket_policy" "public_read" {
+#   bucket = aws_s3_bucket.gamification_bucket.id
+#   policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Action = [
+#           "s3:GetObject",
+#         ]
+#         Effect = "Allow"
+#         Resource = "${aws_s3_bucket.gamification_bucket.arn}/*"
+#         Principal = "*"
+#       }
+#     ]
+#   })
+# }
