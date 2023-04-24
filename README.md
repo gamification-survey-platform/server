@@ -137,7 +137,19 @@ You can access the application here https://gamification-client.onrender.com/.
 
 # How to Run
 
-After setting up the environment, run `python manage.py runserver` to start the server. Here are a few pages implemented at the moment:
+After setting up the environment, export following environment variables:
+
+```python
+'''You should be given access-key and secret-key from whoever is managing the aws account for the gamification. If you want to create a new developer role to access it, follow those steps:`
+- Login the AWS account -> IAM -> User -> Add users -> Attach policies directly/Copy permissions -> click your username -> Security credentials -> Create access key
+'''
+export AWS_ACCESS_KEY_ID="<Access Key Id>"
+export AWS_SECRET_ACCESS_KEY="<Secret Key Id>"
+export AWS_REGION="us-west-2"
+export AWS_STORAGE_BUCKET_NAME="gamification-bucket2023"
+```
+
+run `python manage.py runserver` to start the server. Here are a few pages implemented at the moment:
 
 - Sign in page `127.0.0.1:8000/signin/`
 
