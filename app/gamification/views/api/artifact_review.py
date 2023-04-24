@@ -47,7 +47,8 @@ class ArtifactReviewList(generics.RetrieveAPIView):
                     entity=artifact.entity).student.users.name_or_andrew_id()
             else:
                 artifact_review_dict['reviewing'] = artifact.entity.team.name
-            artifact_reviews.append(artifact_review_dict)
+            if artifact_review.user.users_id != user_id:
+                artifact_reviews.append(artifact_review_dict)
         return Response(artifact_reviews, status=status.HTTP_200_OK)
 
 
