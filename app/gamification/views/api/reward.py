@@ -32,20 +32,6 @@ class RewardList(generics.ListCreateAPIView):
     @swagger_auto_schema(
         operation_description="Create a new reward",
         tags=['rewards'],
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'name': openapi.Schema(type=openapi.TYPE_STRING),
-                'description': openapi.Schema(type=openapi.TYPE_STRING),
-                'reward_type': openapi.Schema(type=openapi.TYPE_STRING),
-                'course': openapi.Schema(type=openapi.TYPE_INTEGER),
-                'xp_points': openapi.Schema(type=openapi.TYPE_INTEGER),
-                'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN),
-            },
-        ),
-        responses={
-            200: RewardSerializer,
-        },
     )
     def get(self, request, *args, **kwargs):
         user_id = get_user_pk(request)
