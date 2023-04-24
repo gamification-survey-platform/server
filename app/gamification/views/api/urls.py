@@ -81,7 +81,7 @@ urlpatterns = [
     # course
     path('courses/', CourseList.as_view(), name='course-list'),
 
-     # course detail
+    # course detail
     path('courses/<str:course_id>/', CourseDetail.as_view(), name='course-detail'),
 
     # assignment
@@ -172,39 +172,4 @@ urlpatterns = [
 
     # get level detail
     path('levels/<str:level>/', LevelList.as_view(), name='level-detail')
-
-    # get reward in course by course_id or post a new reward
-    #     path('courses/<str:course_id>/rewards/',
-    #          courseRewardList.as_view(), name='reward-list'),
-
-
-    #     # Get list of constraints
-    #     path('constraints/', ConstraintList.as_view(), name='constraint-list'),
-
-    #     # Get detail of a constraint, Update a constraint, Delete a constraint
-    #     path('constraints/<str:url>/',
-    #          ConstraintDetail.as_view(), name='constraint-detail'),
-
-    #     # Get progress of a constraint
-    #     path('constraints/<str:url>/progress/',
-    #          ConstraintProgress.as_view(), name='constraint-progress'),
-
-    #     # Get progress of an action constraint, update progress of an action constraint, delete progress of an action constraint
-    #     path('constraints/<str:url>/progress/action',
-    #          ActionConstraintProgressDetail.as_view(), name='constraint-progress-detail'),
-
-    #     # Get progress of a grade constraint, update progress of a grade constraint, delete progress of a grade constraint
-    #     path('constraints/<str:url>/progress/grade',
-    #          GradeConstraintProgressDetail.as_view(), name='constraint-progress-detail'),
-    #     # path('constraints/<int:constraint_pk>/progress', ConstraintProgress.as_view(), name='constraint-progress'),
-
-    #     # get all rules
-    #     path('rules/', getAllRules.as_view(), name='rule-list'),
-
-    #     # get the progress of all rules
-    #     path('rules/progress/', getAllRuleProgress.as_view(), name='rule-progress'),
-
-    #     # get the progress of all rules by constraint id
-    #     path('rules/progress/<int:constraint_pk>',
-    #          getRulesProgressByContraint.as_view(), name='rule-progress'),
 ]
