@@ -13,6 +13,10 @@ from datetime import datetime
 
 from app.gamification.utils import get_user_pk
 
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
+
 class IsAdminOrReadOnly(permissions.BasePermission):
     '''
     Custom permission to only allow users to view read-only information.
@@ -28,16 +32,39 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return request.user.is_staff
-    
+
+
 class MemberList(generics.RetrieveUpdateDestroyAPIView):
     queryset = Entity.objects.all()
     serializer_class = EntitySerializer
-    permission_classes = [permissions.AllowAny] # [permissions.IsAuthenticated]
-    
+    # [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
+
     def check_instructor_count(self, course_id):
-            instructor_count = Registration.objects.filter(courses=course_id, userRole='Instructor').count()
-            return instructor_count
-    
+        instructor_count = Registration.objects.filter(
+            courses=course_id, userRole='Instructor').count()
+        return instructor_count
+
+    @swagger_auto_schema(
+        operation_description="Get a list of members in a course",
+        tags=['members'],
+        responses={
+            200: openapi.Response(
+                description='List of members',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'andrew_id': openapi.Schema(type=openapi.TYPE_STRING),
+                        'userRole': openapi.Schema(type=openapi.TYPE_STRING),
+                        'team': openapi.Schema(type=openapi.TYPE_STRING),
+                        'is_activated': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                        'course_id': openapi.Schema(type=openapi.TYPE_STRING),
+                        'userRole': openapi.Schema(type=openapi.TYPE_STRING),
+                    }
+                )
+            )
+        }
+    )
     def get(self, request, course_id, *args, **kwargs):
         def get_member_list(course_id):
             registration = Registration.objects.filter(courses=course)
@@ -60,13 +87,14 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
                 })
             membership = sorted(membership, key=lambda x: x['team'])
             context = {'membership': membership,
-                    'course_id': course_id, 'userRole': userRole}
+                       'course_id': course_id, 'userRole': userRole}
             return context
 
         def get_a_member(course_id, andrew_id):
             # get user with andrew_id
             user = get_object_or_404(CustomUser, andrew_id=andrew_id)
-            registration = Registration.objects.filter(courses=course, users=user)
+            registration = Registration.objects.filter(
+                courses=course, users=user)
             membership = []
             for i in registration:
                 try:
@@ -86,9 +114,9 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
                 })
             membership = sorted(membership, key=lambda x: x['team'])
             context = {'membership': membership,
-                    'course_id': course_id, 'userRole': userRole}
+                       'course_id': course_id, 'userRole': userRole}
             return context
-        
+
         course = get_object_or_404(Course, pk=course_id)
         # TODO: rethink about permission control for staff(superuser) and instructor
         user_id = get_user_pk(request)
@@ -104,6 +132,34 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         context["user_role"] = userRole
         return Response(context)
 
+    @swagger_auto_schema(
+        operation_description="Add a member to a course",
+        tags=['members'],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'andrew_id': openapi.Schema(type=openapi.TYPE_STRING),
+                'userRole': openapi.Schema(type=openapi.TYPE_STRING),
+                'team': openapi.Schema(type=openapi.TYPE_STRING),
+            }
+        ),
+        responses={
+            200: openapi.Response(
+                description='List of members',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'andrew_id': openapi.Schema(type=openapi.TYPE_STRING),
+                        'userRole': openapi.Schema(type=openapi.TYPE_STRING),
+                        'team': openapi.Schema(type=openapi.TYPE_STRING),
+                        'is_activated': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                        'course_id': openapi.Schema(type=openapi.TYPE_STRING),
+                        'userRole': openapi.Schema(type=openapi.TYPE_STRING),
+                    }
+                )
+            )
+        }
+    )
     def post(self, request, course_id, *args, **kwargs):
         def get_member_list(course_id):
             registration = Registration.objects.filter(courses=course)
@@ -126,7 +182,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
                 })
             membership = sorted(membership, key=lambda x: x['team'])
             context = {'membership': membership,
-                    'course_id': course_id, 'userRole': userRole}
+                       'course_id': course_id, 'userRole': userRole}
             return context
 
         # Create registration for user who is not registered this course, otherwise, return the registration
@@ -215,10 +271,11 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
                         team.delete()
                 membership.delete()
                 # delete all artifact_review of TA or instructor
-                artifact_reviews = ArtifactReview.objects.filter(user=registration)
+                artifact_reviews = ArtifactReview.objects.filter(
+                    user=registration)
                 for artifact_review in artifact_reviews:
                     artifact_review.delete()
-        
+
         course = get_object_or_404(Course, pk=course_id)
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, pk=user_id)
@@ -238,7 +295,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
                 instructor_count = self.check_instructor_count(course_id)
                 if instructor_count <= 1:
                     return Response({'error': 'You are the last instructor, you cannot switch to student or TA'}, status=status.HTTP_400_BAD_REQUEST)
-            
+
             user = CustomUser.objects.get(andrew_id=andrew_id)
             users = add_users_from_the_same_course()
             registration, message_info = get_users_registration(
@@ -249,22 +306,34 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         except CustomUser.DoesNotExist:
             return Response({'error': 'AndrewID does not exist'}, status=status.HTTP_400_BAD_REQUEST)
         messages.info(request, message_info)
-        
+
         context = get_member_list(course_id)
         context["user_role"] = userRole
         return Response(context)
 
+    @swagger_auto_schema(
+        operation_description="Delete a user from a course",
+        manual_parameters=[
+            openapi.Parameter('andrew_id', openapi.IN_QUERY,
+                              description="Andrew ID of the user to be deleted", type=openapi.TYPE_STRING),
+        ],
+        responses={
+            200: openapi.Response('Success'),
+            400: openapi.Response('Bad Request'),
+            404: openapi.Response('Not Found'),
+        }
+    )
     def delete(self, request, course_id, *args, **kwargs):
-        if 'andrew_id' not in  request.query_params:
+        if 'andrew_id' not in request.query_params:
             return Response({'error': 'AndrewID is missing'}, status=status.HTTP_400_BAD_REQUEST)
         andrew_id = request.query_params['andrew_id']
         user = get_object_or_404(CustomUser, andrew_id=andrew_id)
         registration = get_object_or_404(
             Registration, users=user, courses=course_id)
-        
+
         if registration.userRole == 'Instructor' and self.check_instructor_count(course_id) <= 1:
             return Response({'error': 'Cannot delete the last instructor'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         membership = Membership.objects.filter(student=registration)
         membership.delete()
         registration.delete()

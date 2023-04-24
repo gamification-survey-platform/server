@@ -18,6 +18,9 @@ import pytz
 from datetime import datetime
 from django.conf import settings
 from app.gamification.utils import generate_presigned_url, generate_presigned_post
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
 
 class SubmitArtifact(generics.ListCreateAPIView):
     queryset = ArtifactReview.objects.all()
@@ -62,6 +65,35 @@ class SubmitArtifact(generics.ListCreateAPIView):
                         artifact=artifact, user=single_registration)
                     artifact_review.save()
 
+    @swagger_auto_schema(
+        operation_description="Upload an artifact for an assignment",
+        tags=['Artifacts'],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'artifact': openapi.Schema(type=openapi.TYPE_FILE),
+            },
+        ),
+        responses={
+            201: openapi.Response(
+                description="Artifact uploaded",
+                examples={
+                    "application/json": {
+                        "upload_url": "http://localhost:8000/media/assignment_files/artifact_1_1.pdf",
+                        "download_url": "http://localhost:8000/media/assignment_files/artifact_1_1.pdf"
+                    }
+                }
+            ),
+            404: openapi.Response(
+                description="No team found",
+                examples={
+                    "application/json": {
+                        "messages": "No team found"
+                    }
+                }
+            ),
+        }
+    )
     def post(self, request, course_id, assignment_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, pk=user_id)
@@ -90,7 +122,7 @@ class SubmitArtifact(generics.ListCreateAPIView):
 
         artifact = self.create_artifact(
             request, assignment, registration, entity)
-        
+
         # Generate the presigned URL to share with the user.
         key = artifact.file.name
         if settings.USE_S3:
@@ -101,12 +133,35 @@ class SubmitArtifact(generics.ListCreateAPIView):
             download_url = f'http://{settings.ALLOWED_HOSTS[1]}:8000{artifact.file.url}'
         self.create_artifact_review(
             artifact, registration, course, assignment_type, entity)
-        
+
         return Response({
             'upload_url': upload_url,
             'download_url': download_url
         }, status=status.HTTP_201_CREATED)
 
+    @swagger_auto_schema(
+        operation_description="Get artifact for an assignment",
+        tags=['Artifacts'],
+        responses={
+            200: openapi.Response(
+                description="Artifact uploaded",
+                examples={
+                    "application/json": {
+                        "create_date": "2020-10-22T21:00:00Z",
+                        "download_url": "http://localhost:8000/media/assignment_files/artifact_1_1.pdf"
+                    }
+                }
+            ),
+            404: openapi.Response(
+                description="No submission",
+                examples={
+                    "application/json": {
+                        "messages": "No submission"
+                    }
+                }
+            ),
+        }
+    )
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, pk=user_id)
@@ -128,11 +183,11 @@ class SubmitArtifact(generics.ListCreateAPIView):
         # get an open file handle (I'm just using a file attached to the model for this example):
         key = artifact.file.name
         path = f'http://{settings.ALLOWED_HOSTS[1]}:8000{artifact.file.url}'
-        
+
         if settings.USE_S3:
             path = generate_presigned_url(key, http_method='GET')
         data['file_path'] = path
-    
+
         data['artifact_pk'] = artifact.pk
         return Response(data, status=status.HTTP_200_OK)
 
@@ -142,6 +197,29 @@ class GetArtifact (generics.RetrieveAPIView):
     serializer_class = ArtifactReviewSerializer
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        operation_description="Get artifact for an assignment by artifact id",
+        tags=['Artifacts'],
+        responses={
+            200: openapi.Response(
+                description="Artifact uploaded",
+                examples={
+                    "application/json": {
+                        "create_date": "2020-10-22T21:00:00Z",
+                        "download_url": "http://localhost:8000/media/assignment_files/artifact_1_1.pdf"
+                    }
+                }
+            ),
+            404: openapi.Response(
+                description="No submission",
+                examples={
+                    "application/json": {
+                        "messages": "No submission"
+                    }
+                }
+            ),
+        }
+    )
     def get(self, request, course_id, assignment_id, artifact_id, *args, **kwargs):
         artifact = get_object_or_404(Artifact, pk=artifact_id)
         data = dict()
@@ -149,10 +227,9 @@ class GetArtifact (generics.RetrieveAPIView):
 
         key = artifact.file.name
         path = f'http://{settings.ALLOWED_HOSTS[1]}:8000{artifact.file.url}'
-        
+
         if settings.USE_S3:
             path = generate_presigned_url(key, http_method='GET')
         data['file_path'] = path
-    
-        
+
         return Response(data, status=status.HTTP_200_OK)

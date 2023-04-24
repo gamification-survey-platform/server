@@ -22,6 +22,8 @@ from app.gamification.serializers.answer import AnswerSerializer, ArtifactReview
 from collections import defaultdict
 import pytz
 from datetime import datetime
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -355,6 +357,10 @@ class ArtifactAnswerKeywordList(generics.ListCreateAPIView):
     serializer_class = AnswerSerializer
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        operation_description="Get all answers keywords for a specific artifact",
+        tags=['reports'],
+    )
     def get(self, request, artifact_pk, *args, **kwargs):
         nlp = spacy.load("en_core_web_sm")
         answers = []
@@ -396,6 +402,35 @@ class ArtifactAnswerMultipleChoiceList(generics.ListCreateAPIView):
     serializer_class = AnswerSerializer
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        operation_description="Get all multiple choice data for a given artifact",
+        tags=['reports'],
+        responses={
+            200: openapi.Response(
+                description="Multiple choice data for a given artifact",
+                examples={
+                    "application/json": {
+                        "label": [
+                            "a",
+                            "b",
+                            "c",
+                            "d"
+                        ],
+                        "sections": {
+                            "section_name": {
+                                "question_name": [
+                                    2,
+                                    3,
+                                    1,
+                                    4
+                                ]
+                            }
+                        }
+                    }
+                }
+            )
+        }
+    )
     def get(self, request, artifact_pk, *args, **kwargs):
         answers = []
         artifacts_reviews = ArtifactReview.objects.filter(

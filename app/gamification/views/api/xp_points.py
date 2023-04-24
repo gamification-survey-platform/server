@@ -12,104 +12,8 @@ from app.gamification.utils import get_user_pk, ASSIGNMENT_POINTS, SURVEY_POINTS
 from app.gamification.serializers.xp_points import XpPointsSerializer
 from django.shortcuts import get_object_or_404
 from app.gamification.models.xp_points import XpPoints
-
-
-class XpPointsList(generics.ListCreateAPIView):
-    queryset = XpPoints.objects.all()
-    permission_classes = [permissions.AllowAny]
-    serializer_class = XpPointsSerializer
-
-    def get(self, request, *args, **kwargs):
-        user_id = get_user_pk(request)
-        user = CustomUser.objects.get(pk=user_id)
-        if not user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        xp_points = XpPoints.objects.all()
-        serializer = self.get_serializer(xp_points, many=True)
-        return Response(serializer.data)
-
-    # create a new xp_points
-    def post(self, request, *args, **kwargs):
-        user_id = get_user_pk(request)
-        user = CustomUser.objects.get(pk=user_id)
-        if not user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        user = CustomUser.objects.get(pk=request.data.get('user_id'))
-        points = request.data.get('points')
-        exp = request.data.get('exp')
-        level = request.data.get('level')
-        # if user already has xp_points, update the xp_points
-        if XpPoints.objects.filter(user=user).exists():
-            xp_points = XpPoints.objects.get(user=user)
-            xp_points.exp_points = points
-            xp_points.exp = exp
-            xp_points.level = level
-            xp_points.save()
-            serializer = self.get_serializer(xp_points)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        xp_points = XpPoints.objects.create(
-            user=user,
-            exp_points=points,
-            exp=exp,
-            level=level
-        )
-        serializer = self.get_serializer(xp_points)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class XpPointsDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = XpPoints.objects.all()
-    permission_classes = [permissions.AllowAny]
-    serializer_class = XpPointsSerializer
-
-    def get(self, request, xp_points_id, *args, **kwargs):
-        user_id = get_user_pk(request)
-        user = CustomUser.objects.get(pk=user_id)
-        xp_points = get_object_or_404(XpPoints, pk=xp_points_id)
-        # allow superuser or user who is the owner of the xp_points to view the xp_points
-        # if not user.is_superuser and user != xp_points.user:
-        #     return Response(status=status.HTTP_403_FORBIDDEN)
-        serializer = self.get_serializer(xp_points)
-        return Response(serializer.data)
-
-    def patch(self, request, xp_points_id, *args, **kwargs):
-        user_id = get_user_pk(request)
-        user = CustomUser.objects.get(pk=user_id)
-        if not user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        xp_points = get_object_or_404(XpPoints, pk=xp_points_id)
-
-        points = request.data.get('exp_points')
-        if points:
-            xp_points.exp_points = points
-        exp = request.data.get('exp')
-        if exp:
-            xp_points.exp = int(exp)
-            # upgrade if exp is enough, level up for every 1000 exp
-            cur_level = xp_points.level
-            if xp_points.exp >= 1000:
-                cur_level += 1
-                xp_points.exp -= 1000
-                xp_points.level = cur_level
-
-        # also allow staff to manually change level if needed
-        level = request.data.get('level')
-        if level:
-            xp_points.level = level
-
-        xp_points.save()
-        serializer = self.get_serializer(xp_points)
-        return Response(serializer.data)
-
-    def delete(self, request, xp_points_id, *args, **kwargs):
-        user_id = get_user_pk(request)
-        user = CustomUser.objects.get(pk=user_id)
-        if not user.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        xp_points = get_object_or_404(XpPoints, pk=xp_points_id)
-        xp_points.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 
 class UpdateExp(generics.RetrieveUpdateAPIView):
@@ -117,6 +21,48 @@ class UpdateExp(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = XpPointsSerializer
 
+    @swagger_auto_schema(
+        operation_description="Update user's exp and level",
+        tags=['exp'],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'operation': openapi.Schema(type=openapi.TYPE_STRING, description='operation name'),
+                'method': openapi.Schema(type=openapi.TYPE_STRING, description='method name'),
+                'api': openapi.Schema(type=openapi.TYPE_STRING, description='api name'),
+            }
+        ),
+        responses={
+            200: openapi.Response(
+                description='User\'s exp and level updated',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'exp': openapi.Schema(type=openapi.TYPE_INTEGER, description='user\'s exp'),
+                        'level': openapi.Schema(type=openapi.TYPE_INTEGER, description='user\'s level'),
+                    }
+                )
+            ),
+            400: openapi.Response(
+                description='User has already gained exp for this operation',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'error': openapi.Schema(type=openapi.TYPE_STRING, description='error message'),
+                    }
+                )
+            ),
+            403: openapi.Response(
+                description='User is not authenticated',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'detail': openapi.Schema(type=openapi.TYPE_STRING, description='error message'),
+                    }
+                )
+            ),
+        }
+    )
     def patch(self, request, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)

@@ -18,6 +18,9 @@ from datetime import datetime
 from app.gamification.utils import get_user_pk
 from collections import defaultdict
 
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     '''
@@ -35,11 +38,16 @@ class IsAdminOrReadOnly(permissions.BasePermission):
             return True
         return request.user.is_staff
 
+
 class ViewReport(generics.ListCreateAPIView):
     # queryset = Entity.objects.all()
     serializer_class = EntitySerializer
     permission_classes = [permissions.AllowAny]
-    
+
+    @swagger_auto_schema(
+        operation_description="Get report information",
+        tags=['reports'],
+    )
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         if 'andrew_id' in request.query_params:
             def artifact_result(artifact_pk):
@@ -120,19 +128,22 @@ class ViewReport(generics.ListCreateAPIView):
                                     answers[section.title][question.text]['answers'].append(
                                         answer.answer_text)
                 return answers
-            
+
             def artifact_answer_multiple_choice_list(artifact_pk):
                 # data = {"label":["a", "b", "c", "d"], "sections":{"section_name": {"question_name": [2,3,1,4]}}}
                 answers = []
-                artifacts_reviews = ArtifactReview.objects.filter(artifact_id = artifact_pk)
+                artifacts_reviews = ArtifactReview.objects.filter(
+                    artifact_id=artifact_pk)
                 for artifact_review in artifacts_reviews:
                     answer = Answer.objects.filter(
                         artifact_review_id=artifact_review.pk).order_by('pk')
                     answers.extend(answer)
-                
+
                 choice_labels = set()
-                scale_list_7 = ['strongly disagree', 'disagree', 'weakly disagree', 'neutral', 'weakly agree', 'agree', 'strongly agree']
-                scale_list_5 = ['strongly disagree', 'disagree', 'neutral', 'agree', 'strongly agree']
+                scale_list_7 = ['strongly disagree', 'disagree', 'weakly disagree',
+                                'neutral', 'weakly agree', 'agree', 'strongly agree']
+                scale_list_5 = ['strongly disagree', 'disagree',
+                                'neutral', 'agree', 'strongly agree']
                 scale_list_3 = ['disagree', 'neutral', 'agree']
 
                 choice_labels_scale = set()
@@ -141,7 +152,8 @@ class ViewReport(generics.ListCreateAPIView):
                     if answer.question_option.question.question_type == 'SCALEMULTIPLECHOICE':
                         number_of_scale = answer.question_option.question.number_of_scale
                     elif answer.question_option.question.question_type == 'MULTIPLECHOICE':
-                        choice_labels.add(answer.question_option.option_choice.text)
+                        choice_labels.add(
+                            answer.question_option.option_choice.text)
                 scale_list_input = []
                 if number_of_scale == 7:
                     scale_list_input = scale_list_7
@@ -153,29 +165,35 @@ class ViewReport(generics.ListCreateAPIView):
                     pass
                 for scale_answer in scale_list_input:
                     choice_labels_scale.add(scale_answer)
-                    
-                result = {"label": list(choice_labels), "label_scale": scale_list_input, "sections": defaultdict(dict), "sections_scale": defaultdict(dict), "number_of_scale": number_of_scale}
+
+                result = {"label": list(choice_labels), "label_scale": scale_list_input, "sections": defaultdict(
+                    dict), "sections_scale": defaultdict(dict), "number_of_scale": number_of_scale}
                 for answer in answers:
                     if answer.question_option.question.question_type == 'MULTIPLECHOICE':
                         if answer.question_option.question.text not in result["sections"][answer.question_option.question.section.title].keys():
-                            result["sections"][answer.question_option.question.section.title][answer.question_option.question.text]= [0 for i in range(len(choice_labels))]
-                        option_index = list(choice_labels).index(answer.question_option.option_choice.text)
+                            result["sections"][answer.question_option.question.section.title][answer.question_option.question.text] = [
+                                0 for i in range(len(choice_labels))]
+                        option_index = list(choice_labels).index(
+                            answer.question_option.option_choice.text)
                         result["sections"][answer.question_option.question.section.title][answer.question_option.question.text][option_index] += 1
                     elif answer.question_option.question.question_type == 'SCALEMULTIPLECHOICE':
                         if answer.question_option.question.text not in result["sections_scale"][answer.question_option.question.section.title].keys():
-                            result["sections_scale"][answer.question_option.question.section.title][answer.question_option.question.text]= [0 for i in range(len(choice_labels_scale))]
-                        option_index = list(choice_labels_scale).index(answer.question_option.option_choice.text)
-                        result["sections_scale"][answer.question_option.question.section.title][answer.question_option.question.text][option_index] += 1
+                            result["sections_scale"][answer.question_option.question.section.title][answer.question_option.question.text] = [
+                                0 for i in range(len(choice_labels_scale))]
+                        option_index = list(choice_labels_scale).index(
+                            answer.question_option.option_choice.text)
+                        result["sections_scale"][answer.question_option.question.section.title][
+                            answer.question_option.question.text][option_index] += 1
                 return result
-            
+
             def retrive_grade(artifact_pk):
                 dummy_data = {
                     'user_index': 0,
-                    'data': [[95.0, 80.0, 88.0, 90,0], [90.0, 85.0, 90.0, 95.0], [85.0, 90.0, 95.0, 100.0], [85.0, 90.0, 95.0, 100.0]]
-                    }
-                
-                return dummy_data # TODO: implement this function
-            
+                    'data': [[95.0, 80.0, 88.0, 90, 0], [90.0, 85.0, 90.0, 95.0], [85.0, 90.0, 95.0, 100.0], [85.0, 90.0, 95.0, 100.0]]
+                }
+
+                return dummy_data  # TODO: implement this function
+
             # individual report
             andrew_id = request.query_params['andrew_id']
             user = get_object_or_404(CustomUser, andrew_id=andrew_id)
@@ -184,29 +202,32 @@ class ViewReport(generics.ListCreateAPIView):
                 Registration, users=user, courses=course)
             assignment = get_object_or_404(Assignment, pk=assignment_id)
             assignment_type = assignment.assignment_type
-            
+
             if assignment_type == "Individual":
                 entity = Individual.objects.get(
                     registration=registration, course=course)
                 team_name = str(andrew_id)
             elif assignment_type == "Team":
-                entity = Team.objects.get(registration=registration, course=course)
+                entity = Team.objects.get(
+                    registration=registration, course=course)
                 team_name = entity.name
 
             artifact_id = None
             try:
-                artifact = Artifact.objects.get(assignment=assignment, entity=entity)
+                artifact = Artifact.objects.get(
+                    assignment=assignment, entity=entity)
                 artifact_id = artifact.pk
             except Artifact.DoesNotExist:
                 return Response("Artifact does not exist", status=status.HTTP_404_NOT_FOUND)
 
             context = {'andrew_id': user.andrew_id,
-                    'course_name': course.course_name,
-                    'team_name': team_name,
-                    'artifact_result_ret': artifact_result(artifact_id),
-                    'artifact_answer_multiple_choice_list_ret': artifact_answer_multiple_choice_list(artifact_id),
-                    'point': retrive_grade(artifact_id), # dummy data preserved for pointing system
-            }
+                       'course_name': course.course_name,
+                       'team_name': team_name,
+                       'artifact_result_ret': artifact_result(artifact_id),
+                       'artifact_answer_multiple_choice_list_ret': artifact_answer_multiple_choice_list(artifact_id),
+                       # dummy data preserved for pointing system
+                       'point': retrive_grade(artifact_id),
+                       }
             return Response(context, status=status.HTTP_200_OK)
         else:
             # assignment report
@@ -215,11 +236,13 @@ class ViewReport(generics.ListCreateAPIView):
             assignment_type = assignment.assignment_type
             user_id = get_user_pk(request)
             user = get_object_or_404(CustomUser, id=user_id)
-            userRole = Registration.objects.get(users=user, courses=course).userRole
+            userRole = Registration.objects.get(
+                users=user, courses=course).userRole
             students = []
             teams = []
             if assignment_type == "Individual":
-                registrations = Registration.objects.filter(courses=course_id, userRole = Registration.UserRole.Student)
+                registrations = Registration.objects.filter(
+                    courses=course_id, userRole=Registration.UserRole.Student)
                 counter = 0
                 student_row = []
                 for registration in registrations:
@@ -230,9 +253,9 @@ class ViewReport(generics.ListCreateAPIView):
                         counter = 0
                         student_row = []
                 students.append(student_row)
-                    
+
             elif assignment_type == "Team":
-                all_teams = Team.objects.filter(course = course)
+                all_teams = Team.objects.filter(course=course)
                 team_row = []
                 counter = 0
                 for team in all_teams:
@@ -243,7 +266,7 @@ class ViewReport(generics.ListCreateAPIView):
                         counter = 0
                         team_row = []
                 teams.append(team_row)
-            
+
             # students or teams is an empty list
             context = {
                 'userRole': userRole,
@@ -251,4 +274,3 @@ class ViewReport(generics.ListCreateAPIView):
                 'teams': teams
             }
             return Response(context, status=status.HTTP_200_OK)
-            

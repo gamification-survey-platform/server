@@ -12,6 +12,8 @@ from app.gamification.models.survey_section import SurveySection
 from app.gamification.models.survey_template import SurveyTemplate
 from app.gamification.serializers.survey import OptionChoiceSerializer, OptionChoiceWithoutNumberOfTextSerializer, QuestionSerializer, SectionSerializer, SurveySerializer, TemplateSectionSerializer
 from app.gamification.utils import parse_datetime
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -38,6 +40,10 @@ class SurveyList(generics.ListCreateAPIView):
     serializer_class = SurveySerializer
     permission_classes = [permissions.AllowAny]  # [IsAdminOrReadOnly]
 
+    @swagger_auto_schema(
+        operation_description="Get survey information",
+        tags=['surveys']
+    )
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         assignment = get_object_or_404(Assignment, pk=assignment_id)
         try:
@@ -56,13 +62,25 @@ class SurveyList(generics.ListCreateAPIView):
         }
         return Response(context, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        operation_description="Create a new survey, template_name is 'default template' will create a default template based on fixture data",
+        tags=['surveys'],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'template_name': openapi.Schema(type=openapi.TYPE_STRING),
+                'instructions': openapi.Schema(type=openapi.TYPE_STRING),
+                'other_info': openapi.Schema(type=openapi.TYPE_STRING),
+                'date_released': openapi.Schema(type=openapi.TYPE_STRING),
+                'date_due': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ),
+    )
     def post(self, request, assignment_id, *args, **kwargs):
         assignment = get_object_or_404(Assignment, pk=assignment_id)
         survey_template_name = request.data.get('template_name').strip()
         survey_template_instruction = request.data.get('instructions')
         survey_template_other_info = request.data.get('other_info')
-        print(1111)
-        print(request.data.get('date_released'))
         feedback_survey_date_released = parse_datetime(
             request.data.get('date_released'))
         feedback_survey_date_due = parse_datetime(request.data.get('date_due'))
@@ -141,11 +159,27 @@ class SurveyDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = SurveySerializer
     # permission_classes = [IsAdminOrReadOnly]
 
+    @swagger_auto_schema(
+        operation_description="Get a survey template",
+        tags=['surveys'],
+    )
     def get(self, request, feedback_survey_pk, *args, **kwargs):
         survey = get_object_or_404(SurveyTemplate, id=feedback_survey_pk)
         serializer = self.get_serializer(survey)
         return Response(serializer.data)
 
+    @swagger_auto_schema(
+        operation_description="Update a survey template",
+        tags=['surveys'],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'template_name': openapi.Schema(type=openapi.TYPE_STRING),
+                'instructions': openapi.Schema(type=openapi.TYPE_STRING),
+                'other_info': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ),
+    )
     def put(self, request, feedback_survey_pk, *args, **kwargs):
         survey = get_object_or_404(SurveyTemplate, id=feedback_survey_pk)
         name = request.data.get('template_name').strip()
@@ -161,6 +195,10 @@ class SurveyDetail(generics.RetrieveUpdateDestroyAPIView):
         serializer = self.get_serializer(survey)
         return Response(serializer.data)
 
+    @swagger_auto_schema(
+        operation_description="Delete a survey template",
+        tags=['surveys'],
+    )
     def delete(self, request, feedback_survey_pk, *args, **kwargs):
         survey = get_object_or_404(SurveyTemplate, id=feedback_survey_pk)
         survey.delete()
