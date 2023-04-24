@@ -13,6 +13,7 @@ from app.gamification.utils import get_user_pk
 from app.gamification.serializers.reward import RewardSerializer
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from app.gamification.utils import generate_presigned_url, generate_presigned_post
 
 
@@ -234,7 +235,7 @@ class CourseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
             name = request.data.get('name')
             description = request.data.get('description')
             type_string = request.data.get('type')
-            type = get_object_or_404(RewardType, type=type_string)
+            reward_type = get_object_or_404(RewardType, type=type_string)
             inventory = request.data.get('inventory')
             is_active = request.data.get('is_active')
             exp_point = request.data.get('exp_points')
@@ -244,19 +245,19 @@ class CourseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
                 reward.description = description
             if exp_point:
                 reward.exp_point = exp_point
-            if type:
-                reward.reward_type = type
+            if reward_type:
+                reward.reward_type = reward_type
             if inventory:
                 reward.inventory = inventory
             if is_active:
                 reward.is_active = True if is_active == 'true' else False
-            if type.type == 'Bonus' or type.type == 'Late Submission':
+            if reward_type.type == 'Bonus' or reward_type.type == 'Late Submission':
                 quantity = request.data.get('quantity')
                 if quantity:
                     reward.quantity = quantity
-            elif type.type == 'Other':
+            elif reward_type.type == 'Other':
                 picture = request.data.get('picture')
-                if picture:
+                if picture and isinstance(picture, InMemoryUploadedFile):
                     reward.picture = picture
             else:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
