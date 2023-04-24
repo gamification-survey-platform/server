@@ -5,6 +5,9 @@ from app.gamification.models import Course, Registration, CustomUser
 from app.gamification.utils import get_user_pk
 from app.gamification.serializers import CourseSerializer, RegistrationSerializer
 from django.shortcuts import get_object_or_404
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     '''
@@ -21,12 +24,33 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return request.user.is_staff
-    
+
+
 class CourseDetail(generics.ListCreateAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    permission_classes =  [permissions.AllowAny]
+    permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        operation_description="Get course information",
+        tags=['courses'],
+        responses={
+            200: openapi.Response(
+                description='Course information',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'course_number': openapi.Schema(type=openapi.TYPE_STRING),
+                        'course_name': openapi.Schema(type=openapi.TYPE_STRING),
+                        'syllabus': openapi.Schema(type=openapi.TYPE_STRING),
+                        'semester': openapi.Schema(type=openapi.TYPE_STRING),
+                        'visible': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                        'picture': openapi.Schema(type=openapi.TYPE_STRING),
+                    }
+                )
+            )
+        }
+    )
     def get(self, request, course_id, *args, **kwargs):
         andrew_id = get_user_pk(request)
         user = CustomUser.objects.get(andrew_id=andrew_id)
@@ -40,8 +64,38 @@ class CourseDetail(generics.ListCreateAPIView):
         serializer = CourseSerializer(course)
         # serializer = self.get_serializer(course)
         return Response(serializer.data)
-        
-    
+
+    @swagger_auto_schema(
+        operation_description="Update course information",
+        tags=['courses'],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'course_number': openapi.Schema(type=openapi.TYPE_STRING),
+                'course_name': openapi.Schema(type=openapi.TYPE_STRING),
+                'syllabus': openapi.Schema(type=openapi.TYPE_STRING),
+                'semester': openapi.Schema(type=openapi.TYPE_STRING),
+                'visible': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                'picture': openapi.Schema(type=openapi.TYPE_STRING),
+            }
+        ),
+        responses={
+            200: openapi.Response(
+                description='Course information',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'course_number': openapi.Schema(type=openapi.TYPE_STRING),
+                        'course_name': openapi.Schema(type=openapi.TYPE_STRING),
+                        'syllabus': openapi.Schema(type=openapi.TYPE_STRING),
+                        'semester': openapi.Schema(type=openapi.TYPE_STRING),
+                        'visible': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                        'picture': openapi.Schema(type=openapi.TYPE_STRING),
+                    }
+                )
+            )
+        }
+    )
     def put(self, request, course_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
         user_pk = get_user_pk(request)
@@ -54,7 +108,7 @@ class CourseDetail(generics.ListCreateAPIView):
             return Response(content, status=status.HTTP_403_FORBIDDEN)
         course_number = request.data.get('course_number').strip()
         course_name = request.data.get('course_name').strip()
-        syllabus =  request.data.get('syllabus').strip()
+        syllabus = request.data.get('syllabus').strip()
         semester = request.data.get('semester').strip()
         visible = request.data.get('visible')
         visible = True if visible == 'true' else False
@@ -69,6 +123,18 @@ class CourseDetail(generics.ListCreateAPIView):
         serializer = CourseSerializer(course)
         return Response(serializer.data)
 
+    @swagger_auto_schema(
+        operation_description="Delete course",
+        tags=['courses'],
+        responses={
+            200: openapi.Response(
+                description='Course information',
+            ),
+            403: openapi.Response(
+                description='Permission denied',
+            )
+        }
+    )
     def delete(self, request, course_id, *args, **kwargs):
         # delete course
         course = get_object_or_404(Course, pk=int(course_id))
@@ -79,17 +145,22 @@ class CourseDetail(generics.ListCreateAPIView):
         if registration.userRole == Registration.UserRole.Student:
             content = {'message': 'Permission denied'}
             return Response(content, status=status.HTTP_403_FORBIDDEN)
-        try :
+        try:
             course.delete()
         except Exception as error:
             print(error)
         return Response(status=status.HTTP_200_OK)
 
+
 class CourseList(generics.RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    permission_classes =  [permissions.AllowAny] # [IsAdminOrReadOnly]
-    
+    permission_classes = [permissions.AllowAny]  # [IsAdminOrReadOnly]
+
+    @swagger_auto_schema(
+        operation_description="List all courses",
+        tags=['courses'],
+    )
     def get(self, request, *args, **kwargs):
         def get_registrations(user):
             registration = []
@@ -101,6 +172,7 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
                     registration.append(reg)
             print(registration)
             return registration
+
         def registrations_to_courses(registrations):
             courses = []
             for reg in registrations:
@@ -127,11 +199,15 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
                 data.append(course)
             return Response(data)
 
+    @swagger_auto_schema(
+        operation_description="Create a new course",
+        tags=['courses'],
+    )
     def post(self, request, *args, **kwargs):
         # add course
         course_number = request.data.get('course_number').strip()
         course_name = request.data.get('course_name').strip()
-        syllabus =  request.data.get('syllabus').strip()
+        syllabus = request.data.get('syllabus').strip()
         semester = request.data.get('semester').strip()
         user_pk = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_pk)

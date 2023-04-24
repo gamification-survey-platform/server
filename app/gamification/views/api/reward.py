@@ -15,17 +15,25 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from app.gamification.utils import generate_presigned_url, generate_presigned_post
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 
 """
 GET all rewards
 Permission: Admin
 """
+
+
 class RewardList(generics.ListCreateAPIView):
     queryset = Reward.objects.all()
     permission_classes = [permissions.AllowAny]
     serializer_class = RewardSerializer
 
+    @swagger_auto_schema(
+        operation_description="Create a new reward",
+        tags=['rewards'],
+    )
     def get(self, request, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
@@ -46,20 +54,31 @@ class RewardList(generics.ListCreateAPIView):
             serializer = self.get_serializer(rewards, many=True)
             return Response(serializer.data)
 
+
 """
 GET, PATCH, DELETE specific Rewards
 Permissions: Admin
 """
+
+
 class RewardDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Reward.objects.all()
     permission_classes = [permissions.AllowAny]
     serializer_class = RewardSerializer
 
+    @swagger_auto_schema(
+        operation_description="Update a reward",
+        tags=['rewards'],
+    )
     def get(self, request, reward_id, *args, **kwargs):
         reward = Reward.objects.get(pk=reward_id)
         serializer = self.get_serializer(reward)
         return Response(serializer.data)
 
+    @swagger_auto_schema(
+        operation_description="Update a reward",
+        tags=['rewards'],
+    )
     def patch(self, request, reward_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
@@ -99,6 +118,10 @@ class RewardDetail(generics.RetrieveUpdateDestroyAPIView):
             else:
                 return Response(data={"message": "Reward is out of stock"}, status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(
+        operation_description="Delete a reward",
+        tags=['rewards'],
+    )
     def delete(self, request, reward_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
@@ -108,16 +131,23 @@ class RewardDetail(generics.RetrieveUpdateDestroyAPIView):
         reward.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
 """
 GET, POST Reward for a specific course
 GET Permissions: Staff or Student
 POST Permissions: Staff
 """
+
+
 class CourseRewardList(generics.ListCreateAPIView):
     queryset = Reward.objects.all()
     permission_classes = [permissions.AllowAny]
     serializer_class = RewardSerializer
 
+    @swagger_auto_schema(
+        operation_description="Get rewards under a course",
+        tags=['rewards'],
+    )
     def get(self, request, course_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
@@ -126,13 +156,14 @@ class CourseRewardList(generics.ListCreateAPIView):
             sys_pk = settings.SYSTEM_PK
             rewards = []
             rewards.extend(Reward.objects.filter(
-            course=sys_pk, is_active=True))
+                course=sys_pk, is_active=True))
             serializer = self.get_serializer(rewards, many=True)
             return Response(serializer.data)
         else:
             rewards = Reward.objects.filter(course_id=course_id)
             serializer = self.get_serializer(rewards, many=True)
             return Response(serializer.data)
+
     def create_reward_picture(self, request, course):
         picture = request.FILES.get('picture')
         if not picture:
@@ -152,7 +183,11 @@ class CourseRewardList(generics.ListCreateAPIView):
             key = picture
 
         return key
-    
+
+    @swagger_auto_schema(
+        operation_description="Create a reward under a course",
+        tags=['rewards'],
+    )
     def post(self, request, course_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
@@ -193,11 +228,12 @@ class CourseRewardList(generics.ListCreateAPIView):
         response_data = self.get_serializer(reward).data
         if type.type == 'Other' and settings.USE_S3:
             upload_url = generate_presigned_post(picture_key)
-            download_url = generate_presigned_url(picture_key, http_method='GET')
+            download_url = generate_presigned_url(
+                picture_key, http_method='GET')
         else:
             upload_url = response_data['picture']
             download_url = response_data['picture']
-        
+
         response_data.pop('picture')
         if upload_url:
             response_data['upload_url'] = upload_url
@@ -205,18 +241,24 @@ class CourseRewardList(generics.ListCreateAPIView):
             response_data['download_url'] = download_url
         return Response(response_data)
 
+
 """
 GET, PATCH, DELETE Reward for a specific course
 GET Permissions: Staff or Student
 PATCH, DELETE Permissions: Staff
 """
+
+
 class CourseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Reward.objects.all()
     permission_classes = [permissions.AllowAny]
     serializer_class = RewardSerializer
 
+    @swagger_auto_schema(
+        operation_description="Get a reward under a course",
+        tags=['rewards'],
+    )
     def get(self, request, course_id, reward_id, *args, **kwargs):
-        print("hhehehe")
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
         if not user.is_staff:
@@ -227,6 +269,10 @@ class CourseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
 
         return Response(response_data)
 
+    @swagger_auto_schema(
+        operation_description="Update a reward under a course",
+        tags=['rewards'],
+    )
     def patch(self, request, course_id, reward_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
@@ -269,6 +315,10 @@ class CourseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
+    @swagger_auto_schema(
+        operation_description="Delete a reward under a course",
+        tags=['rewards'],
+    )
     def delete(self, request, course_id, reward_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)

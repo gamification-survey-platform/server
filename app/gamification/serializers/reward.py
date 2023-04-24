@@ -12,16 +12,17 @@ class RewardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reward
         fields = ('pk', 'name', 'description', 'course', 'reward_type',
-                  'inventory', 'is_active', 'picture', 'quantity', 'theme', 'exp_point')
+                  'inventory', 'is_active', 'picture', 'quantity', 'theme', 'exp_point', 'picture_url')
 
     def get_picture_url(self, obj):
         if settings.USE_S3 and obj.picture:
             key = obj.picture.name
             return generate_presigned_url(key, http_method='GET')
         return None
+
     def to_representation(self, instance):
         data = self.type_serializer(instance)
-        
+
         return data
 
     def type_serializer(self, reward):
@@ -46,5 +47,6 @@ class RewardSerializer(serializers.ModelSerializer):
             data['theme'] = reward.theme
         elif reward.reward_type.type == 'Other':
             path = f'http://{settings.ALLOWED_HOSTS[1]}:8000{reward.picture.url}'
-            data['picture'] = self.get_picture_url(reward) if settings.USE_S3 else path
+            data['picture'] = self.get_picture_url(
+                reward) if settings.USE_S3 else path
         return data

@@ -12,6 +12,8 @@ from app.gamification.models.survey_section import SurveySection
 from app.gamification.models.survey_template import SurveyTemplate
 from app.gamification.serializers.survey import OptionChoiceSerializer, OptionChoiceWithoutNumberOfTextSerializer, QuestionSerializer, SectionSerializer, SurveySerializer, TemplateSectionSerializer
 from app.gamification.utils import parse_datetime
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -32,8 +34,6 @@ class IsAdminOrReadOnly(permissions.BasePermission):
             if registration.userRole == Registration.UserRole.Instructor:
                 return True
         return False
-
-
 
 
 class SurveySectionList(generics.ListCreateAPIView):
@@ -430,8 +430,18 @@ class TemplateSectionList(generics.ListAPIView):
 class SurveyGetInfo(generics.RetrieveUpdateAPIView):
     queryset = SurveyTemplate.objects.all()
     serializer_class = SurveySerializer
-    permission_classes = [permissions.AllowAny] # [IsAdminOrReadOnly]
+    permission_classes = [permissions.AllowAny]  # [IsAdminOrReadOnly]
 
+    @swagger_auto_schema(
+        operation_description="Get student survey answers",
+        tags=['surveys'],
+        responses={
+            200: openapi.Response(
+                description="Survey information",
+                schema=SurveySerializer,
+            ),
+        },
+    )
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         assignment = get_object_or_404(Assignment, id=assignment_id)
         survey_template = assignment.survey_template
@@ -470,10 +480,21 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                 curr_section['questions'].append(curr_question)
             data['sections'].append(curr_section)
         return Response(data)
-    
+
+    @swagger_auto_schema(
+        operation_description="Update student survey answers",
+        tags=['surveys'],
+        responses={
+            200: openapi.Response(
+                description="Survey information",
+                schema=SurveySerializer,
+            ),
+        },
+    )
     def patch(self, request, course_id, assignment_id, *args, **kwargs):
         survey_info = request.data.get('survey_info')
-        survey_template = get_object_or_404(SurveyTemplate, id=survey_info["pk"])
+        survey_template = get_object_or_404(
+            SurveyTemplate, id=survey_info["pk"])
         sections = SurveySection.objects.filter(template=survey_template)
         for section in sections:
             questions = Question.objects.filter(section=section)
@@ -494,7 +515,8 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                 question_template.question_type = question["question_type"]
                 question_template.save()
                 if question["question_type"] == Question.QuestionType.MULTIPLECHOICE:
-                    question_option = QuestionOption.objects.filter(question=question_template)
+                    question_option = QuestionOption.objects.filter(
+                        question=question_template)
                     for option in question_template.options:
                         option.delete()
                     for option_choice in question["option_choices"]:

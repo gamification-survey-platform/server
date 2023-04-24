@@ -15,14 +15,38 @@ from app.gamification.models.question_option import QuestionOption
 from app.gamification.models.registration import Registration
 from app.gamification.models.grade import Grade
 from app.gamification.serializers.answer import ArtifactReviewSerializer
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 import pandas as pd
+
 
 class ArtifactReviewList(generics.RetrieveAPIView):
     queryset = ArtifactReview.objects.all()
     serializer_class = ArtifactReviewSerializer
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        operation_description="Get artifact reviews for a specific assignment",
+        tags=['artifact_reviews'],
+        responses={
+            200: openapi.Response(
+                description="Artifact reviews",
+                examples={
+                    "application/json": [
+                        {
+                            "id": 1,
+                            "artifact": 1,
+                            "user": 1,
+                            "score": 0,
+                            "feedback": "string",
+                            "reviewing": "string"
+                        }
+                    ]
+                }
+            )
+        }
+    )
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
@@ -57,6 +81,25 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = ArtifactReview.objects.all()
     serializer_class = ArtifactReviewSerializer
 
+    @swagger_auto_schema(
+        operation_description="Get artifact review details",
+        tags=['artifact_reviews'],
+        responses={
+            200: openapi.Response(
+                description="Artifact review details",
+                examples={
+                    "application/json": {
+                        "id": 1,
+                        "artifact": 1,
+                        "user": 1,
+                        "score": 0,
+                        "feedback": "string",
+                        "reviewing": "string"
+                    }
+                }
+            )
+        }
+    )
     def get(self, request, course_id, assignment_id,  artifact_review_pk, *args, **kwargs):
         artifact_review = get_object_or_404(
             ArtifactReview, id=artifact_review_pk)
@@ -120,6 +163,64 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             data['sections'].append(curr_section)
         return Response(data)
 
+    @swagger_auto_schema(
+        operation_description="Update artifact review details",
+        tags=['artifact_reviews'],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'artifact_review_detail': openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'pk': openapi.Schema(type=openapi.TYPE_INTEGER),
+                        'sections': openapi.Schema(
+                            type=openapi.TYPE_ARRAY,
+                            items=openapi.Schema(
+                                type=openapi.TYPE_OBJECT,
+                                properties={
+                                    'pk': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                    'questions': openapi.Schema(
+                                        type=openapi.TYPE_ARRAY,
+                                        items=openapi.Schema(
+                                            type=openapi.TYPE_OBJECT,
+                                            properties={
+                                                'pk': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                                'answer': openapi.Schema(
+                                                    type=openapi.TYPE_ARRAY,
+                                                    items=openapi.Schema(
+                                                        type=openapi.TYPE_OBJECT,
+                                                        properties={
+                                                            'text': openapi.Schema(type=openapi.TYPE_STRING),
+                                                            'page': openapi.Schema(type=openapi.TYPE_INTEGER)
+                                                        }
+                                                    )
+                                                )
+                                            }
+                                        )
+                                    )
+                                }
+                            )
+                        )
+                    }
+                )
+            }
+        ),
+        responses={
+            200: openapi.Response(
+                description="Artifact review details",
+                examples={
+                    "application/json": {
+                        "id": 1,
+                        "artifact": 1,
+                        "user": 1,
+                        "score": 0,
+                        "feedback": "string",
+                        "reviewing": "string"
+                    }
+                }
+            )
+        }
+    )
     def patch(self, request, course_id, assignment_id, artifact_review_pk, *args, **kwargs):
         assignment = get_object_or_404(Assignment, id=assignment_id)
         artifact_status = check_survey_status(assignment)
@@ -132,9 +233,10 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         max_grade = 0
         # for now, here we only consider about five scale SCALEMULTIPLECHOICE question for grading
         # grading rule: {'strongly disagree': 0, 'disagree': 1, 'neutral': 2, 'agree': 3, 'strongly agree': 4} and max_grade add 4
-        grading_rule = {'strongly disagree': 0, 'disagree': 1, 'neutral': 2, 'agree': 3, 'strongly agree': 4}
+        grading_rule = {'strongly disagree': 0, 'disagree': 1,
+                        'neutral': 2, 'agree': 3, 'strongly agree': 4}
         MAX_GRADE_FOR_EACH_QUESTION = 4
-        
+
         for answer in artifact_review_detail:
             question_pk = answer["question_pk"]
             answer_text = answer["answer_text"]
@@ -168,7 +270,8 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                             grade += grading_rule[answer_text]
                             max_grade += MAX_GRADE_FOR_EACH_QUESTION
                         else:
-                            print("Error: grading rule does not contain this answer text, update grading rule ASAP")
+                            print(
+                                "Error: grading rule does not contain this answer text, update grading rule ASAP")
                         break
 
             elif question_type == Question.QuestionType.FIXEDTEXT or question_type == Question.QuestionType.MULTIPLETEXT or question_type == Question.QuestionType.TEXTAREA or question_type == Question.QuestionType.NUMBER:
@@ -190,42 +293,51 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
 
                 artifact_feedback.page = page
                 artifact_feedback.save()
-        
+
         artifact_review.status = artifact_status
-        # convert max_grade to 
+        # convert max_grade to
         artifact_review.artifact_review_score = grade
         artifact_review.max_artifact_review_score = max_grade
         artifact_review.save()
 
         return Response(status=status.HTTP_200_OK)
 
+
 class ArtifactReviewIpsatization(generics.RetrieveAPIView):
     queryset = ArtifactReview.objects.all()
     serializer_class = ArtifactReviewSerializer
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        operation_description="Get artifact review ipsatization",
+        tags=['reports'],
+    )
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         # pointing-system
         # get artifact_reviews by assignment_id
-        artifact_reviews = ArtifactReview.objects.filter(artifact__assignment_id=assignment_id)
+        artifact_reviews = ArtifactReview.objects.filter(
+            artifact__assignment_id=assignment_id)
         # get all artifacts in the course
         artifacts = Artifact.objects.filter(assignment_id=assignment_id)
         # get all registrations in the course
         registrations = Registration.objects.filter(courses_id=course_id)
         # create a list of registrations id (row)
-        registrations_id_list = [registration.id for registration in registrations]
+        registrations_id_list = [
+            registration.id for registration in registrations]
         # create a list of artifacts id (column)
         artifacts_id_list = [artifact.id for artifact in artifacts]
-        
+
         # create a 2d matrix of artifact_reviews by artifacts and registrations
-        matrix = [[None for j in range(len(artifacts_id_list))] for i in range(len(registrations_id_list))]
+        matrix = [[None for j in range(len(artifacts_id_list))]
+                  for i in range(len(registrations_id_list))]
         for artifact_review in artifact_reviews:
             artifact = artifact_review.artifact
             user = artifact_review.user
             print(artifact_review)
             # fill in the matrix with artifact_review_score / max_artifact_review_score
-            matrix[registrations_id_list.index(user.id)][artifacts_id_list.index(artifact.id)] = artifact_review.artifact_review_score / artifact_review.max_artifact_review_score
-        
+            matrix[registrations_id_list.index(user.id)][artifacts_id_list.index(
+                artifact.id)] = artifact_review.artifact_review_score / artifact_review.max_artifact_review_score
+
         ipsatization_MAX = 100
         ipsatization_MIN = 80
         assignment = get_object_or_404(Assignment, id=assignment_id)
@@ -233,11 +345,12 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
         if assignment.ipsatization_max and assignment.ipsatization_min:
             ipsatization_MAX = assignment.ipsatization_max
             ipsatization_MIN = assignment.ipsatization_min
-        
+
         if 'ipsatization_MAX' in request.query_params and 'ipsatization_MIN' in request.query_params:
             ipsatization_MAX = int(request.query_params['ipsatization_MAX'])
             ipsatization_MIN = int(request.query_params['ipsatization_MIN'])
         # calculate ipsatizated score at backend
+
         def ipsatization(data, ipsatization_MAX, ipsatization_MIN):
             def convert(score):
                 # 0 <= score <= 1, convert to -1 to 1
@@ -248,7 +361,8 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
                 max_value = max(data)
                 normalized_data = []
                 for value in data:
-                    normalized_value = (value - min_value) / (max_value - min_value)
+                    normalized_value = (value - min_value) / \
+                        (max_value - min_value)
                     normalized_data.append(normalized_value)
                 return normalized_data
             # Calculate the mean and standard deviation of each survey
@@ -258,8 +372,9 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
             i_data = data.copy()
             for i in range(len(data)):
                 for j in range(len(data.columns)):
-                    i_data.iloc[i, j] = (data.iloc[i, j] - means[i]) / stds[i] if stds[i] != 0 else convert(data.iloc[i, j])
-            # Calculate the means of each survey as their score 
+                    i_data.iloc[i, j] = (
+                        data.iloc[i, j] - means[i]) / stds[i] if stds[i] != 0 else convert(data.iloc[i, j])
+            # Calculate the means of each survey as their score
             i_means = i_data.mean()
             i_stds = i_data.std()
 
@@ -268,20 +383,21 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
 
             # Convert scores to desired range
             ipsatization_range = ipsatization_MAX - ipsatization_MIN
-            final_means = [score * ipsatization_range + ipsatization_MIN for score in normalized_means]
+            final_means = [score * ipsatization_range +
+                           ipsatization_MIN for score in normalized_means]
             return final_means
-        
-        df = pd.DataFrame(matrix, columns = artifacts_id_list, dtype = float)
+
+        df = pd.DataFrame(matrix, columns=artifacts_id_list, dtype=float)
         # handle None value in matrix with mean value of each row
         m = df.mean(axis=1)
         for i, col in enumerate(df):
             df.iloc[:, i] = df.iloc[:, i].fillna(m)
         ipsatizated_data = ipsatization(df, ipsatization_MAX, ipsatization_MIN)
         # final result
-        artifacts_id_and_scores_dict = dict(zip(artifacts_id_list, ipsatizated_data))
+        artifacts_id_and_scores_dict = dict(
+            zip(artifacts_id_list, ipsatizated_data))
         # retrive entities with artifacts_id_list
         entities = []
-        print(assignment.assignment_type)
         if assignment.assignment_type == 'Individual':
             for artifact_id in artifacts_id_list:
                 artifact = get_object_or_404(Artifact, id=artifact_id)
@@ -296,25 +412,32 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
                 entity = artifact.entity
                 group_name = entity.team.name
                 members = entity.members
-                members_first_and_last_name = [member.first_name + ' ' + member.last_name for member in members]
-                entities.append(group_name + ' (' + ', '.join(members_first_and_last_name) + ')')
+                members_first_and_last_name = [
+                    member.first_name + ' ' + member.last_name for member in members]
+                entities.append(
+                    group_name + ' (' + ', '.join(members_first_and_last_name) + ')')
 
-        content = {'artifacts_id_and_scores_dict': artifacts_id_and_scores_dict, 
-                   'ipsatization_MAX': ipsatization_MAX, 
+        content = {'artifacts_id_and_scores_dict': artifacts_id_and_scores_dict,
+                   'ipsatization_MAX': ipsatization_MAX,
                    'ipsatization_MIN': ipsatization_MIN,
                    'assignment_type': assignment.assignment_type,
                    'entities': entities
                    }
         return Response(content, status=status.HTTP_200_OK)
 
-    
     # update an artiafct_review's score
+
+    @swagger_auto_schema(
+        operation_description="Update an artifact_review's score",
+        tags=['reports'],
+    )
     def patch(self, request, course_id, assignment_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
-        userRole = Registration.objects.get(users=user, courses=course).userRole
-        
+        userRole = Registration.objects.get(
+            users=user, courses=course).userRole
+
         if userRole != 'Instructor':
             return Response(status=status.HTTP_403_FORBIDDEN)
         else:
@@ -325,8 +448,9 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
                     max_artifact_review_score = request.data['max_artifact_review_score']
                 else:
                     max_artifact_review_score = None
-                
-                artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_id)
+
+                artifact_review = get_object_or_404(
+                    ArtifactReview, id=artifact_review_id)
                 artifact_review.artifact_review_score = artifact_review_score
                 artifact_review.max_artifact_review_score = max_artifact_review_score
                 artifact_review.save()

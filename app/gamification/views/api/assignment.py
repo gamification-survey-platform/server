@@ -12,6 +12,8 @@ from app.gamification.models import Assignment, Course, Registration, Team, Memb
 import pytz
 from pytz import timezone
 from datetime import datetime
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -30,15 +32,22 @@ class IsAdminOrReadOnly(permissions.BasePermission):
             return True
         return request.user.is_staff
 
+
 class AssignmentList(generics.ListCreateAPIView):
     queryset = Assignment.objects.all()
     serializer_class = AssignmentSerializer
-    permission_classes = [permissions.AllowAny] # [permissions.IsAuthenticated]
+    # [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        operation_description="Get all assignments information",
+        tags=['assignments'],
+    )
     def get(self, request, course_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
-        user_role = Registration.objects.get(users=user, courses=course_id).userRole
+        user_role = Registration.objects.get(
+            users=user, courses=course_id).userRole
         course = get_object_or_404(Course, pk=course_id)
         assignments = Assignment.objects.filter(course=course)
         assignments = [model_to_dict(assignment) for assignment in assignments]
@@ -46,11 +55,16 @@ class AssignmentList(generics.ListCreateAPIView):
             assignment['user_role'] = user_role
         return Response(assignments, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        operation_description="Create a new assignment",
+        tags=['assignments'],
+    )
     def post(self, request, course_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
-        userRole = Registration.objects.get(users=user, courses=course).userRole
+        userRole = Registration.objects.get(
+            users=user, courses=course).userRole
         assignment_name = request.data.get('assignment_name')
         assignment_type = request.data.get('assignment_type')
         date_released = request.data.get('date_released')
@@ -61,11 +75,11 @@ class AssignmentList(generics.ListCreateAPIView):
         weight = request.data.get('weight')
         review_assign_policy = request.data.get('review_assign_policy')
         if userRole == Registration.UserRole.Instructor:
-            assignment = Assignment.objects.create(course=course, assignment_name=assignment_name, 
-                                                   assignment_type=assignment_type, 
-                                                   date_released=date_released, date_due=date_due, 
-                                                   description=description, submission_type=submission_type, 
-                                                   total_score=total_score, weight=weight, 
+            assignment = Assignment.objects.create(course=course, assignment_name=assignment_name,
+                                                   assignment_type=assignment_type,
+                                                   date_released=date_released, date_due=date_due,
+                                                   description=description, submission_type=submission_type,
+                                                   total_score=total_score, weight=weight,
                                                    review_assign_policy=review_assign_policy)
             assignment.save()
             data = model_to_dict(assignment)
@@ -73,26 +87,37 @@ class AssignmentList(generics.ListCreateAPIView):
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+
 class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Assignment.objects.all()
     serializer_class = AssignmentSerializer
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        operation_description="Get assignment information",
+        tags=['assignments'],
+    )
     def get(self, request, course_id, assignment_id,  *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
-        userRole = Registration.objects.get(users=user, courses=course).userRole
+        userRole = Registration.objects.get(
+            users=user, courses=course).userRole
         assignment = get_object_or_404(Assignment, pk=assignment_id)
         data = model_to_dict(assignment)
         data['user_role'] = userRole
         return Response(data, status=status.HTTP_200_OK)
-    
+
+    @swagger_auto_schema(
+        operation_description="update an assignment",
+        tags=['assignments'],
+    )
     def patch(self, request, course_id, assignment_id,  *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
-        userRole = Registration.objects.get(users=user, courses=course).userRole
+        userRole = Registration.objects.get(
+            users=user, courses=course).userRole
         assignment_name = request.data.get('assignment_name')
         assignment_type = request.data.get('assignment_type')
         date_due = request.data.get('date_due')
@@ -122,7 +147,11 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
             return Response(data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
-        
+
+    @swagger_auto_schema(
+        operation_description="Delete an assignment",
+        tags=['assignments'],
+    )
     def delete(self, request, course_id, assignment_id,  *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
         user_id = get_user_pk(request)
@@ -135,26 +164,25 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-    
 # class AssignmentList(generics.RetrieveUpdateDestroyAPIView):
 #     queryset = Assignment.objects.all()
 #     serializer_class = AssignmentSerializer
 #     permission_classes = [permissions.AllowAny] # [permissions.IsAuthenticated]
-    
+
 #     def get(self, request, course_id, *args, **kwargs):
 #         course = get_object_or_404(Course, pk=course_id)
 #         user_id = get_user_pk(request)
 #         user = get_object_or_404(CustomUser, id=user_id)
 #         userRole = Registration.objects.get(users=user, courses=course).userRole
-        
+
 #         if 'assignment_id' in request.query_params:
 #             assignment_id = request.query_params['assignment_id']
 #             if userRole == Registration.UserRole.Student:
 #                 assignment = get_object_or_404(Assignment, pk=assignment_id)
 #                 registration = get_object_or_404(
 #                     Registration, users=user, courses=course_id)
-#                 assignment_type = assignment.assignment_type   
-                
+#                 assignment_type = assignment.assignment_type
+
 #                 if assignment_type == "Individual":
 #                     try:
 #                         entity = Individual.objects.get(
@@ -265,7 +293,7 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
 #                 return Response({"user_role": userRole, "assignments": assignments_info}, status=status.HTTP_200_OK)
 #             else:
 #                 return Response(status=status.HTTP_401_UNAUTHORIZED)
-            
+
 
 #     def post(self, request, course_id, *args, **kwargs):
 #         course = get_object_or_404(Course, pk=course_id)
@@ -284,7 +312,7 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
 #             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 #         else:
 #             return Response(status=status.HTTP_401_UNAUTHORIZED)
-    
+
 #     def put(self, request, course_id, *args, **kwargs):
 #         course = get_object_or_404(Course, pk=course_id)
 #         user_id = get_user_pk(request)
@@ -307,7 +335,7 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
 #         else:
 #             # missing data, return 400
 #             return Response(status=status.HTTP_400_BAD_REQUEST)
-        
+
 #     def delete(self, request, course_id, *args, **kwargs):
 #         course = get_object_or_404(Course, pk=course_id)
 #         user_id = get_user_pk(request)
@@ -328,4 +356,3 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
 #         else:
 #             # missing data, return 400
 #             return Response(status=status.HTTP_400_BAD_REQUEST)
-            

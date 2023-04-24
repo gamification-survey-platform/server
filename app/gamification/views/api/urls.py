@@ -13,7 +13,7 @@ from .answer import ArtifactAnswerMultipleChoiceList, ArtifactAnswerKeywordList
 from .profile import UserProfile
 from .reward import RewardList, RewardDetail, CourseRewardList, CourseRewardDetail
 from .levels import LevelList
-from .xp_points import XpPointsList, XpPointsDetail, UpdateExp
+from .xp_points import UpdateExp
 from .feedback_survey import SurveyList
 from .member import MemberList
 from .report import ViewReport
@@ -81,7 +81,7 @@ urlpatterns = [
     # course
     path('courses/', CourseList.as_view(), name='course-list'),
 
-     # course detail
+    # course detail
     path('courses/<str:course_id>/', CourseDetail.as_view(), name='course-detail'),
 
     # assignment
@@ -103,14 +103,6 @@ urlpatterns = [
     # Grade
     path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/',
          GradeList.as_view(), name='grade-review-list'),
-
-    # Deduction
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/<str:grade_id>/deductions/',
-         DeductionList.as_view(), name='deduction-review-list'),
-
-    # Deduction Detail
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/<str:grade_id>/deductions/<str:deduction_id>/',
-         DeductionDetail.as_view(), name='deduction-detail'),
 
     # Get the  feedback_surveys, Post a new survey,update a survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/',
@@ -163,48 +155,6 @@ urlpatterns = [
     path('courses/<str:course_id>/rewards/<str:reward_id>/',
          CourseRewardDetail.as_view(), name='reward-detail'),
 
-    # get xp_points list
-    path('xp_points/', XpPointsList.as_view(), name='xp-point-list'),
-
-    # get xp_points detail
-    path('xp_points/<str:xp_points_id>/',
-         XpPointsDetail.as_view(), name='xp-point-detail'),
-
     # get level detail
     path('levels/<str:level>/', LevelList.as_view(), name='level-detail')
-
-    # get reward in course by course_id or post a new reward
-    #     path('courses/<str:course_id>/rewards/',
-    #          courseRewardList.as_view(), name='reward-list'),
-
-
-    #     # Get list of constraints
-    #     path('constraints/', ConstraintList.as_view(), name='constraint-list'),
-
-    #     # Get detail of a constraint, Update a constraint, Delete a constraint
-    #     path('constraints/<str:url>/',
-    #          ConstraintDetail.as_view(), name='constraint-detail'),
-
-    #     # Get progress of a constraint
-    #     path('constraints/<str:url>/progress/',
-    #          ConstraintProgress.as_view(), name='constraint-progress'),
-
-    #     # Get progress of an action constraint, update progress of an action constraint, delete progress of an action constraint
-    #     path('constraints/<str:url>/progress/action',
-    #          ActionConstraintProgressDetail.as_view(), name='constraint-progress-detail'),
-
-    #     # Get progress of a grade constraint, update progress of a grade constraint, delete progress of a grade constraint
-    #     path('constraints/<str:url>/progress/grade',
-    #          GradeConstraintProgressDetail.as_view(), name='constraint-progress-detail'),
-    #     # path('constraints/<int:constraint_pk>/progress', ConstraintProgress.as_view(), name='constraint-progress'),
-
-    #     # get all rules
-    #     path('rules/', getAllRules.as_view(), name='rule-list'),
-
-    #     # get the progress of all rules
-    #     path('rules/progress/', getAllRuleProgress.as_view(), name='rule-progress'),
-
-    #     # get the progress of all rules by constraint id
-    #     path('rules/progress/<int:constraint_pk>',
-    #          getRulesProgressByContraint.as_view(), name='rule-progress'),
 ]

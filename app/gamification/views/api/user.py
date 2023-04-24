@@ -21,17 +21,24 @@ import os
 
 from app.gamification.utils import get_user_pk
 
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
 
 # class IsAdminUser(permissions.BasePermission):
 #     def has_permission(self, request, view):
 #         return request.user and request.user.is_staff
 
 
-class Users(generics.ListCreateAPIView):
+class Users(generics.RetrieveAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        operation_description='List all users in the system',
+        tags=['users']
+    )
     def get(self, request, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(id=user_id)
@@ -49,6 +56,10 @@ class UserDetail(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        operation_description='Get a user by andrew id',
+        tags=['users']
+    )
     def get(self, request, andrew_id, *args, **kwargs):
         try:
             data = CustomUser.objects.get(andrew_id=andrew_id)
@@ -59,6 +70,10 @@ class UserDetail(generics.RetrieveUpdateAPIView):
         except CustomUser.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+    @swagger_auto_schema(
+        operation_description='Update a user is_staff field by andrew id',
+        tags=['users']
+    )
     def patch(self, request, andrew_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(id=user_id)
@@ -79,6 +94,42 @@ class Login(generics.CreateAPIView):
 
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        operation_description='Login a user',
+        tags=['users'],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'andrew_id': openapi.Schema(type=openapi.TYPE_STRING),
+                'password': openapi.Schema(type=openapi.TYPE_STRING),
+            }
+        ),
+        responses={
+            200: openapi.Response(
+                description='Login successful',
+                examples={
+                    'application/json': {
+                        'id': 1,
+                        'andrew_id': 'test',
+                        'first_name': 'test',
+                        'last_name': 'test',
+                        'email': '123@gmail.com',
+                        'is_staff': False,
+                        'exp_points': 0,
+                        'exp': 0,
+                        'level': 1,
+                    }
+                }
+            ),
+            404: openapi.Response(
+                description='Failed to login. Username does not exist.',
+            ),
+
+            400: openapi.Response(
+                description='Failed to login. Password is incorrect.',
+            ),
+        }
+    )
     def post(self, request, *args, **kwargs):
         andrew_id = request.data.get('andrew_id')
         password = request.data.get('password')
@@ -88,7 +139,7 @@ class Login(generics.CreateAPIView):
             serializer = UserSerializer(user, context={'request': request})
             user_data = serializer.data
         except CustomUser.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND, data={ 'error': 'Failed to login. Username does not exist.' })
+            return Response(status=status.HTTP_404_NOT_FOUND, data={'error': 'Failed to login. Username does not exist.'})
         try:
             xp_points = XpPoints.objects.get(user=user)
         except XpPoints.DoesNotExist:
@@ -103,7 +154,7 @@ class Login(generics.CreateAPIView):
             user_data['token'] = jwt_token['token']
             return Response(user_data, status=status.HTTP_200_OK)
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST, data={ 'error': 'Failed to login. Invalid password.' })
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={'error': 'Failed to login. Invalid password.'})
 
 
 class Register(generics.ListCreateAPIView):
@@ -112,6 +163,23 @@ class Register(generics.ListCreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
 
+    @swagger_auto_schema(
+        operation_description='Register a user',
+        tags=['users'],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+
+                'andrew_id': openapi.Schema(type=openapi.TYPE_STRING),
+                'password': openapi.Schema(type=openapi.TYPE_STRING),
+            }
+        ),
+        responses={
+            200: openapi.Response(
+                description='Register successful',
+            ),
+        }
+    )
     def post(self, request, *args, **kwargs):
 
         andrew_id = request.data.get('andrew_id')
@@ -124,4 +192,4 @@ class Register(generics.ListCreateAPIView):
             user.set_password(password)
             user.save()
             return Response(status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST, data={ 'error': 'Failed to register. Username already taken.' })
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={'error': 'Failed to register. Username already taken.'})
