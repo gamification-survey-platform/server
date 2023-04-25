@@ -36,13 +36,34 @@ class UserProfile(generics.RetrieveUpdateAPIView):
             )
         }
     )
+    def create_profile_picture(self, request, user):
+        picture = request.FILES.get('image')
+        if not picture:
+            return None
+
+        content_type = picture.content_type
+        if content_type == 'image/jpeg':
+            file_ext = 'jpg'
+        elif content_type == 'image/png':
+            file_ext = 'png'
+        else:
+            return None
+
+        if settings.USE_S3:
+            key = f'users/user_{user.id}.{file_ext}'
+        else:
+            key = picture
+
+        return key
+
     def get(self, request, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(id=user_id)
         user_info = {
             'first_name': user.first_name,
             'last_name': user.last_name,
-            'email': user.email
+            'email': user.email,
+            'image': user.image
         }
         return Response(user_info)
 
@@ -65,16 +86,22 @@ class UserProfile(generics.RetrieveUpdateAPIView):
         first_name = request.data.get('first_name')
         last_name = request.data.get('last_name')
         email = request.data.get('email')
+        image = request.data.get('image')
         if first_name:
             user.first_name = first_name
         if last_name:
             user.last_name = last_name
         if email:
             user.email = email
+        if image:
+            image_key = self.create_profile_picture(request, user)
+            user.image = image_key
         user.save()
         user_info = {
             'first_name': user.first_name,
             'last_name': user.last_name,
-            'email': user.email
+            'email': user.email,
         }
+        if user.image:
+            user_info['image'] = user.image
         return Response(user_info)
