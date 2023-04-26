@@ -333,7 +333,7 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
         for artifact_review in artifact_reviews:
             artifact = artifact_review.artifact
             user = artifact_review.user
-            print(artifact_review)
+            if artifact_review.status == ArtifactReview.ArtifactReviewType.INCOMPLETE: continue
             # fill in the matrix with artifact_review_score / max_artifact_review_score
             matrix[registrations_id_list.index(user.id)][artifacts_id_list.index(
                 artifact.id)] = artifact_review.artifact_review_score / artifact_review.max_artifact_review_score
