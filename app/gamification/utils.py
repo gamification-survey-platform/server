@@ -114,8 +114,14 @@ def generate_presigned_url(key, expiration=3600, http_method='GET'):
         region_name=settings.AWS_S3_REGION_NAME
     )
 
+    client_method = {
+        'GET': 'get_object',
+        'PUT': 'put_object',
+        'DELETE': 'delete_object'
+    }.get(http_method, 'get_object')
+
     response = s3_client.generate_presigned_url(
-        ClientMethod='put_object' if http_method == 'PUT' else 'get_object',
+        ClientMethod=client_method,
         Params={
             'Bucket': settings.AWS_STORAGE_BUCKET_NAME,
             'Key': key
