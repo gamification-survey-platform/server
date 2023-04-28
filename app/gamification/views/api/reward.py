@@ -138,6 +138,43 @@ GET Permissions: Staff or Student
 POST Permissions: Staff
 """
 
+def generate_reward_key(request, course):
+    picture = request.FILES.get('picture')
+    if not picture:
+        return None
+
+    content_type = picture.content_type
+    if content_type == 'image/jpeg':
+        file_ext = 'jpg'
+    elif content_type == 'image/png':
+        file_ext = 'png'
+    else:
+        return None
+
+    if settings.USE_S3:
+        key = f'rewards/reward_{course.id}.{file_ext}'
+    else:
+        key = picture
+
+    return key
+
+def get_reward_picture_key(reward):
+    picture = reward.picture
+    content_type = picture.content_type
+    if content_type == 'image/jpeg':
+        file_ext = 'jpg'
+    elif content_type == 'image/png':
+        file_ext = 'png'
+    else:
+        return None
+
+    if settings.USE_S3:
+        key = f'rewards/reward_{course.id}.{file_ext}'
+    else:
+        key = picture
+
+    return key
+
 
 class CourseRewardList(generics.ListCreateAPIView):
     queryset = Reward.objects.all()
@@ -164,25 +201,6 @@ class CourseRewardList(generics.ListCreateAPIView):
             serializer = self.get_serializer(rewards, many=True)
             return Response(serializer.data)
 
-    def create_reward_picture(self, request, course):
-        picture = request.FILES.get('picture')
-        if not picture:
-            return None
-
-        content_type = picture.content_type
-        if content_type == 'image/jpeg':
-            file_ext = 'jpg'
-        elif content_type == 'image/png':
-            file_ext = 'png'
-        else:
-            return None
-
-        if settings.USE_S3:
-            key = f'rewards/reward_{course.id}.{file_ext}'
-        else:
-            key = picture
-
-        return key
 
     @swagger_auto_schema(
         operation_description="Create a reward under a course",
@@ -218,7 +236,7 @@ class CourseRewardList(generics.ListCreateAPIView):
         if type.type == 'Bonus' or type.type == 'Late Submission':
             reward.quantity = request.data.get('quantity')
         elif type.type == 'Other':
-            picture_key = self.create_reward_picture(request, course)
+            picture_key = generate_reward_key(request, course)
             reward.picture = picture_key
         elif type.type == 'Theme':
             reward.theme = request.data.get('theme')
@@ -278,6 +296,7 @@ class CourseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
         user = CustomUser.objects.get(pk=user_id)
         if user.is_staff:
             reward = Reward.objects.get(pk=reward_id)
+            course = get_object_or_404(Course, pk=course_id)
             name = request.data.get('name')
             description = request.data.get('description')
             type_string = request.data.get('type')
@@ -302,14 +321,27 @@ class CourseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
                 if quantity:
                     reward.quantity = quantity
             elif reward_type.type == 'Other':
-                picture = request.data.get('picture')
-                if picture and isinstance(picture, InMemoryUploadedFile):
-                    reward.picture = picture
+                picture_key = generate_reward_key(request, course)
+                reward.picture = picture_key
             else:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             reward.save()
             serializer = self.get_serializer(reward)
-            return Response(serializer.data)
+            response_data = serializer.data
+            if reward_type.type == 'Other' and settings.USE_S3:
+                upload_url = generate_presigned_post(picture_key)
+                download_url = generate_presigned_url(
+                    picture_key, http_method='GET')
+            else:
+                upload_url = response_data['picture']
+                download_url = response_data['picture']
+            response_data.pop('picture')
+            if upload_url:
+                response_data['upload_url'] = upload_url
+            if download_url:
+                response_data['download_url'] = download_url
+
+            return Response(response_data)
         elif user.is_superuser:
             pass
         else:
@@ -325,5 +357,9 @@ class CourseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
         if not user.is_staff:
             return Response(status=status.HTTP_403_FORBIDDEN)
         reward = Reward.objects.get(pk=reward_id)
+        if reward.picture and settings.USE_S3:
+            delete_url = generate_presigned_url(
+                    str(reward.picture), http_method='DELETE')
         reward.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        response_data = { 'delete_url': delete_url }
+        return Response(response_data)
