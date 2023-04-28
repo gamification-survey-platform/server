@@ -25,3 +25,6 @@ terraform/terraform.tfstate*
 
 # Credentials
 *.csv
+
+# Data
+*.json
