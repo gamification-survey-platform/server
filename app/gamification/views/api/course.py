@@ -148,7 +148,7 @@ class CourseDetail(generics.ListCreateAPIView):
         try:
             course.delete()
         except Exception as error:
-            print(error)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(status=status.HTTP_200_OK)
 
 
@@ -165,12 +165,10 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         def get_registrations(user):
             registration = []
             for reg in Registration.objects.filter(users=user):
-                print(reg.courses.visible)
                 if reg.courses.visible == False:
                     continue
                 else:
                     registration.append(reg)
-            print(registration)
             return registration
 
         def registrations_to_courses(registrations):

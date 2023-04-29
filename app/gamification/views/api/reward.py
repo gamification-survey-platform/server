@@ -325,21 +325,26 @@ class CourseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
                 reward.picture = picture_key
             else:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-            reward.save()
-            serializer = self.get_serializer(reward)
-            response_data = serializer.data
             if reward_type.type == 'Other' and settings.USE_S3:
                 upload_url = generate_presigned_post(picture_key)
                 download_url = generate_presigned_url(
                     picture_key, http_method='GET')
+                delete_url = generate_presigned_url(
+                    str(reward.picture), http_method='DELETE')
             else:
                 upload_url = response_data['picture']
                 download_url = response_data['picture']
+
+            reward.save()
+            serializer = self.get_serializer(reward)
+            response_data = serializer.data
             response_data.pop('picture')
             if upload_url:
                 response_data['upload_url'] = upload_url
             if download_url:
                 response_data['download_url'] = download_url
+            if delete_url:
+                response_data['delete_url'] = delete_url
 
             return Response(response_data)
         elif user.is_superuser:

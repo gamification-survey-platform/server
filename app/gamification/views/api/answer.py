@@ -464,8 +464,6 @@ class ArtifactAnswerMultipleChoiceList(generics.ListCreateAPIView):
         choice_labels_scale = set()
         number_of_scale = 0
         for answer in answers:
-            # print(answer.question_option.question.section)
-            # print(answer.question_option.question.question_type)
             if answer.question_option.question.question_type == 'SCALEMULTIPLECHOICE':
                 # choice_labels_scale.add(answer.question_option.option_choice.text)
                 number_of_scale = answer.question_option.question.number_of_scale
