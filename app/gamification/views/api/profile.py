@@ -119,7 +119,11 @@ class UserProfile(generics.RetrieveUpdateAPIView):
         if settings.USE_S3 and key != None:
             upload_url = generate_presigned_post(key)
             download_url = generate_presigned_url(key, http_method='GET')
-            user_info['image'] = download_url
+            delete_url = generate_presigned_url(
+                    str(user.image), http_method='DELETE')
+            user_info['upload_url'] = upload_url
+            user_info['download_url'] = download_url
+            user_info['delete_url'] = delete_url
         elif key != None:
             upload_url = f'http://{settings.ALLOWED_HOSTS[1]}:8000{user.image.url}'
             download_url = f'http://{settings.ALLOWED_HOSTS[1]}:8000{user.image.url}'
