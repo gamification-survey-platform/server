@@ -53,17 +53,21 @@ class SubmitArtifact(generics.ListCreateAPIView):
                 courses=course) if i.users.pk not in team_members]
             for registration in registrations:
                 if registration.userRole == Registration.UserRole.Student:
-                    artifact_review = ArtifactReview(
-                        artifact=artifact, user=registration)
-                    artifact_review.save()
+                    # create artifact review if it doesn't exist
+                    if not ArtifactReview.objects.filter(artifact=artifact, user=registration).exists():
+                        artifact_review = ArtifactReview(
+                            artifact=artifact, user=registration)
+                        artifact_review.save()
         else:
             registrations = [i for i in Registration.objects.filter(
                 courses=course) if i.id != registration.id]
             if registration.userRole == Registration.UserRole.Student:
                 for single_registration in registrations:
-                    artifact_review = ArtifactReview(
-                        artifact=artifact, user=single_registration)
-                    artifact_review.save()
+                    # create artifact review if it doesn't exist
+                    if not ArtifactReview.objects.filter(artifact=artifact, user=single_registration).exists():
+                        artifact_review = ArtifactReview(
+                            artifact=artifact, user=single_registration)
+                        artifact_review.save()
 
     @swagger_auto_schema(
         operation_description="Upload an artifact for an assignment",
