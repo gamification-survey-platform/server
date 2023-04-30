@@ -58,6 +58,9 @@ class AssignmentArtifactReviewList(generics.RetrieveAPIView):
             assignment_id=assignment_id)
         artifact_reviews = []
         for artifact in artifacts:
+            artifact_members = artifact.entity.members
+            if user in artifact_members:
+                continue
             try:
                 artifact_review = ArtifactReview.objects.get(
                     artifact=artifact, user=registration)

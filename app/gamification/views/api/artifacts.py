@@ -64,7 +64,7 @@ class SubmitArtifact(generics.ListCreateAPIView):
             if registration.userRole == Registration.UserRole.Student:
                 for single_registration in registrations:
                     # create artifact review if it doesn't exist
-                    if not ArtifactReview.objects.filter(artifact=artifact, user=single_registration).exists():
+                    if not ArtifactReview.objects.filter(artifact=artifact, user=single_registration).exists() and single_registration.userRole == Registration.UserRole.Student:
                         artifact_review = ArtifactReview(
                             artifact=artifact, user=single_registration)
                         artifact_review.save()
