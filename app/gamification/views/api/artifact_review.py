@@ -21,7 +21,7 @@ from drf_yasg.utils import swagger_auto_schema
 import pandas as pd
 
 
-class ArtifactReviewList(generics.RetrieveAPIView):
+class AssignmentArtifactReviewList(generics.RetrieveAPIView):
     queryset = ArtifactReview.objects.all()
     serializer_class = ArtifactReviewSerializer
     permission_classes = [permissions.AllowAny]
@@ -31,7 +31,7 @@ class ArtifactReviewList(generics.RetrieveAPIView):
         tags=['artifact_reviews'],
         responses={
             200: openapi.Response(
-                description="Artifact reviews",
+                description="Artifact reviews for an assignment",
                 examples={
                     "application/json": [
                         {
@@ -71,10 +71,57 @@ class ArtifactReviewList(generics.RetrieveAPIView):
                     entity=artifact.entity).student.users.name_or_andrew_id()
             else:
                 artifact_review_dict['reviewing'] = artifact.entity.team.name
-            if artifact_review.user.users_id != user_id:
-                artifact_reviews.append(artifact_review_dict)
+            artifact_reviews.append(artifact_review_dict)
+
         return Response(artifact_reviews, status=status.HTTP_200_OK)
 
+class UserArtifactReviewList(generics.RetrieveAPIView):
+    queryset = ArtifactReview.objects.all()
+    serializer_class = ArtifactReviewSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Get artifact reviews for a specific user",
+        tags=['artifact_reviews'],
+        responses={
+            200: openapi.Response(
+                description="Artifact reviews for a user",
+                examples={
+                    "application/json": [
+                        {
+                            "id": 1,
+                            "artifact": 1,
+                            "user": 1,
+                            "score": 0,
+                            "feedback": "string",
+                            "reviewing": "string"
+                        }
+                    ]
+                }
+            )
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
+        registrations = Registration.objects.filter(users=user)
+        response_data = []
+        for registration in registrations:
+            artifact_reviews = ArtifactReview.objects.filter(
+                user=registration)
+            for artifact_review in artifact_reviews:
+                artifact_review_data = model_to_dict(artifact_review)
+                artifact = get_object_or_404(Artifact, id=artifact_review.artifact_id)
+                assignment = get_object_or_404(Assignment, id=artifact.assignment_id)
+                if assignment.assignment_type == 'Individual':
+                    artifact_review_data['reviewing'] = Membership.objects.get(
+                        entity=artifact.entity).student.users.name_or_andrew_id()
+                else:
+                    artifact_review_data['reviewing'] = artifact.entity.team.name
+                artifact_review_data['course_id'] = registration.courses_id
+                artifact_review_data['assignment_id'] = assignment.id
+                response_data.append(artifact_review_data)
+        return Response(response_data, status=status.HTTP_200_OK)
 
 class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.AllowAny]

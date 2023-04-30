@@ -203,7 +203,7 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
     )
     def post(self, request, *args, **kwargs):
         # add course
-        course_number = request.data.get('course_number').strip()
+        course_number = request.data.get('course_number')
         course_name = request.data.get('course_name').strip()
         syllabus = request.data.get('syllabus').strip()
         semester = request.data.get('semester').strip()

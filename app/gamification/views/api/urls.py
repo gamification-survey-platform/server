@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from app.gamification.views.api.artifact_review import ArtifactReviewDetails, ArtifactReviewList, ArtifactReviewIpsatization
+from app.gamification.views.api.artifact_review import ArtifactReviewDetails, AssignmentArtifactReviewList, UserArtifactReviewList, ArtifactReviewIpsatization
 from app.gamification.views.api.artifacts import SubmitArtifact, GetArtifact
 from .user import Users, UserDetail, Login, Register
 from .course import CourseList, CourseDetail
@@ -129,9 +129,13 @@ urlpatterns = [
     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/<int:artifact_pk>/statistics',
          ArtifactAnswerMultipleChoiceList.as_view(), name='artifact-answer-statistics'),
 
-    # get all artifact reviews
+    # get all artifact reviews for a user
+    path('artifact_reviews/',
+         UserArtifactReviewList.as_view(), name="artifact-review-list"),
+
+    # get all artifact reviews for an assignment
     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/',
-         ArtifactReviewList.as_view(), name="artifact-review-list"),
+         AssignmentArtifactReviewList.as_view(), name="artifact-review-list"),
 
     # calculate ipsatized values from artifact_reviews and saved to 'score' in Grade
     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/ipsatization/',

@@ -194,6 +194,7 @@ class SubmitArtifact(generics.ListCreateAPIView):
 
         data['artifact_pk'] = artifact.pk
         return Response(data, status=status.HTTP_200_OK)
+    
 
 
 class GetArtifact (generics.RetrieveAPIView):
