@@ -58,9 +58,9 @@ class AssignmentArtifactReviewList(generics.RetrieveAPIView):
             assignment_id=assignment_id)
         artifact_reviews = []
         for artifact in artifacts:
+            # Prevent self review
             artifact_members = artifact.entity.members
-            if user in artifact_members:
-                continue
+            if user in artifact_members: continue
             try:
                 artifact_review = ArtifactReview.objects.get(
                     artifact=artifact, user=registration)
@@ -113,8 +113,13 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
             artifact_reviews = ArtifactReview.objects.filter(
                 user=registration)
             for artifact_review in artifact_reviews:
-                artifact_review_data = model_to_dict(artifact_review)
                 artifact = get_object_or_404(Artifact, id=artifact_review.artifact_id)
+
+                # Prevent self review
+                artifact_members = artifact.entity.members
+                if user in artifact_members: continue
+
+                artifact_review_data = model_to_dict(artifact_review)
                 assignment = get_object_or_404(Assignment, id=artifact.assignment_id)
                 if assignment.assignment_type == 'Individual':
                     artifact_review_data['reviewing'] = Membership.objects.get(
