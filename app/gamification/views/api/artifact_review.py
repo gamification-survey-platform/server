@@ -56,27 +56,45 @@ class AssignmentArtifactReviewList(generics.RetrieveAPIView):
             Registration, users=user, courses=course)
         artifacts = Artifact.objects.filter(
             assignment_id=assignment_id)
-        artifact_reviews = []
-        for artifact in artifacts:
-            # Prevent self review
-            artifact_members = artifact.entity.members
-            if user in artifact_members: continue
-            try:
-                artifact_review = ArtifactReview.objects.get(
-                    artifact=artifact, user=registration)
-            except ArtifactReview.DoesNotExist:
-                artifact_review = ArtifactReview(
-                    artifact=artifact, user=registration)
-                artifact_review.save()
-            artifact_review_dict = model_to_dict(artifact_review)
-            if assignment.assignment_type == 'Individual':
-                artifact_review_dict['reviewing'] = Membership.objects.get(
-                    entity=artifact.entity).student.users.name_or_andrew_id()
-            else:
-                artifact_review_dict['reviewing'] = artifact.entity.team.name
-            artifact_reviews.append(artifact_review_dict)
+        response_data = []
+        # Instructors get all artifacts for assignment
+        if registration.userRole == Registration.UserRole.Instructor:
+            for artifact in artifacts:
+                artifact_reviews = ArtifactReview.objects.filter(
+                    artifact=artifact)
+                for artifact_review in artifact_reviews:
+                    artifact_review_dict = model_to_dict(artifact_review)
+                    reviewer_registration = artifact_review.user
+                    reviewer = get_object_or_404(CustomUser, id=reviewer_registration.users_id)
+                    artifact_review_dict['reviewer'] = reviewer.andrew_id
+                    if assignment.assignment_type == 'Individual':
+                        artifact_review_dict['reviewing'] = Membership.objects.get(
+                            entity=artifact.entity).student.users.name_or_andrew_id()
+                    else:
+                        artifact_review_dict['reviewing'] = artifact.entity.team.name
+                    response_data.append(artifact_review_dict)
+        # Students get all artifacts he/she should review
+        else:
+            for artifact in artifacts:
+                # Prevent self review
+                artifact_members = artifact.entity.members
+                if user in artifact_members: continue
+                try:
+                    artifact_review = ArtifactReview.objects.get(
+                        artifact=artifact, user=registration)
+                except ArtifactReview.DoesNotExist:
+                    artifact_review = ArtifactReview(
+                        artifact=artifact, user=registration)
+                    artifact_review.save()
+                artifact_review_dict = model_to_dict(artifact_review)
+                if assignment.assignment_type == 'Individual':
+                    artifact_review_dict['reviewing'] = Membership.objects.get(
+                        entity=artifact.entity).student.users.name_or_andrew_id()
+                else:
+                    artifact_review_dict['reviewing'] = artifact.entity.team.name
+                response_data.append(artifact_review_dict)
 
-        return Response(artifact_reviews, status=status.HTTP_200_OK)
+        return Response(response_data, status=status.HTTP_200_OK)
 
 class UserArtifactReviewList(generics.RetrieveAPIView):
     queryset = ArtifactReview.objects.all()
