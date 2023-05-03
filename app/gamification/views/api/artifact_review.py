@@ -3,6 +3,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from app.gamification.models.assignment import Assignment
+from app.gamification.models.entity import Team, Individual
 from app.gamification.models.course import Course
 from app.gamification.models.membership import Membership
 from app.gamification.models.user import CustomUser
@@ -17,14 +18,60 @@ from app.gamification.models.grade import Grade
 from app.gamification.serializers.answer import ArtifactReviewSerializer
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-
 import pandas as pd
 
-
-class AssignmentArtifactReviewList(generics.RetrieveAPIView):
+class AssignmentArtifactReviewList(generics.GenericAPIView):
     queryset = ArtifactReview.objects.all()
     serializer_class = ArtifactReviewSerializer
     permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Create specific artifact review for a student",
+        tags=['artifact_reviews'],
+        responses={
+            200: openapi.Response(
+                description="Create artifact review for a student",
+                examples=[{
+                    "application/json": {
+                        "id": 1,
+                        "artifact": 1,
+                        "user": 1,
+                        "score": 0,
+                        "feedback": "string",
+                        "reviewing": "string"
+                    }
+                }]
+            )
+        }
+    )
+    def post(self, request, course_id, assignment_id, *args, **kwargs):
+        course = get_object_or_404(Course, pk=course_id)
+        assignment = get_object_or_404(Assignment, pk=assignment_id)
+        reviewer_andrew_id = request.data.get('reviewer')
+        reviewee_andrew_id = request.data.get('reviewee')
+        reviewer = get_object_or_404(CustomUser, andrew_id=reviewer_andrew_id)
+        reviewee = get_object_or_404(CustomUser, andrew_id=reviewee_andrew_id)
+        reviewer_registration = get_object_or_404(Registration, users=reviewer, courses=course)
+        reviewee_registration = get_object_or_404(Registration, users=reviewee, courses=course)
+        if assignment.assignment_type == "Individual":
+            try:
+                entity = Individual.objects.get(
+                    registration=reviewee_registration, course=course)
+            except Individual.DoesNotExist:
+                return Response({"messages": "No team found"}, status=status.HTTP_404_NOT_FOUND)
+        elif assignment.assignment_type == "Team":
+            try:
+                entity = Team.objects.get(
+                    registration=reviewee_registration, course=course)
+            except Team.DoesNotExist:
+                return Response({"messages": "No team found"}, status=status.HTTP_404_NOT_FOUND)
+        artifact = get_object_or_404(Artifact, entity=entity)
+        artifact_review = ArtifactReview(artifact=artifact, user=reviewer_registration)
+        artifact_review.save()
+        response_data = model_to_dict(artifact_review)
+        response_data['reviewer'] = reviewer_andrew_id
+        response_data['reviewing'] = reviewee_andrew_id
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
         operation_description="Get artifact reviews for a specific assignment",
@@ -95,6 +142,19 @@ class AssignmentArtifactReviewList(generics.RetrieveAPIView):
                 response_data.append(artifact_review_dict)
 
         return Response(response_data, status=status.HTTP_200_OK)
+    
+    @swagger_auto_schema(
+        operation_description="Unassign specific artifact review for a student",
+        tags=['artifact_reviews'],
+        responses={
+            204
+        }
+    )
+    def delete(self, request, course_id, assignment_id, *args, **kwargs):
+        artifact_review_id = request.data.get('artifact_review_id')
+        artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_id)
+        artifact_review.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class UserArtifactReviewList(generics.RetrieveAPIView):
     queryset = ArtifactReview.objects.all()

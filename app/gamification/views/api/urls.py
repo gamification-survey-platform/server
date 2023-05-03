@@ -129,6 +129,10 @@ urlpatterns = [
     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/<int:artifact_pk>/statistics',
          ArtifactAnswerMultipleChoiceList.as_view(), name='artifact-answer-statistics'),
 
+    # create a artifact review for a user given a artifact
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifacts_reviews/',
+         UserArtifactReviewList.as_view(), name="artifact-review-list"),
+
     # get all artifact reviews for a user
     path('artifact_reviews/',
          UserArtifactReviewList.as_view(), name="artifact-review-list"),
