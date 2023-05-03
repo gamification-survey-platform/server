@@ -50,7 +50,7 @@ class SubmitArtifact(generics.ListCreateAPIView):
         if assignment_type == 'Team':
             team_members = [i.pk for i in entity.members]
             registrations = [i for i in Registration.objects.filter(
-                courses=course) if i.users.pk not in team_members]
+                course=course) if i.user.pk not in team_members]
             for registration in registrations:
                 if registration.userRole == Registration.UserRole.Student:
                     # create artifact review if it doesn't exist
@@ -60,7 +60,7 @@ class SubmitArtifact(generics.ListCreateAPIView):
                         artifact_review.save()
         else:
             registrations = [i for i in Registration.objects.filter(
-                courses=course) if i.id != registration.id]
+                course=course) if i.id != registration.id]
             if registration.userRole == Registration.UserRole.Student:
                 for single_registration in registrations:
                     # create artifact review if it doesn't exist
@@ -103,7 +103,7 @@ class SubmitArtifact(generics.ListCreateAPIView):
         user = get_object_or_404(CustomUser, pk=user_id)
         assignment = get_object_or_404(Assignment, pk=assignment_id)
         course = get_object_or_404(Course, pk=course_id)
-        registration = Registration.objects.get(users=user, courses=course)
+        registration = Registration.objects.get(user=user, course=course)
         assignment_type = assignment.assignment_type
         if assignment_type == "Individual":
             try:
@@ -172,11 +172,10 @@ class SubmitArtifact(generics.ListCreateAPIView):
         assignment = get_object_or_404(Assignment, pk=assignment_id)
         if assignment.assignment_type == "Individual":
             entity = Individual.objects.get(
-                registration__users=user, course__id=course_id)
+                registration__user=user, course__id=course_id)
         elif assignment.assignment_type == "Team":
             entity = Team.objects.get(
-                registration__users=user, course__id=course_id)
-
+                registration__user=user, course__id=course_id)
         try:
             artifact = Artifact.objects.get(
                 assignment=assignment, entity=entity)

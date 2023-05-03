@@ -56,7 +56,7 @@ class CourseDetail(generics.ListCreateAPIView):
         user = CustomUser.objects.get(andrew_id=andrew_id)
         course = get_object_or_404(Course, pk=course_id)
         registration = get_object_or_404(
-            Registration, users=user, courses=course)
+            Registration, user=user, course=course)
         if course.visible == False and registration.userRole == Registration.UserRole.Student:
             # return 403 and error message
             content = {'message': 'Permission denied'}
@@ -101,7 +101,7 @@ class CourseDetail(generics.ListCreateAPIView):
         user_pk = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_pk)
         registration = get_object_or_404(
-            Registration, users=user, courses=course)
+            Registration, user=user, course=course)
 
         if registration.userRole == Registration.UserRole.Student:
             content = {'message': 'Permission denied'}
@@ -141,7 +141,7 @@ class CourseDetail(generics.ListCreateAPIView):
         user_pk = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_pk)
         registration = get_object_or_404(
-            Registration, users=user, courses=course)
+            Registration, user=user, course=course)
         if registration.userRole == Registration.UserRole.Student:
             content = {'message': 'Permission denied'}
             return Response(content, status=status.HTTP_403_FORBIDDEN)
@@ -164,8 +164,8 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
     def get(self, request, *args, **kwargs):
         def get_registrations(user):
             registration = []
-            for reg in Registration.objects.filter(users=user):
-                if reg.courses.visible == False:
+            for reg in Registration.objects.filter(user=user):
+                if reg.course.visible == False:
                     continue
                 else:
                     registration.append(reg)
@@ -174,7 +174,7 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         def registrations_to_courses(registrations):
             courses = []
             for reg in registrations:
-                course = Course.objects.get(id=reg.courses.id)
+                course = Course.objects.get(id=reg.course.id)
                 courses.append(course)
             return courses
         user = None
@@ -189,6 +189,7 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
             return Response(serializer.data)
         else:
             registrations = get_registrations(user)
+            print(registrations)
             courses = registrations_to_courses(registrations)
             serializer = CourseSerializer(courses, many=True)
             data = []
@@ -211,7 +212,7 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         user = CustomUser.objects.get(pk=user_pk)
         # boolean value visible
         visible = request.data.get('visible')
-        visible = True if visible == 'true' else False
+        visible = False if visible == 'false' else True
         picture = request.data.get('picture')
         course = Course.objects.create(
             course_number=course_number,
@@ -223,7 +224,7 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         )
         course.save()
         registration = Registration(
-            users=user, courses=course, userRole=Registration.UserRole.Instructor)
+            user=user, course=course, userRole=Registration.UserRole.Instructor)
         registration.save()
         serializer = CourseSerializer(course)
         return Response(serializer.data)

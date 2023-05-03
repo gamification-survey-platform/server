@@ -11,7 +11,6 @@ from app.gamification.models.registration import Registration
 from app.gamification.models.survey_section import SurveySection
 from app.gamification.models.survey_template import SurveyTemplate
 from app.gamification.serializers.survey import OptionChoiceSerializer, OptionChoiceWithoutNumberOfTextSerializer, QuestionSerializer, SectionSerializer, SurveySerializer, TemplateSectionSerializer
-from app.gamification.utils import parse_datetime
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 

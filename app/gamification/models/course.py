@@ -80,7 +80,7 @@ class Course(models.Model):
 
     def get_query(self, role):
         return Registration.objects.filter(
-            courses=self.pk, userRole=role).values_list('users', flat=True)
+            course=self.pk, userRole=role).values_list('user', flat=True)
 
     @property
     def instructors(self):

@@ -1,7 +1,6 @@
 from app.gamification.models.course import Course
 from app.gamification.models.registration import Registration
 from app.gamification.models.reward import Reward
-from app.gamification.models.xp_points import XpPoints
 from app.gamification.models.reward_type import RewardType
 from app.gamification.models.user_reward import UserReward
 from rest_framework import generics
@@ -93,22 +92,16 @@ class RewardDetail(generics.RetrieveUpdateDestroyAPIView):
             pass
         else:
             reward = Reward.objects.get(pk=reward_id)
-            try:
-                xp_point = XpPoints.objects.get(
-                    user=user)
-            except XpPoints.DoesNotExist:
-                xp_point = XpPoints.objects.create(
-                    user=user,
-                    points=0
-                )
-            if reward.exp_point > xp_point.points:
+            course = reward.course
+            registration = get_object_or_404(Registration, user=user, course=course)
+            if reward.points > registration.points:
                 return Response(data={"message": "Do not have enough points"}, status=status.HTTP_400_BAD_REQUEST)
             if reward.inventory > 0 or reward.inventory == -1:
                 if reward.inventory != -1:
                     reward.inventory -= 1
                     reward.save()
-                xp_point.points -= reward.exp_point
-                xp_point.save()
+                registration.points -= reward.points
+                registration.save()
                 user_reward = UserReward.objects.create(
                     user=user,
                     reward=reward

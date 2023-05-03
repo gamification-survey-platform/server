@@ -12,8 +12,6 @@ from .survey import SurveyGetInfo
 from .answer import ArtifactAnswerMultipleChoiceList, ArtifactAnswerKeywordList
 from .profile import UserProfile
 from .reward import RewardList, RewardDetail, CourseRewardList, CourseRewardDetail
-from .levels import LevelList
-from .xp_points import UpdateExp
 from .feedback_survey import SurveyList
 from .member import MemberList
 from .report import ViewReport
@@ -72,9 +70,6 @@ urlpatterns = [
 
     # get user profile, or update user profile
     path('profile/', UserProfile.as_view(), name='user-profile'),
-
-    # update exp_points, exp, level
-    path('exp/', UpdateExp.as_view(), name='xp-points-list'),
 
     # course
     path('courses/', CourseList.as_view(), name='course-list'),
@@ -156,7 +151,4 @@ urlpatterns = [
     # get reward detail by reward_id, update a reward, delete a reward
     path('courses/<str:course_id>/rewards/<str:reward_id>/',
          CourseRewardDetail.as_view(), name='reward-detail'),
-
-    # get level detail
-    path('levels/<str:level>/', LevelList.as_view(), name='level-detail')
 ]

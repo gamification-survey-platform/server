@@ -11,7 +11,6 @@ from app.gamification.models.registration import Registration
 from app.gamification.models.survey_section import SurveySection
 from app.gamification.models.survey_template import SurveyTemplate
 from app.gamification.serializers.survey import OptionChoiceSerializer, OptionChoiceWithoutNumberOfTextSerializer, QuestionSerializer, SectionSerializer, SurveySerializer, TemplateSectionSerializer
-from app.gamification.utils import parse_datetime
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
@@ -81,9 +80,8 @@ class SurveyList(generics.ListCreateAPIView):
         survey_template_name = request.data.get('template_name').strip()
         survey_template_instruction = request.data.get('instructions')
         survey_template_other_info = request.data.get('other_info')
-        feedback_survey_date_released = parse_datetime(
-            request.data.get('date_released'))
-        feedback_survey_date_due = parse_datetime(request.data.get('date_due'))
+        feedback_survey_date_released = request.data.get('date_released')
+        feedback_survey_date_due = request.data.get('date_due')
         feedback_survey = FeedbackSurvey.objects.filter(assignment=assignment)
         if len(feedback_survey) > 0:
             survey_template = feedback_survey[0].template
@@ -111,6 +109,7 @@ class SurveyList(generics.ListCreateAPIView):
         if survey_template_name == "Default Template":
             default_survey_template = get_object_or_404(
                 SurveyTemplate, is_template=True, name="Survey Template")
+            print(default_survey_template)
             for default_section in default_survey_template.sections:
                 section = SurveySection(template=survey_template,
                                         title=default_section.title,

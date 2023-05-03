@@ -42,7 +42,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
 
     def check_instructor_count(self, course_id):
         instructor_count = Registration.objects.filter(
-            courses=course_id, userRole='Instructor').count()
+            course=course_id, userRole='Instructor').count()
         return instructor_count
 
     @swagger_auto_schema(
@@ -67,7 +67,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
     )
     def get(self, request, course_id, *args, **kwargs):
         def get_member_list(course_id):
-            registration = Registration.objects.filter(courses=course)
+            registration = Registration.objects.filter(course=course)
             membership = []
             for i in registration:
                 try:
@@ -80,10 +80,10 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
                 except Team.DoesNotExist:
                     team = ''
                 membership.append({
-                    'andrew_id': i.users.andrew_id,
+                    'andrew_id': i.user.andrew_id,
                     'userRole': i.userRole,
                     'team': team,
-                    'is_activated': i.users.is_activated,
+                    'is_activated': i.user.is_activated,
                 })
             membership = sorted(membership, key=lambda x: x['team'])
             context = {'membership': membership,
@@ -94,7 +94,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
             # get user with andrew_id
             user = get_object_or_404(CustomUser, andrew_id=andrew_id)
             registration = Registration.objects.filter(
-                courses=course, users=user)
+                course=course, user=user)
             membership = []
             for i in registration:
                 try:
@@ -122,7 +122,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, pk=user_id)
         registration = get_object_or_404(
-            Registration, users=user, courses=course)
+            Registration, user=user, course=course)
         userRole = registration.userRole
         if 'andrew_id' in request.query_params:
             andrew_id = request.query_params['andrew_id']
@@ -162,7 +162,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
     )
     def post(self, request, course_id, *args, **kwargs):
         def get_member_list(course_id):
-            registration = Registration.objects.filter(courses=course)
+            registration = Registration.objects.filter(course=course)
             membership = []
             for i in registration:
                 try:
@@ -175,10 +175,10 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
                 except Team.DoesNotExist:
                     team = ''
                 membership.append({
-                    'andrew_id': i.users.andrew_id,
+                    'andrew_id': i.user.andrew_id,
                     'userRole': i.userRole,
                     'team': team,
-                    'is_activated': i.users.is_activated,
+                    'is_activated': i.user.is_activated,
                 })
             membership = sorted(membership, key=lambda x: x['team'])
             context = {'membership': membership,
@@ -191,9 +191,9 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
             role = request.data.get('membershipRadios')
             if user not in users:
                 registration = Registration(
-                    users=user, courses=course, userRole=role)
+                    user=user, course=course, userRole=role)
                 registration.save()
-                message_info = 'A new member has been added'
+                error_info = 'A new member has been added'
                 assignments = []
                 for a in Assignment.objects.filter(course=course, assignment_type=Assignment.AssigmentType.Individual):
                     if a.date_due != None and a.date_due.astimezone(pytz.timezone('America/Los_Angeles')) < datetime.now().astimezone(pytz.timezone('America/Los_Angeles')):
@@ -208,12 +208,12 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
                         artifact_review.save()
             else:
                 registration = get_object_or_404(
-                    Registration, users=user, courses=course)
+                    Registration, user=user, course=course)
                 registration.userRole = role
                 registration.save()
 
-                message_info = andrew_id + '\'s team has been added or updated'
-            return registration, message_info
+                error_info = andrew_id + '\'s team has been added or updated'
+            return registration, error_info
 
         # Create membership for user's team
         def get_users_team(registration, request):
@@ -281,7 +281,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         user = get_object_or_404(CustomUser, pk=user_id)
         # TODO: rethink about permission control for staff(superuser) and instructor
         registration = get_object_or_404(
-            Registration, users=user, courses=course)
+            Registration, user=user, course=course)
         userRole = registration.userRole
 
         andrew_id = request.data.get('andrew_id')
@@ -298,14 +298,14 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
 
             user = CustomUser.objects.get(andrew_id=andrew_id)
             users = add_users_from_the_same_course()
-            registration, message_info = get_users_registration(
+            registration, error_info = get_users_registration(
                 users, request)
             delete_memebership_after_switch_to_TA_or_instructor(
                 registration)
             get_users_team(registration, request)
         except CustomUser.DoesNotExist:
             return Response({'error': 'AndrewID does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        messages.info(request, message_info)
+        messages.info(request, error_info)
 
         context = get_member_list(course_id)
         context["user_role"] = userRole
@@ -329,7 +329,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         andrew_id = request.query_params['andrew_id']
         user = get_object_or_404(CustomUser, andrew_id=andrew_id)
         registration = get_object_or_404(
-            Registration, users=user, courses=course_id)
+            Registration, user=user, course=course_id)
 
         if registration.userRole == 'Instructor' and self.check_instructor_count(course_id) <= 1:
             return Response({'error': 'Cannot delete the last instructor'}, status=status.HTTP_400_BAD_REQUEST)
@@ -338,5 +338,5 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         membership.delete()
         registration.delete()
         # delete all artifact_review of TA or instructor
-        # return delete success message, return 200 or 204
+        # return delete success error, return 200 or 204
         return Response(status=status.HTTP_204_NO_CONTENT)

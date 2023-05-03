@@ -41,7 +41,7 @@ class CourseTest(TestCase):
 
         registration = Registration(
             users=user,
-            courses=course,
+            course=course,
             userRole=Registration.UserRole.Instructor,
         )
         registration.save()
@@ -71,7 +71,7 @@ class CourseTest(TestCase):
 
         registration = Registration(
             users=user,
-            courses=course,
+            course=course,
             userRole=Registration.UserRole.Student,
         )
         registration.save()
@@ -101,7 +101,7 @@ class CourseTest(TestCase):
 
         registration = Registration(
             users=user,
-            courses=course,
+            course=course,
             userRole=Registration.UserRole.TA,
         )
         registration.save()
@@ -131,7 +131,7 @@ class CourseTest(TestCase):
 
         registration = Registration(
             users=user,
-            courses=course,
+            course=course,
             userRole=Registration.UserRole.TA,
         )
         registration.save()
@@ -167,7 +167,7 @@ class CourseTest(TestCase):
 
         registration = Registration(
             users=user,
-            courses=course,
+            course=course,
             userRole=Registration.UserRole.TA,
         )
         registration.save()

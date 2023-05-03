@@ -6,5 +6,5 @@ from app.gamification.models import Registration
 class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Registration
-        fields = ['users', 'courses',
+        fields = ['user', 'course',
                   'userRole']

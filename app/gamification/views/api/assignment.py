@@ -6,7 +6,7 @@ from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
 from app.gamification.utils import get_user_pk
 
-from app.gamification.serializers import CourseSerializer, AssignmentSerializer
+from app.gamification.serializers import AssignmentSerializer
 from django.shortcuts import get_object_or_404
 from app.gamification.models import Assignment, Course, Registration, Team, Membership, Artifact, Individual, FeedbackSurvey, CustomUser
 import pytz
@@ -47,7 +47,7 @@ class AssignmentList(generics.ListCreateAPIView):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
         user_role = Registration.objects.get(
-            users=user, courses=course_id).userRole
+            user=user, course=course_id).userRole
         course = get_object_or_404(Course, pk=course_id)
         assignments = Assignment.objects.filter(course=course)
         assignments = [model_to_dict(assignment) for assignment in assignments]
@@ -64,7 +64,7 @@ class AssignmentList(generics.ListCreateAPIView):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
         userRole = Registration.objects.get(
-            users=user, courses=course).userRole
+            user=user, course=course).userRole
         assignment_name = request.data.get('assignment_name')
         assignment_type = request.data.get('assignment_type')
         date_released = request.data.get('date_released')
@@ -102,7 +102,7 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
         userRole = Registration.objects.get(
-            users=user, courses=course).userRole
+            user=user, course=course).userRole
         assignment = get_object_or_404(Assignment, pk=assignment_id)
         data = model_to_dict(assignment)
         data['user_role'] = userRole
@@ -117,7 +117,7 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
         userRole = Registration.objects.get(
-            users=user, courses=course).userRole
+            user=user, course=course).userRole
         assignment_name = request.data.get('assignment_name')
         assignment_type = request.data.get('assignment_type')
         date_due = request.data.get('date_due')
@@ -156,7 +156,7 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
         course = get_object_or_404(Course, pk=course_id)
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
-        if user.is_staff or Registration.objects.get(users=user, courses=course).userRole == Registration.UserRole.Instructor:
+        if user.is_staff or Registration.objects.get(user=user, course=course).userRole == Registration.UserRole.Instructor:
             assignment = get_object_or_404(Assignment, pk=assignment_id)
             assignment.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -173,14 +173,14 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
 #         course = get_object_or_404(Course, pk=course_id)
 #         user_id = get_user_pk(request)
 #         user = get_object_or_404(CustomUser, id=user_id)
-#         userRole = Registration.objects.get(users=user, courses=course).userRole
+#         userRole = Registration.objects.get(user=user, course=course).userRole
 
 #         if 'assignment_id' in request.query_params:
 #             assignment_id = request.query_params['assignment_id']
 #             if userRole == Registration.UserRole.Student:
 #                 assignment = get_object_or_404(Assignment, pk=assignment_id)
 #                 registration = get_object_or_404(
-#                     Registration, users=user, courses=course_id)
+#                     Registration, user=user, course=course_id)
 #                 assignment_type = assignment.assignment_type
 
 #                 if assignment_type == "Individual":
@@ -239,7 +239,7 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
 #                 user_is_individual = True
 #                 try:
 #                     registration = get_object_or_404(
-#                         Registration, users=user, courses=course_id)
+#                         Registration, user=user, course=course_id)
 #                     entity = Team.objects.get(
 #                         registration=registration, course=course)
 #                     user_is_individual = False
@@ -299,7 +299,7 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
 #         course = get_object_or_404(Course, pk=course_id)
 #         user_id = get_user_pk(request)
 #         user = get_object_or_404(CustomUser, id=user_id)
-#         userRole = Registration.objects.get(users=user, courses=course).userRole
+#         userRole = Registration.objects.get(user=user, course=course).userRole
 #         if userRole == Registration.UserRole.Student:
 #             # Students are not allowed to create assignments
 #             return Response(status=status.HTTP_403_FORBIDDEN)
@@ -317,7 +317,7 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
 #         course = get_object_or_404(Course, pk=course_id)
 #         user_id = get_user_pk(request)
 #         user = get_object_or_404(CustomUser, id=user_id)
-#         userRole = Registration.objects.get(users=user, courses=course).userRole
+#         userRole = Registration.objects.get(user=user, course=course).userRole
 #         if 'assignment_id' in request.query_params:
 #             assignment_id = request.query_params['assignment_id']
 #             if userRole == Registration.UserRole.Student:
@@ -340,7 +340,7 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
 #         course = get_object_or_404(Course, pk=course_id)
 #         user_id = get_user_pk(request)
 #         user = get_object_or_404(CustomUser, id=user_id)
-#         userRole = Registration.objects.get(users=user, courses=course).userRole
+#         userRole = Registration.objects.get(user=user, course=course).userRole
 #         if 'assignment_id' in request.query_params:
 #             assignment_id = request.query_params['assignment_id']
 #             if userRole == Registration.UserRole.Student:

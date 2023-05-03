@@ -199,7 +199,7 @@ class ViewReport(generics.ListCreateAPIView):
             user = get_object_or_404(CustomUser, andrew_id=andrew_id)
             course = get_object_or_404(Course, pk=course_id)
             registration = get_object_or_404(
-                Registration, users=user, courses=course)
+                Registration, user=user, course=course)
             assignment = get_object_or_404(Assignment, pk=assignment_id)
             assignment_type = assignment.assignment_type
 
@@ -237,12 +237,12 @@ class ViewReport(generics.ListCreateAPIView):
             user_id = get_user_pk(request)
             user = get_object_or_404(CustomUser, id=user_id)
             userRole = Registration.objects.get(
-                users=user, courses=course).userRole
+                user=user, course=course).userRole
             students = []
             teams = []
             if assignment_type == "Individual":
                 registrations = Registration.objects.filter(
-                    courses=course_id, userRole=Registration.UserRole.Student)
+                    course=course_id, userRole=Registration.UserRole.Student)
                 counter = 0
                 student_row = []
                 for registration in registrations:

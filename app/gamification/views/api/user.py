@@ -12,7 +12,6 @@ from rest_framework import status
 
 
 from app.gamification.models import CustomUser
-from app.gamification.models.xp_points import XpPoints
 from app.gamification.serializers import UserSerializer
 
 from django.conf import settings
@@ -140,14 +139,7 @@ class Login(generics.CreateAPIView):
             user_data = serializer.data
         except CustomUser.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND, data={'error': 'Failed to login. Username does not exist.'})
-        try:
-            xp_points = XpPoints.objects.get(user=user)
-        except XpPoints.DoesNotExist:
-            xp_points = XpPoints.objects.create(user=user)
-            xp_points.save()
-        user_data['exp_points'] = xp_points.exp_points
-        user_data['exp'] = xp_points.exp
-        user_data['level'] = xp_points.level
+        user_data['exp'] = user.exp
         if user.check_password(password):
             jwt_token = {'token': jwt.encode(
                 {'id': user.id, 'is_staff': user.is_staff}, os.getenv('SECRET_KEY'), algorithm='HS256').decode('utf-8')}

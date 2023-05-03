@@ -133,6 +133,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     )
     date_joined = models.DateTimeField(_('data joined'), default=timezone.now)
 
+    # exp is only used to level up
+    exp = models.IntegerField(default=0, null=True, blank=True)
+
     objects = CustomUserManager()
 
     EMAIL_FIELD = 'email'

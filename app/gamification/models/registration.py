@@ -11,9 +11,9 @@ class Registration(models.Model):
         Instructor = 'Instructor'
         TA = 'TA'
 
-    users = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
-    courses = models.ForeignKey('Course', on_delete=models.CASCADE)
+    course = models.ForeignKey('Course', on_delete=models.CASCADE)
 
     userRole = models.TextField(
         choices=UserRole.choices, default=UserRole.Student)
@@ -24,7 +24,7 @@ class Registration(models.Model):
         verbose_name_plural = _('registrations')
 
     def __str__(self):
-        return f"{self.courses.course_name} - {self.users.andrew_id}"
+        return f"{self.course.course_name} - {self.user.andrew_id}"
 
     @property
     def team(self):

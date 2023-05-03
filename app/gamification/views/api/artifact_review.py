@@ -50,20 +50,20 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
         reviewee_andrew_id = request.data.get('reviewee')
         reviewer = get_object_or_404(CustomUser, andrew_id=reviewer_andrew_id)
         reviewee = get_object_or_404(CustomUser, andrew_id=reviewee_andrew_id)
-        reviewer_registration = get_object_or_404(Registration, users=reviewer, courses=course)
-        reviewee_registration = get_object_or_404(Registration, users=reviewee, courses=course)
+        reviewer_registration = get_object_or_404(Registration, user=reviewer, course=course)
+        reviewee_registration = get_object_or_404(Registration, user=reviewee, course=course)
         if assignment.assignment_type == "Individual":
             try:
                 entity = Individual.objects.get(
                     registration=reviewee_registration, course=course)
             except Individual.DoesNotExist:
-                return Response({"messages": "No team found"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": "No team found"}, status=status.HTTP_404_NOT_FOUND)
         elif assignment.assignment_type == "Team":
             try:
                 entity = Team.objects.get(
                     registration=reviewee_registration, course=course)
             except Team.DoesNotExist:
-                return Response({"messages": "No team found"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": "No team found"}, status=status.HTTP_404_NOT_FOUND)
         artifact = get_object_or_404(Artifact, entity=entity)
         artifact_review = ArtifactReview(artifact=artifact, user=reviewer_registration)
         artifact_review.save()
@@ -99,7 +99,7 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
         course = get_object_or_404(Course, id=course_id)
         assignment = get_object_or_404(Assignment, id=assignment_id)
         registration = get_object_or_404(
-            Registration, users=user, courses=course)
+            Registration, user=user, course=course)
         artifacts = Artifact.objects.filter(
             assignment_id=assignment_id)
         response_data = []
@@ -111,13 +111,15 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                 for artifact_review in artifact_reviews:
                     artifact_review_dict = model_to_dict(artifact_review)
                     reviewer_registration = artifact_review.user
-                    reviewer = get_object_or_404(CustomUser, id=reviewer_registration.users_id)
+                    reviewer = get_object_or_404(CustomUser, id=reviewer_registration.user_id)
                     artifact_review_dict['reviewer'] = reviewer.andrew_id
                     if assignment.assignment_type == 'Individual':
                         artifact_review_dict['reviewing'] = Membership.objects.get(
-                            entity=artifact.entity).student.users.name_or_andrew_id()
+                            entity=artifact.entity).student.user.name_or_andrew_id()
                     else:
                         artifact_review_dict['reviewing'] = artifact.entity.team.name
+                    artifact_review_dict['course_id'] = registration.course_id
+                    artifact_review_dict['assignment_id'] = assignment.id
                     response_data.append(artifact_review_dict)
         # Students get all artifacts he/she should review
         else:
@@ -135,9 +137,11 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                 artifact_review_dict = model_to_dict(artifact_review)
                 if assignment.assignment_type == 'Individual':
                     artifact_review_dict['reviewing'] = Membership.objects.get(
-                        entity=artifact.entity).student.users.name_or_andrew_id()
+                        entity=artifact.entity).student.user.name_or_andrew_id()
                 else:
                     artifact_review_dict['reviewing'] = artifact.entity.team.name
+                artifact_review_dict['course_id'] = registration.course_id
+                artifact_review_dict['assignment_id'] = assignment.id
                 response_data.append(artifact_review_dict)
 
         return Response(response_data, status=status.HTTP_200_OK)
@@ -184,7 +188,7 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
     def get(self, request, *args, **kwargs):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
-        registrations = Registration.objects.filter(users=user)
+        registrations = Registration.objects.filter(user=user)
         response_data = []
         for registration in registrations:
             artifact_reviews = ArtifactReview.objects.filter(
@@ -200,10 +204,10 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                 assignment = get_object_or_404(Assignment, id=artifact.assignment_id)
                 if assignment.assignment_type == 'Individual':
                     artifact_review_data['reviewing'] = Membership.objects.get(
-                        entity=artifact.entity).student.users.name_or_andrew_id()
+                        entity=artifact.entity).student.user.name_or_andrew_id()
                 else:
                     artifact_review_data['reviewing'] = artifact.entity.team.name
-                artifact_review_data['course_id'] = registration.courses_id
+                artifact_review_data['course_id'] = registration.course_id
                 artifact_review_data['assignment_id'] = assignment.id
                 response_data.append(artifact_review_data)
         return Response(response_data, status=status.HTTP_200_OK)
@@ -237,6 +241,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             ArtifactReview, id=artifact_review_pk)
         artifact = artifact_review.artifact
         assignment = get_object_or_404(Assignment, id=assignment_id)
+        print(artifact_review, artifact, assignment)
         survey_template = assignment.survey_template
         if not survey_template:
             return Response({"error": "No survey template, instructor should create survey first"}, status=status.HTTP_400_BAD_REQUEST)
@@ -568,7 +573,7 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
         userRole = Registration.objects.get(
-            users=user, courses=course).userRole
+            user=user, course=course).userRole
 
         if userRole != 'Instructor':
             return Response(status=status.HTTP_403_FORBIDDEN)
@@ -586,8 +591,6 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
                 artifact_review.artifact_review_score = artifact_review_score
                 artifact_review.max_artifact_review_score = max_artifact_review_score
                 artifact_review.save()
-                # respond 200 and return the updated artifact_review
                 return Response(ArtifactReviewSerializer(artifact_review).data, status=status.HTTP_200_OK)
             else:
-                # return error message
                 return Response(status=status.HTTP_400_BAD_REQUEST)
