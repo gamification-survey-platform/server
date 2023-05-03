@@ -14,7 +14,6 @@ from app.gamification.models.artifact_review import ArtifactReview
 from app.gamification.models.question import Question
 from app.gamification.models.question_option import QuestionOption
 from app.gamification.models.registration import Registration
-from app.gamification.models.grade import Grade
 from app.gamification.serializers.answer import ArtifactReviewSerializer
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema

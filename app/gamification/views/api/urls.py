@@ -17,8 +17,6 @@ from .xp_points import UpdateExp
 from .feedback_survey import SurveyList
 from .member import MemberList
 from .report import ViewReport
-from .grade import GradeList
-from .deduction import DeductionList, DeductionDetail
 
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
@@ -99,10 +97,6 @@ urlpatterns = [
     # Report
     path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/',
          ViewReport.as_view(), name='artifact-review-list'),
-
-    # Grade
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/grades/',
-         GradeList.as_view(), name='grade-review-list'),
 
     # Get the  feedback_surveys, Post a new survey,update a survey
     path('courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/',

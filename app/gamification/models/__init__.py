@@ -16,8 +16,6 @@ from .user import *
 from .todo_list import *
 from .reward import *
 from .user_reward import *
-from .grade import *
-from .deduction import *
 from .reward_type import *
 from .xp_points import *
 from .exp_history import *
