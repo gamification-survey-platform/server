@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from app.gamification.models.assignment import Assignment
 from app.gamification.models.entity import Team, Individual
 from app.gamification.models.course import Course
+from app.gamification.models.feedback_survey import FeedbackSurvey
 from app.gamification.models.membership import Membership
 from app.gamification.models.user import CustomUser
 from app.gamification.utils import get_user_pk, check_survey_status
@@ -18,6 +19,7 @@ from app.gamification.serializers.answer import ArtifactReviewSerializer
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 import pandas as pd
+
 
 class AssignmentArtifactReviewList(generics.GenericAPIView):
     queryset = ArtifactReview.objects.all()
@@ -50,8 +52,10 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
         reviewee_andrew_id = request.data.get('reviewee')
         reviewer = get_object_or_404(CustomUser, andrew_id=reviewer_andrew_id)
         reviewee = get_object_or_404(CustomUser, andrew_id=reviewee_andrew_id)
-        reviewer_registration = get_object_or_404(Registration, user=reviewer, course=course)
-        reviewee_registration = get_object_or_404(Registration, user=reviewee, course=course)
+        reviewer_registration = get_object_or_404(
+            Registration, user=reviewer, course=course)
+        reviewee_registration = get_object_or_404(
+            Registration, user=reviewee, course=course)
         if assignment.assignment_type == "Individual":
             try:
                 entity = Individual.objects.get(
@@ -65,7 +69,8 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
             except Team.DoesNotExist:
                 return Response({"message": "No team found"}, status=status.HTTP_404_NOT_FOUND)
         artifact = get_object_or_404(Artifact, entity=entity)
-        artifact_review = ArtifactReview(artifact=artifact, user=reviewer_registration)
+        artifact_review = ArtifactReview(
+            artifact=artifact, user=reviewer_registration)
         artifact_review.save()
         response_data = model_to_dict(artifact_review)
         response_data['reviewer'] = reviewer_andrew_id
@@ -98,6 +103,7 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
         user = get_object_or_404(CustomUser, id=user_id)
         course = get_object_or_404(Course, id=course_id)
         assignment = get_object_or_404(Assignment, id=assignment_id)
+        feedbackSurvey = FeedbackSurvey.objects.filter(assignment=assignment)
         registration = get_object_or_404(
             Registration, user=user, course=course)
         artifacts = Artifact.objects.filter(
@@ -111,7 +117,8 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                 for artifact_review in artifact_reviews:
                     artifact_review_dict = model_to_dict(artifact_review)
                     reviewer_registration = artifact_review.user
-                    reviewer = get_object_or_404(CustomUser, id=reviewer_registration.user_id)
+                    reviewer = get_object_or_404(
+                        CustomUser, id=reviewer_registration.user_id)
                     artifact_review_dict['reviewer'] = reviewer.andrew_id
                     if assignment.assignment_type == 'Individual':
                         artifact_review_dict['reviewing'] = Membership.objects.get(
@@ -123,10 +130,13 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                     response_data.append(artifact_review_dict)
         # Students get all artifacts he/she should review
         else:
+            if len(feedbackSurvey) == 0:
+                return Response({"message": "No feedback survey found"}, status=status.HTTP_404_NOT_FOUND)
             for artifact in artifacts:
                 # Prevent self review
                 artifact_members = artifact.entity.members
-                if user in artifact_members: continue
+                if user in artifact_members:
+                    continue
                 try:
                     artifact_review = ArtifactReview.objects.get(
                         artifact=artifact, user=registration)
@@ -145,7 +155,7 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                 response_data.append(artifact_review_dict)
 
         return Response(response_data, status=status.HTTP_200_OK)
-    
+
     @swagger_auto_schema(
         operation_description="Unassign specific artifact review for a student",
         tags=['artifact_reviews'],
@@ -155,9 +165,11 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
     )
     def delete(self, request, course_id, assignment_id, *args, **kwargs):
         artifact_review_id = request.data.get('artifact_review_id')
-        artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_id)
+        artifact_review = get_object_or_404(
+            ArtifactReview, id=artifact_review_id)
         artifact_review.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class UserArtifactReviewList(generics.RetrieveAPIView):
     queryset = ArtifactReview.objects.all()
@@ -194,14 +206,17 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
             artifact_reviews = ArtifactReview.objects.filter(
                 user=registration)
             for artifact_review in artifact_reviews:
-                artifact = get_object_or_404(Artifact, id=artifact_review.artifact_id)
+                artifact = get_object_or_404(
+                    Artifact, id=artifact_review.artifact_id)
 
                 # Prevent self review
                 artifact_members = artifact.entity.members
-                if user in artifact_members: continue
+                if user in artifact_members:
+                    continue
 
                 artifact_review_data = model_to_dict(artifact_review)
-                assignment = get_object_or_404(Assignment, id=artifact.assignment_id)
+                assignment = get_object_or_404(
+                    Assignment, id=artifact.assignment_id)
                 if assignment.assignment_type == 'Individual':
                     artifact_review_data['reviewing'] = Membership.objects.get(
                         entity=artifact.entity).student.user.name_or_andrew_id()
@@ -211,6 +226,7 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                 artifact_review_data['assignment_id'] = assignment.id
                 response_data.append(artifact_review_data)
         return Response(response_data, status=status.HTTP_200_OK)
+
 
 class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.AllowAny]
@@ -470,7 +486,8 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
         for artifact_review in artifact_reviews:
             artifact = artifact_review.artifact
             user = artifact_review.user
-            if artifact_review.status == ArtifactReview.ArtifactReviewType.INCOMPLETE: continue
+            if artifact_review.status == ArtifactReview.ArtifactReviewType.INCOMPLETE:
+                continue
             # fill in the matrix with artifact_review_score / max_artifact_review_score
             matrix[registrations_id_list.index(user.id)][artifacts_id_list.index(
                 artifact.id)] = artifact_review.artifact_review_score / artifact_review.max_artifact_review_score
