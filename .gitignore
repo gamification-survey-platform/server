@@ -28,3 +28,6 @@ terraform/terraform.tfstate*
 
 # Data
 *.json
+
+# Scripts
+*.sh
