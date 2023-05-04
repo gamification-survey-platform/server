@@ -43,8 +43,6 @@ class RewardSerializer(serializers.ModelSerializer):
             data['inventory'] = reward.inventory
         if reward.reward_type.type == 'Bonus' or reward.reward_type.type == 'Late Submission':
             data['quantity'] = reward.quantity
-        elif reward.reward_type.type == 'Theme':
-            data['theme'] = reward.theme
         elif reward.reward_type.type == 'Other':
             path = f'http://{settings.ALLOWED_HOSTS[1]}:8000{reward.picture.url}'
             data['picture'] = self.get_picture_url(

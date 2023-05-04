@@ -231,8 +231,6 @@ class CourseRewardList(generics.ListCreateAPIView):
         elif type.type == 'Other':
             picture_key = generate_reward_key(request, course)
             reward.picture = picture_key
-        elif type.type == 'Theme':
-            reward.theme = request.data.get('theme')
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         reward.save()

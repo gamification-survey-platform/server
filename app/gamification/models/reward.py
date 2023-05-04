@@ -7,15 +7,11 @@ from app.gamification.models.user_reward import UserReward
 
 class Reward(models.Model):
 
-    class Theme(models.TextChoices):
-        dark = 'Dark'
-        red = 'Red'
-
     name = models.CharField(_('name'), max_length=255, default='', blank=False)
     description = models.TextField(_('description'), default='', blank=False)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    exp_point = models.IntegerField(
-        _('exp_point'), default=0, null=True, blank=False)
+    points = models.IntegerField(
+        _('points'), default=0, null=True, blank=False)
     reward_type = models.ForeignKey(
         RewardType, on_delete=models.CASCADE)
     inventory = models.IntegerField(
@@ -26,8 +22,6 @@ class Reward(models.Model):
         _('reward_picture'), upload_to='rewards', null=True, blank=True)
     quantity = models.IntegerField(
         _('quantity'),  null=True, blank=True)
-    theme = models.TextField(
-        choices=Theme.choices, null=True, blank=True)
 
     class Meta:
         db_table = 'rewards'
