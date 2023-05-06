@@ -8,6 +8,7 @@ from app.gamification.models.user import CustomUser
 class UserReward(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     reward = models.ForeignKey('Reward', on_delete=models.CASCADE)
+    fulfilled = models.BooleanField(_('reward fulfilled'), default=False, null=True, blank=True)
 
     class Meta:
         db_table = 'user_reward'

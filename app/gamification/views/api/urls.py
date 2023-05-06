@@ -11,7 +11,7 @@ from .assignment import AssignmentList, AssignmentDetail
 from .survey import SurveyGetInfo
 from .answer import ArtifactAnswerMultipleChoiceList, ArtifactAnswerKeywordList
 from .profile import UserProfile
-from .reward import RewardList, RewardDetail, CourseRewardList, CourseRewardDetail
+from .reward import RewardList, RewardDetail, CourseRewardList, CourseRewardPurchases, CourseRewardPurchasesDetail, UserRewardPurchases, CourseRewardDetail
 from .feedback_survey import SurveyList
 from .member import MemberList
 from .report import ViewReport
@@ -147,6 +147,18 @@ urlpatterns = [
     # get course rewards
     path('courses/<str:course_id>/rewards/',
          CourseRewardList.as_view(), name='reward-list'),
+
+    # get course purchases
+    path('courses/<str:course_id>/purchases/',
+         CourseRewardPurchases.as_view(), name='reward-list'),
+
+    # patch course purchases
+    path('courses/<str:course_id>/purchases/<str:purchase_id>/',
+         CourseRewardPurchasesDetail.as_view(), name='reward-list'),
+
+    # get user purchases
+    path('purchases/',
+         UserRewardPurchases.as_view(), name='reward-list'),
 
     # get reward detail by reward_id, update a reward, delete a reward
     path('courses/<str:course_id>/rewards/<str:reward_id>/',

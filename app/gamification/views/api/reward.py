@@ -10,6 +10,7 @@ from rest_framework import status
 from app.gamification.models.user import CustomUser
 from app.gamification.utils import get_user_pk
 from app.gamification.serializers.reward import RewardSerializer
+from app.gamification.serializers.user import UserSerializer
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -211,13 +212,13 @@ class CourseRewardList(generics.ListCreateAPIView):
         type = get_object_or_404(RewardType, type=type_string)
         inventory = request.data.get('inventory')
         is_active = request.data.get('is_active')
-        exp_point = request.data.get('exp_points')
+        points = request.data.get('points')
         reward = Reward.objects.create(
             course=course,
             reward_type=type,
         )
-        if exp_point:
-            reward.exp_point = exp_point
+        if points:
+            reward.points = points
         if inventory:
             reward.inventory = inventory
         if is_active:
@@ -249,6 +250,96 @@ class CourseRewardList(generics.ListCreateAPIView):
         if download_url:
             response_data['download_url'] = download_url
         return Response(response_data)
+
+class CourseRewardPurchases(generics.RetrieveUpdateAPIView):
+    queryset = Reward.objects.all()
+    permission_classes = [permissions.AllowAny]
+    serializer_class = RewardSerializer
+
+    @swagger_auto_schema(
+        operation_description="Get all course reward purchases",
+        tags=['Rewards'],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_STRING,
+        ),
+        responses={
+            200: openapi.Response(
+                description="All rewards purchased within a course",
+            )
+        }
+    )
+    def get(self, request, course_id, *args, **kwargs):
+        user_id = get_user_pk(request)
+        user = CustomUser.objects.get(pk=user_id)
+        if not user.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        response_data = []
+        course_rewards = Reward.objects.filter(course_id=course_id)
+        for course_reward in course_rewards:
+            purchased_course_rewards = UserReward.objects.filter(reward_id=course_reward.id)
+            for purchased_course_reward in purchased_course_rewards:
+                buyer = CustomUser.objects.get(id=purchased_course_reward.user_id)
+                reward_data = self.get_serializer(course_reward).data
+                reward_data['reward_id'] = reward_data['pk']
+                reward_data['pk'] = purchased_course_reward.pk
+                reward_data['buyer'] = buyer.andrew_id
+                reward_data['fulfilled'] = purchased_course_reward.fulfilled
+                response_data.append(reward_data)
+
+        return Response(response_data, status=status.HTTP_200_OK)
+    
+class CourseRewardPurchasesDetail(generics.UpdateAPIView):
+    queryset = Reward.objects.all()
+    permission_classes = [permissions.AllowAny]
+    serializer_class = RewardSerializer
+
+    @swagger_auto_schema(
+        operation_description="Edit a course purchase",
+        tags=['Rewards'],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+        ),
+        responses={
+            204: openapi.Response(
+                description="No content."
+            )
+        }
+    )
+    def patch(self, request, course_id, purchase_id, *args, **kwargs):
+        print(purchase_id)
+        purchase = get_object_or_404(UserReward, id=purchase_id)
+        fulfilled = request.data.get('fulfilled')
+        if fulfilled is not None:
+            purchase.fulfilled = fulfilled
+            purchase.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class UserRewardPurchases(generics.RetrieveUpdateAPIView):
+    queryset = Reward.objects.all()
+    permission_classes = [permissions.AllowAny]
+    serializer_class = RewardSerializer
+
+    @swagger_auto_schema(
+        operation_description="Get all user's purchases",
+        tags=['Rewards'],
+        responses={
+            200: openapi.Response(
+                description="All rewards purchased by a user",
+            )
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        user_id = get_user_pk(request)
+        user = CustomUser.objects.get(pk=user_id)
+        response_data = []
+        user_rewards = UserReward.objects.filter(user_id=user_id)
+        for user_reward in user_rewards:
+            reward = Reward.objects.get(id=user_reward.reward_id)
+            reward_data = self.get_serializer(reward).data
+            reward_data['fulfilled'] = user_reward.fulfilled
+            response_data.append(reward_data)
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 """
@@ -294,13 +385,13 @@ class CourseRewardDetail(generics.RetrieveUpdateDestroyAPIView):
             reward_type = get_object_or_404(RewardType, type=type_string)
             inventory = request.data.get('inventory')
             is_active = request.data.get('is_active')
-            exp_point = request.data.get('exp_points')
+            points = request.data.get('points')
             if name:
                 reward.name = name
             if description:
                 reward.description = description
-            if exp_point:
-                reward.exp_point = exp_point
+            if points:
+                reward.points = points
             if reward_type:
                 reward.reward_type = reward_type
             if inventory:

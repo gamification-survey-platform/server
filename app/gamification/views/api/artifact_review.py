@@ -8,10 +8,11 @@ from app.gamification.models.course import Course
 from app.gamification.models.feedback_survey import FeedbackSurvey
 from app.gamification.models.membership import Membership
 from app.gamification.models.user import CustomUser
-from app.gamification.utils import get_user_pk, check_survey_status
+from app.gamification.utils import get_user_pk, check_survey_status, level_func, inv_level_func
 from app.gamification.models.artifact import Artifact
 from app.gamification.models.answer import Answer, ArtifactFeedback
 from app.gamification.models.artifact_review import ArtifactReview
+from app.gamification.models.behavior import Behavior
 from app.gamification.models.question import Question
 from app.gamification.models.question_option import QuestionOption
 from app.gamification.models.registration import Registration
@@ -257,10 +258,9 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             ArtifactReview, id=artifact_review_pk)
         artifact = artifact_review.artifact
         assignment = get_object_or_404(Assignment, id=assignment_id)
-        print(artifact_review, artifact, assignment)
         survey_template = assignment.survey_template
         if not survey_template:
-            return Response({"error": "No survey template, instructor should create survey first"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Survey has not been created.'}, status=status.HTTP_400_BAD_REQUEST)
         data = dict()
         data['pk'] = survey_template.pk
         data['name'] = survey_template.name
@@ -375,11 +375,29 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         }
     )
     def patch(self, request, course_id, assignment_id, artifact_review_pk, *args, **kwargs):
+        def add_exp(user, artifact_review):
+            if artifact_review.status != 'COMPLETED':
+                behavior = Behavior.objects.get(operation='survey')
+                user.exp += behavior.points
+                user.save()
+
+        def add_points(registration, artifact_review):
+            if artifact_review.status != 'COMPLETED':
+                behavior = Behavior.objects.get(operation='survey')
+                registration.points += behavior.points
+                registration.save()
+                
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
+        course = get_object_or_404(Course, id=course_id)
+        registration = get_object_or_404(Registration, course=course, user=user)
         assignment = get_object_or_404(Assignment, id=assignment_id)
         artifact_status = check_survey_status(assignment)
         artifact_review_detail = request.data.get('artifact_review_detail')
         artifact_review = get_object_or_404(
             ArtifactReview, id=artifact_review_pk)
+        add_exp(user, artifact_review)
+        add_points(registration, artifact_review)
         # delete old answers
         Answer.objects.filter(artifact_review_id=artifact_review_pk).delete()
         grade = 0
@@ -452,8 +470,15 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         artifact_review.artifact_review_score = grade
         artifact_review.max_artifact_review_score = max_grade
         artifact_review.save()
-
-        return Response(status=status.HTTP_200_OK)
+        level = inv_level_func(user.exp)
+        next_level_exp = level_func(level + 1)
+        response_data = {
+            'exp': user.exp,
+            'level': level,
+            'next_level_exp': next_level_exp,
+            'points': registration.points
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 class ArtifactReviewIpsatization(generics.RetrieveAPIView):

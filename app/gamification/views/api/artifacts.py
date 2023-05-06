@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
 from app.gamification.models.assignment import Assignment
+from app.gamification.models.behavior import Behavior
 from app.gamification.models.course import Course
 from app.gamification.models.entity import Individual, Team
 from app.gamification.models.membership import Membership
@@ -17,7 +18,7 @@ from app.gamification.serializers.answer import ArtifactReviewSerializer
 import pytz
 from datetime import datetime
 from django.conf import settings
-from app.gamification.utils import generate_presigned_url, generate_presigned_post
+from app.gamification.utils import generate_presigned_url, generate_presigned_post, level_func, inv_level_func
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
@@ -99,6 +100,24 @@ class SubmitArtifact(generics.ListCreateAPIView):
         }
     )
     def post(self, request, course_id, assignment_id, *args, **kwargs):
+        def add_exp(user, assignment, entity):
+            try:
+                artifact = Artifact.objects.get(
+                    assignment=assignment, entity=entity)
+            except Artifact.DoesNotExist:
+                behavior = Behavior.objects.get(operation='assignment')
+                user.exp += behavior.points
+                user.save()
+
+        def add_points(registration, assignment, entity):
+            try:
+                artifact = Artifact.objects.get(
+                    assignment=assignment, entity=entity)
+            except Artifact.DoesNotExist:
+                behavior = Behavior.objects.get(operation='assignment')
+                registration.points += behavior.points
+                registration.save()
+                
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, pk=user_id)
         assignment = get_object_or_404(Assignment, pk=assignment_id)
@@ -123,7 +142,8 @@ class SubmitArtifact(generics.ListCreateAPIView):
                     registration=registration, course=course)
             except Team.DoesNotExist:
                 return Response({"messages": "No team found"}, status=status.HTTP_404_NOT_FOUND)
-
+        add_exp(user, assignment, entity)
+        add_points(registration, assignment, entity)
         artifact = self.create_artifact(
             request, assignment, registration, entity)
 
@@ -137,10 +157,16 @@ class SubmitArtifact(generics.ListCreateAPIView):
             download_url = f'http://{settings.ALLOWED_HOSTS[1]}:8000{artifact.file.url}'
         self.create_artifact_review(
             artifact, registration, course, assignment_type, entity)
+        level = inv_level_func(user.exp)
+        next_level_exp = level_func(level + 1)
 
         return Response({
             'upload_url': upload_url,
-            'download_url': download_url
+            'download_url': download_url,
+            'exp': user.exp,
+            'level': level,
+            'next_level_exp': next_level_exp,
+            'points': registration.points
         }, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(

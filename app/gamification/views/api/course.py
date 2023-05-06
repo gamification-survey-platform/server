@@ -62,8 +62,11 @@ class CourseDetail(generics.ListCreateAPIView):
             content = {'message': 'Permission denied'}
             return Response(content, status=status.HTTP_403_FORBIDDEN)
         serializer = CourseSerializer(course)
-        # serializer = self.get_serializer(course)
-        return Response(serializer.data)
+        response_data = serializer.data
+        response_data['points'] = registration.points
+        response_data['userRole'] = registration.userRole
+
+        return Response(response_data)
 
     @swagger_auto_schema(
         operation_description="Update course information",
@@ -189,12 +192,12 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
             return Response(serializer.data)
         else:
             registrations = get_registrations(user)
-            print(registrations)
             courses = registrations_to_courses(registrations)
             serializer = CourseSerializer(courses, many=True)
             data = []
             for (i, course) in enumerate(serializer.data):
                 course['user_role'] = registrations[i].userRole
+                course['points'] = registrations[i].points
                 data.append(course)
             return Response(data)
 

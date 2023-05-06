@@ -45,4 +45,4 @@ class Reward(models.Model):
 
     @property
     def consumed(self):
-        return self.inventory - self.owner.count()
+        return self.inventory - len(self.owner)

@@ -18,7 +18,7 @@ from django.conf import settings
 import jwt
 import os
 
-from app.gamification.utils import get_user_pk
+from app.gamification.utils import get_user_pk, level_func, inv_level_func
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -114,9 +114,9 @@ class Login(generics.CreateAPIView):
                         'last_name': 'test',
                         'email': '123@gmail.com',
                         'is_staff': False,
-                        'exp_points': 0,
                         'exp': 0,
                         'level': 1,
+                        'next_level_exp': 100
                     }
                 }
             ),
@@ -140,6 +140,9 @@ class Login(generics.CreateAPIView):
         except CustomUser.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND, data={'error': 'Failed to login. Username does not exist.'})
         user_data['exp'] = user.exp
+        level = inv_level_func(user.exp)
+        user_data['level'] = level
+        user_data['next_level_exp'] = level_func(level + 1)
         if user.check_password(password):
             jwt_token = {'token': jwt.encode(
                 {'id': user.id, 'is_staff': user.is_staff}, os.getenv('SECRET_KEY'), algorithm='HS256').decode('utf-8')}

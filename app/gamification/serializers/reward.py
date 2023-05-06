@@ -12,7 +12,7 @@ class RewardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reward
         fields = ('pk', 'name', 'description', 'course', 'reward_type',
-                  'inventory', 'is_active', 'picture', 'quantity', 'theme', 'exp_point', 'picture_url')
+                  'inventory', 'is_active', 'picture', 'quantity', 'points', 'picture_url')
 
     def get_picture_url(self, obj):
         if settings.USE_S3 and obj.picture:
@@ -34,9 +34,9 @@ class RewardSerializer(serializers.ModelSerializer):
         data['belong_to'] = reward.course.course_name
         data['type'] = reward.reward_type.type
         data['is_active'] = reward.is_active
-        data['exp_points'] = reward.exp_point
+        data['points'] = reward.points
+        data['consumed'] = reward.consumed
         data['owner'] = [i.user.andrew_id for i in owner]
-        data['consumed'] = len(owner)
         if reward.inventory == -1:
             data['inventory'] = 'Unlimited'
         else:

@@ -439,19 +439,6 @@ class ArtifactAnswerMultipleChoiceList(generics.ListCreateAPIView):
             answer = Answer.objects.filter(
                 artifact_review_id=artifact_review.pk).order_by('pk')
             answers.extend(answer)
-        # choice_labels = set()
-        # [section_title][MULTIPLECHOICE/SCALEMULTIPLECHOICE][label/answer_text]
-        # for answer in answers:
-        #     section_name = answer.question_option.question.section
-        #     if answer.question_option.question.question_type == 'SCALEMULTIPLECHOICE':
-        #         print("test")
-        #     elif answer.question_option.question.question_type == 'MULTIPLECHOICE':
-        #         choice_labels.add((section_name, answer.question_option.option_choice.text))
-        # choice_labels_list = list(choice_labels)
-        # result = collections.defaultdict(list)
-        # for section_name, choice in choice_labels_list:
-        #     result[section_name].append(choice)
-        # return Response(result)
 
         choice_labels = set()
         scale_list_7 = ['strongly disagree', 'disagree', 'weakly disagree',

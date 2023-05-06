@@ -109,7 +109,6 @@ class SurveyList(generics.ListCreateAPIView):
         if survey_template_name == "Default Template":
             default_survey_template = get_object_or_404(
                 SurveyTemplate, is_template=True, name="Survey Template")
-            print(default_survey_template)
             for default_section in default_survey_template.sections:
                 section = SurveySection(template=survey_template,
                                         title=default_section.title,
