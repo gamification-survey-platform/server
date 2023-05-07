@@ -2,7 +2,7 @@ from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
 
 from app.gamification.models import Course, Registration, CustomUser
-from app.gamification.utils import get_user_pk
+from app.gamification.utils.auth import get_user_pk
 from app.gamification.serializers import CourseSerializer, RegistrationSerializer
 from django.shortcuts import get_object_or_404
 from drf_yasg import openapi

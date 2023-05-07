@@ -8,13 +8,13 @@ from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework import status
 from app.gamification.models.user import CustomUser
-from app.gamification.utils import get_user_pk
+from app.gamification.utils.auth import get_user_pk
 from app.gamification.serializers.reward import RewardSerializer
 from app.gamification.serializers.user import UserSerializer
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from app.gamification.utils import generate_presigned_url, generate_presigned_post
+from app.gamification.utils.s3 import generate_presigned_url, generate_presigned_post
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 

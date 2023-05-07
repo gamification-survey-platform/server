@@ -15,7 +15,7 @@ import pytz
 import json
 from pytz import timezone
 from datetime import datetime
-from app.gamification.utils import get_user_pk
+from app.gamification.utils.auth import get_user_pk
 from collections import defaultdict
 
 from drf_yasg import openapi

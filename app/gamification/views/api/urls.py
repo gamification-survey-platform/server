@@ -1,11 +1,12 @@
 from django.urls import path
-from rest_framework.decorators import api_view
+from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from rest_framework import permissions
 
 from app.gamification.views.api.artifact_review import ArtifactReviewDetails, AssignmentArtifactReviewList, UserArtifactReviewList, ArtifactReviewIpsatization
 from app.gamification.views.api.artifacts import SubmitArtifact, GetArtifact
-from .user import Users, UserDetail, Login, Register
+from .user import UserDetail, Login, Register
 from .course import CourseList, CourseDetail
 from .assignment import AssignmentList, AssignmentDetail
 from .survey import SurveyGetInfo
@@ -17,7 +18,7 @@ from .member import MemberList
 from .report import ViewReport
 
 from drf_yasg.views import get_schema_view
-from rest_framework import permissions
+from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 
@@ -33,35 +34,28 @@ schema_view = get_schema_view(
 )
 
 
-@api_view(['GET', 'POST'])
-def api_root(request, format=None):
-    return Response({
-        'users': reverse('user-list', request=request, format=format),
-        'courses': reverse('course-list', request=request, format=format),
-        'surveys': reverse('survey-list', request=request, format=format),
-        'sections': reverse('section-list', request=request, format=format),
-        'questions': reverse('question-list', request=request, format=format),
-        'options': reverse('option-list', request=request, format=format),
-        'answers': reverse('answer-list', request=request, format=format),
-        'template_section': reverse('template-section-list', request=request, format=format),
-        'artifact_reviews': reverse('artifact-review-list', request=request, format=format),
-        'constraints': reverse('constraint-list', request=request, format=format),
-    })
+class APIRootView(generics.RetrieveAPIView):
+    permission_classes = [permissions.AllowAny]
+    @swagger_auto_schema(
+        operation_description='Welcome message to API',
+        tags=['root'],
+        responses={
+            200: openapi.Response(description='Successfully reached API')
+        }
+    )
+    def get(self, request):
+        return Response({ 'message': 'Welcome to the Gamification Platform API' }, status=200)
 
 
 urlpatterns = [
-    path('', api_root),
+    path('', APIRootView.as_view(), name='api-root'),
     path('swagger/', schema_view.with_ui('swagger',
          cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc',
          cache_timeout=0), name='schema-redoc'),
 
-    # get all users
-    path('users/', Users.as_view(), name='user-list'),
-
-    # get user detail or update user.is_staff
-    path('users/<str:andrew_id>/', UserDetail.as_view(), name='user-detail'),
-
+     # GET or PATCH user by id
+    path('users/<str:user_id>/', UserDetail.as_view(), name='user-detail'),
     # login
     path('login/', Login.as_view(), name='user-login'),
 
@@ -164,3 +158,4 @@ urlpatterns = [
     path('courses/<str:course_id>/rewards/<str:reward_id>/',
          CourseRewardDetail.as_view(), name='reward-detail'),
 ]
+

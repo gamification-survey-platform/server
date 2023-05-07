@@ -2,7 +2,7 @@ from rest_framework import serializers
 from app.gamification.models import Reward
 from app.gamification.models import UserReward
 from django.conf import settings
-from app.gamification.utils import generate_presigned_url
+from app.gamification.utils.s3 import generate_presigned_url
 
 
 class RewardSerializer(serializers.ModelSerializer):

@@ -4,7 +4,7 @@ from app.gamification import serializers
 import json
 from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
-from app.gamification.utils import get_user_pk
+from app.gamification.utils.auth import get_user_pk
 
 from app.gamification.serializers import AssignmentSerializer
 from django.shortcuts import get_object_or_404

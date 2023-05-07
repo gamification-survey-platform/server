@@ -11,7 +11,7 @@ import pytz
 from pytz import timezone
 from datetime import datetime
 
-from app.gamification.utils import get_user_pk
+from app.gamification.utils.auth import get_user_pk
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema

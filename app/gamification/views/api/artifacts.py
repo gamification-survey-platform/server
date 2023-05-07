@@ -10,7 +10,7 @@ from app.gamification.models.course import Course
 from app.gamification.models.entity import Individual, Team
 from app.gamification.models.membership import Membership
 from app.gamification.models.user import CustomUser
-from app.gamification.utils import get_user_pk
+from app.gamification.utils.auth import get_user_pk
 from app.gamification.models.artifact import Artifact
 from app.gamification.models.artifact_review import ArtifactReview
 from app.gamification.models.registration import Registration
@@ -18,7 +18,8 @@ from app.gamification.serializers.answer import ArtifactReviewSerializer
 import pytz
 from datetime import datetime
 from django.conf import settings
-from app.gamification.utils import generate_presigned_url, generate_presigned_post, level_func, inv_level_func
+from app.gamification.utils.s3 import generate_presigned_url, generate_presigned_post
+from app.gamification.utils.levels import level_func, inv_level_func
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 

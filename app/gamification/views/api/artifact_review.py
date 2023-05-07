@@ -8,7 +8,9 @@ from app.gamification.models.course import Course
 from app.gamification.models.feedback_survey import FeedbackSurvey
 from app.gamification.models.membership import Membership
 from app.gamification.models.user import CustomUser
-from app.gamification.utils import get_user_pk, check_survey_status, level_func, inv_level_func
+from app.gamification.utils.auth import get_user_pk
+from app.gamification.utils.levels import level_func, inv_level_func
+from app.gamification.utils.survey import check_survey_status
 from app.gamification.models.artifact import Artifact
 from app.gamification.models.answer import Answer, ArtifactFeedback
 from app.gamification.models.artifact_review import ArtifactReview

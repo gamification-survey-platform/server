@@ -10,10 +10,10 @@ from rest_framework import status
 from app.gamification.models import CustomUser
 from app.gamification.serializers import UserSerializer
 from django.conf import settings
-from app.gamification.utils import get_user_pk
+from app.gamification.utils.auth import get_user_pk
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from app.gamification.utils import generate_presigned_url, generate_presigned_post
+from app.gamification.utils.s3 import generate_presigned_url, generate_presigned_post
 
 
 class UserProfile(generics.RetrieveUpdateAPIView):
