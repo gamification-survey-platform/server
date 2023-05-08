@@ -8,7 +8,6 @@ from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-
 class CourseList(generics.RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
@@ -31,8 +30,8 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
                             'semester': openapi.Schema(type=openapi.TYPE_STRING),
                             'visible': openapi.Schema(type=openapi.TYPE_BOOLEAN),
                             'picture': openapi.Schema(type=openapi.TYPE_STRING),
-                            'user_role': openapi.Schema(type=openapi.TYPE_STRING),
-                            'points': openapi.Schema(type=openapi.TYPE_NUMBER),
+                            'user_role': openapi.Schema(type=openapi.TYPE_STRING, enum=["Student", "TA", "Instructor"]),
+                            'points': openapi.Schema(type=openapi.TYPE_INTEGER),
                         }
                     )
                 )
@@ -67,7 +66,6 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         semester = request.data.get('semester').strip()
         user_pk = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_pk)
-        # boolean value visible
         visible = request.data.get('visible')
         visible = False if visible == 'false' else True
         picture = request.data.get('picture')
@@ -117,10 +115,7 @@ class CourseDetail(generics.ListCreateAPIView):
         course = get_object_or_404(Course, pk=course_id)
         registration = get_object_or_404(
             Registration, user=user, course=course)
-        if course.visible == False and registration.userRole == Registration.UserRole.Student:
-            # return 403 and error message
-            content = {'message': 'Permission denied'}
-            return Response(content, status=status.HTTP_403_FORBIDDEN)
+        if course.visible == False and registration.userRole == Registration.UserRole.Student:            return Response({'message': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
         serializer = CourseSerializer(course)
         response_data = serializer.data
         response_data['points'] = registration.points
@@ -167,8 +162,7 @@ class CourseDetail(generics.ListCreateAPIView):
             Registration, user=user, course=course)
 
         if registration.userRole == Registration.UserRole.Student:
-            content = {'message': 'Permission denied'}
-            return Response(content, status=status.HTTP_403_FORBIDDEN)
+            return Response({'message': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
         course_number = request.data.get('course_number').strip()
         course_name = request.data.get('course_name').strip()
         syllabus = request.data.get('syllabus').strip()
@@ -205,10 +199,9 @@ class CourseDetail(generics.ListCreateAPIView):
         registration = get_object_or_404(
             Registration, user=user, course=course)
         if registration.userRole == Registration.UserRole.Student:
-            content = {'message': 'Permission denied'}
-            return Response(content, status=status.HTTP_403_FORBIDDEN)
+            return Response({'message': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
         try:
             course.delete()
         except Exception as error:
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({ 'message': 'Cannot delete course. Another user is likely registered for the course.' }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(status=status.HTTP_200_OK)

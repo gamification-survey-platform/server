@@ -26,7 +26,28 @@ from drf_yasg.utils import swagger_auto_schema
 class UserDetail(generics.RetrieveUpdateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
+
+    def update_profile_picture(self, request, user):
+        picture = request.FILES.get('image')
+        if not picture:
+            return None
+
+        content_type = picture.content_type
+        if content_type == 'image/jpeg':
+            file_ext = 'jpg'
+        elif content_type == 'image/png':
+            file_ext = 'png'
+        else:
+            return None
+        key = picture
+        if settings.USE_S3:
+            key = f'profile_pics/user_{user.id}.{file_ext}'
+        user.image = key
+        user.save()
+
+        return key
+
 
     @swagger_auto_schema(
         operation_description='Get a user by user_id',
@@ -56,7 +77,11 @@ class UserDetail(generics.RetrieveUpdateAPIView):
         tags=['users']
     )
     def patch(self, request, user_id, *args, **kwargs):
-        user = CustomUser.objects.get(id=user_id)
+        try:
+            user = CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
+            return Response({ 'message', 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
         first_name = request.data.get('first_name')
         last_name = request.data.get('last_name')
         email = request.data.get('email')
@@ -98,7 +123,7 @@ class Login(generics.CreateAPIView):
 
     @swagger_auto_schema(
         operation_description='Login a user',
-        tags=['users'],
+        tags=['login'],
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
@@ -111,15 +136,18 @@ class Login(generics.CreateAPIView):
                 description='Login successful',
                 examples={
                     'application/json': {
-                        'id': 1,
-                        'andrew_id': 'test',
-                        'first_name': 'test',
-                        'last_name': 'test',
-                        'email': '123@gmail.com',
-                        'is_staff': False,
-                        'exp': 0,
-                        'level': 1,
-                        'next_level_exp': 100
+                        "andrew_id": "test",
+                        "first_name": "test",
+                        "last_name": "test",
+                        "exp": 0,
+                        "email": "test@andrew.cmu.edu",
+                        "is_staff": True,
+                        "is_active": True,
+                        "is_superuser": True,
+                        "date_joined": "2023-04-02T23:02:44.116000-07:00",
+                        "level": 0,
+                        "next_level_exp": 50,
+                        "token": "<JWT>"
                     }
                 }
             ),
@@ -135,24 +163,33 @@ class Login(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         andrew_id = request.data.get('andrew_id')
         password = request.data.get('password')
-        user_data = None
         try:
             user = CustomUser.objects.get(andrew_id=andrew_id)
             serializer = UserSerializer(user, context={'request': request})
-            user_data = serializer.data
+            response_data = serializer.data
         except CustomUser.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND, data={'error': 'Failed to login. Username does not exist.'})
-        user_data['exp'] = user.exp
+            return Response(status=status.HTTP_404_NOT_FOUND, data={'message': 'Failed to login. Username does not exist.'})
+        response_data['exp'] = user.exp
         level = inv_level_func(user.exp)
-        user_data['level'] = level
-        user_data['next_level_exp'] = level_func(level + 1)
+        response_data['level'] = level
+        response_data['next_level_exp'] = level_func(level + 1)
+        # Generate the presigned URL to share with the user.
+        if settings.USE_S3 and user.image:
+            upload_url = generate_presigned_post(user.image)
+            download_url = generate_presigned_url(user.image, http_method='GET')
+            response_data['image'] = download_url
+        elif user.image:
+            upload_url = f'http://{settings.ALLOWED_HOSTS[1]}:8000{user.image.url}'
+            download_url = f'http://{settings.ALLOWED_HOSTS[1]}:8000{user.image.url}'
+            response_data['image'] = download_url
+
         if user.check_password(password):
             jwt_token = {'token': jwt.encode(
                 {'id': user.id, 'is_staff': user.is_staff}, os.getenv('SECRET_KEY'), algorithm='HS256').decode('utf-8')}
-            user_data['token'] = jwt_token['token']
-            return Response(user_data, status=status.HTTP_200_OK)
+            response_data['token'] = jwt_token['token']
+            return Response(response_data, status=status.HTTP_200_OK)
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST, data={'error': 'Failed to login. Invalid password.'})
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={'message': 'Failed to login. Invalid password.'})
 
 
 class Register(generics.ListCreateAPIView):
@@ -163,7 +200,7 @@ class Register(generics.ListCreateAPIView):
 
     @swagger_auto_schema(
         operation_description='Register a user',
-        tags=['users'],
+        tags=['register'],
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
