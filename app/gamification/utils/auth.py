@@ -3,6 +3,7 @@ import hashlib
 from django.core.cache import cache
 import time
 import jwt
+import os
 
 HEADER = {'typ': 'JWP', 'alg': 'default'}
 KEY = 'GAMIFICATION'

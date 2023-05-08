@@ -1,30 +1,90 @@
-from rest_framework import generics, mixins, permissions, status
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
 from app.gamification.models import Course, Registration, CustomUser
 from app.gamification.utils.auth import get_user_pk
-from app.gamification.serializers import CourseSerializer, RegistrationSerializer
+from app.gamification.serializers import CourseSerializer
 from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 
-class IsAdminOrReadOnly(permissions.BasePermission):
-    '''
-    Custom permission to only allow users to view read-only information.
-    Admin users are allowed to view and edit information.
-    '''
+class CourseList(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    permission_classes = [permissions.AllowAny]
 
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return request.user.is_staff
+    @swagger_auto_schema(
+        operation_description="List of all a user's courses",
+        tags=['courses'],
+        responses={
+            200: openapi.Response(
+                description='Each course information along with relevant registration information',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Items(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'course_number': openapi.Schema(type=openapi.TYPE_STRING),
+                            'course_name': openapi.Schema(type=openapi.TYPE_STRING),
+                            'syllabus': openapi.Schema(type=openapi.TYPE_STRING),
+                            'semester': openapi.Schema(type=openapi.TYPE_STRING),
+                            'visible': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                            'picture': openapi.Schema(type=openapi.TYPE_STRING),
+                            'user_role': openapi.Schema(type=openapi.TYPE_STRING),
+                            'points': openapi.Schema(type=openapi.TYPE_NUMBER),
+                        }
+                    )
+                )
+            )
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        user_pk = get_user_pk(request)
+        user = CustomUser.objects.get(pk=user_pk)
+        registrations = Registration.objects.filter(user=user)
+        courses = []
+        for reg in registrations:
+            course = Course.objects.get(id=reg.course.id)
+            courses.append(course)
+        serializer = CourseSerializer(courses, many=True)
+        response_data = []
+        for (i, course) in enumerate(serializer.data):
+            course['user_role'] = registrations[i].userRole
+            course['points'] = registrations[i].points
+            response_data.append(course)
+        return Response(response_data)
 
-    def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return request.user.is_staff
-
+    @swagger_auto_schema(
+        operation_description="Create a new course",
+        tags=['courses'],
+    )
+    def post(self, request, *args, **kwargs):
+        # add course
+        course_number = request.data.get('course_number')
+        course_name = request.data.get('course_name').strip()
+        syllabus = request.data.get('syllabus').strip()
+        semester = request.data.get('semester').strip()
+        user_pk = get_user_pk(request)
+        user = CustomUser.objects.get(pk=user_pk)
+        # boolean value visible
+        visible = request.data.get('visible')
+        visible = False if visible == 'false' else True
+        picture = request.data.get('picture')
+        course = Course.objects.create(
+            course_number=course_number,
+            course_name=course_name,
+            syllabus=syllabus,
+            semester=semester,
+            visible=visible,
+            picture=picture
+        )
+        course.save()
+        registration = Registration(
+            user=user, course=course, userRole=Registration.UserRole.Instructor)
+        registration.save()
+        serializer = CourseSerializer(course)
+        return Response(serializer.data)
 
 class CourseDetail(generics.ListCreateAPIView):
     queryset = Course.objects.all()
@@ -139,7 +199,6 @@ class CourseDetail(generics.ListCreateAPIView):
         }
     )
     def delete(self, request, course_id, *args, **kwargs):
-        # delete course
         course = get_object_or_404(Course, pk=int(course_id))
         user_pk = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_pk)
@@ -153,81 +212,3 @@ class CourseDetail(generics.ListCreateAPIView):
         except Exception as error:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(status=status.HTTP_200_OK)
-
-
-class CourseList(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Course.objects.all()
-    serializer_class = CourseSerializer
-    permission_classes = [permissions.AllowAny]  # [IsAdminOrReadOnly]
-
-    @swagger_auto_schema(
-        operation_description="List all courses",
-        tags=['courses'],
-    )
-    def get(self, request, *args, **kwargs):
-        def get_registrations(user):
-            registration = []
-            for reg in Registration.objects.filter(user=user):
-                if reg.course.visible == False:
-                    continue
-                else:
-                    registration.append(reg)
-            return registration
-
-        def registrations_to_courses(registrations):
-            courses = []
-            for reg in registrations:
-                course = Course.objects.get(id=reg.course.id)
-                courses.append(course)
-            return courses
-        user = None
-        # list courses
-        if 'andrewId' in request.query_params:
-            andrew_id = request.query_params['andrewId']
-            user = CustomUser.objects.get(andrew_id=andrew_id)
-        if user is None:
-            registrations = Registration.objects.all()
-            courses = registrations_to_courses(registrations)
-            serializer = CourseSerializer(courses, many=True)
-            return Response(serializer.data)
-        else:
-            registrations = get_registrations(user)
-            courses = registrations_to_courses(registrations)
-            serializer = CourseSerializer(courses, many=True)
-            data = []
-            for (i, course) in enumerate(serializer.data):
-                course['user_role'] = registrations[i].userRole
-                course['points'] = registrations[i].points
-                data.append(course)
-            return Response(data)
-
-    @swagger_auto_schema(
-        operation_description="Create a new course",
-        tags=['courses'],
-    )
-    def post(self, request, *args, **kwargs):
-        # add course
-        course_number = request.data.get('course_number')
-        course_name = request.data.get('course_name').strip()
-        syllabus = request.data.get('syllabus').strip()
-        semester = request.data.get('semester').strip()
-        user_pk = get_user_pk(request)
-        user = CustomUser.objects.get(pk=user_pk)
-        # boolean value visible
-        visible = request.data.get('visible')
-        visible = False if visible == 'false' else True
-        picture = request.data.get('picture')
-        course = Course.objects.create(
-            course_number=course_number,
-            course_name=course_name,
-            syllabus=syllabus,
-            semester=semester,
-            visible=visible,
-            picture=picture
-        )
-        course.save()
-        registration = Registration(
-            user=user, course=course, userRole=Registration.UserRole.Instructor)
-        registration.save()
-        serializer = CourseSerializer(course)
-        return Response(serializer.data)
