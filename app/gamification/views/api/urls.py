@@ -5,13 +5,12 @@ from rest_framework.reverse import reverse
 from rest_framework import permissions
 
 from app.gamification.views.api.artifact_review import ArtifactReviewDetails, AssignmentArtifactReviewList, UserArtifactReviewList, ArtifactReviewIpsatization
-from app.gamification.views.api.artifacts import SubmitArtifact, GetArtifact
+from app.gamification.views.api.artifacts import AssignmentArtifact, ArtifactDetail
 from .user import UserDetail, Login, Register
 from .course import CourseList, CourseDetail
 from .assignment import AssignmentList, AssignmentDetail
 from .survey import SurveyGetInfo
 from .answer import ArtifactAnswerMultipleChoiceList, ArtifactAnswerKeywordList
-from .profile import UserProfile
 from .reward import RewardList, RewardDetail, CourseRewardList, CourseRewardPurchases, CourseRewardPurchasesDetail, UserRewardPurchases, CourseRewardDetail
 from .feedback_survey import SurveyList
 from .member import MemberList
@@ -24,64 +23,73 @@ from drf_yasg import openapi
 
 # Create a schema view for Swagger UI
 schema_view = get_schema_view(
-    openapi.Info(
-        title="Gamification API",
-        default_version='v1',
-        description="API for Gamification",
-    ),
-    public=True,
-    permission_classes=(permissions.AllowAny,),
+     openapi.Info(
+          title="Gamification API",
+          default_version='v1',
+          description="API for Gamification",
+     ),
+     public=True,
+     permission_classes=(permissions.AllowAny,),
+     
 )
 
-
 class APIRootView(generics.RetrieveAPIView):
-    permission_classes = [permissions.AllowAny]
-    @swagger_auto_schema(
-        operation_description='Welcome message to API',
-        tags=['root'],
-        responses={
-            200: openapi.Response(description='Successfully reached API')
-        }
-    )
-    def get(self, request):
-        return Response({ 'message': 'Welcome to the Gamification Platform API' }, status=200)
-
+     swagger_schema = None
+     permission_classes = [permissions.AllowAny]
+     @swagger_auto_schema(
+          operation_description='Welcome message to API',
+          tags=['root'],
+          responses={
+               200: openapi.Response(description='Successfully reached API')
+          }
+     )
+     def get(self, request):
+          return Response({ 'message': 'Welcome to the Gamification Platform API' }, status=200)
 
 urlpatterns = [
-    path('', APIRootView.as_view(), name='api-root'),
-    path('swagger/', schema_view.with_ui('swagger',
-         cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc',
-         cache_timeout=0), name='schema-redoc'),
+     path('', APIRootView.as_view(), name='api-root'),
+     path('swagger/', schema_view.with_ui('swagger',
+          cache_timeout=0), name='schema-swagger-ui'),
+     path('redoc/', schema_view.with_ui('redoc',
+          cache_timeout=0), name='schema-redoc'),
 
      # GET or PATCH user by id
-    path('users/<str:user_id>/', UserDetail.as_view(), name='user-detail'),
-    # login
-    path('login/', Login.as_view(), name='user-login'),
+     path('users/<str:user_id>/', UserDetail.as_view(), name='user-detail'),
 
-    # register
-    path('register/', Register.as_view(), name='user-register'),
+     # Login and Registration
+     path('login/', Login.as_view(), name='user-login'),
+     path('register/', Register.as_view(), name='user-register'),
 
-    # get user profile, or update user profile
-    path('profile/', UserProfile.as_view(), name='user-profile'),
+     # GET user courses
+     # POST course
+     path('courses/', CourseList.as_view(), name='course-list'),
 
-    # course
-    path('courses/', CourseList.as_view(), name='course-list'),
+     # GET, PATCH, DELETE course by id
+     path('courses/<str:course_id>/', CourseDetail.as_view(), name='course-detail'),
 
-    # course detail
-    path('courses/<str:course_id>/', CourseDetail.as_view(), name='course-detail'),
-
-    # assignment
-    path('courses/<str:course_id>/assignments/',
+     # GET, POST course assignments
+     path('courses/<str:course_id>/assignments/',
          AssignmentList.as_view(), name='assignment-list'),
 
-    # assignment detail
+    # GET, PATCH, DELETE, course assignment by id
     path('courses/<str:course_id>/assignments/<str:assignment_id>/',
          AssignmentDetail.as_view(), name='assignment-detail'),
 
-    # Entity/member
-    path('courses/<str:course_id>/members/',
-         MemberList.as_view(), name='member-list'),
+     # GET, POST, DELETE member from course
+     path('courses/<str:course_id>/members/',
+          MemberList.as_view(), name='member-list'),
+
+
+    # POST, GET artifact for an assignment
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/',
+         AssignmentArtifact.as_view(), name="submit-artifact"),
+
+    # GET artifact by id
+    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/<str:artifact_id>/',
+         ArtifactDetail.as_view(), name="submit-artifact"),
+]
+'''
+
 
     # Report
     path('courses/<str:course_id>/assignments/<str:assignment_id>/reports/',
@@ -95,13 +103,7 @@ urlpatterns = [
     path('courses/<str:course_id>/assignments/<str:assignment_id>/surveys/',
          SurveyGetInfo.as_view(), name='survey-get-info'),
 
-    # post or get an artifact
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/',
-         SubmitArtifact.as_view(), name="submit-artifact"),
 
-    # get artifact by artifact_id
-    path('courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/<str:artifact_id>/',
-         GetArtifact.as_view(), name="submit-artifact"),
 
     # Get answers keywords of artifact review
     path('courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/<int:artifact_pk>/keywords',
@@ -158,4 +160,4 @@ urlpatterns = [
     path('courses/<str:course_id>/rewards/<str:reward_id>/',
          CourseRewardDetail.as_view(), name='reward-detail'),
 ]
-
+'''

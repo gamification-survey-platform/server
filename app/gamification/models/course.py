@@ -6,7 +6,7 @@ from django.utils.deconstruct import deconstructible
 from app.gamification.models.entity import Team
 
 from .user import CustomUser
-from .registration import Registration
+from .registration import Registration, UserRole
 
 @deconstructible
 class FileSizeValidator:
@@ -84,17 +84,17 @@ class Course(models.Model):
 
     @property
     def instructors(self):
-        query = self.get_query(Registration.UserRole.Instructor)
+        query = self.get_query(UserRole.Instructor)
         return self.users.filter(pk__in=query)
 
     @property
     def students(self):
-        query = self.get_query(Registration.UserRole.Student)
+        query = self.get_query(UserRole.Student)
         return self.users.filter(pk__in=query)
 
     @property
     def TAs(self):
-        query = self.get_query(Registration.UserRole.TA)
+        query = self.get_query(UserRole.TA)
         return self.users.filter(pk__in=query)
 
     @property

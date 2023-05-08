@@ -8,7 +8,7 @@ from app.gamification.utils.auth import get_user_pk
 
 from app.gamification.serializers import AssignmentSerializer
 from django.shortcuts import get_object_or_404
-from app.gamification.models import Assignment, Course, Registration, Team, Membership, Artifact, Individual, FeedbackSurvey, CustomUser
+from app.gamification.models import Assignment, Course, Registration, UserRole, Team, Membership, Artifact, Individual, FeedbackSurvey, CustomUser
 import pytz
 from pytz import timezone
 from datetime import datetime
@@ -80,7 +80,7 @@ class AssignmentList(generics.ListCreateAPIView):
         total_score = request.data.get('total_score')
         weight = request.data.get('weight')
         review_assign_policy = request.data.get('review_assign_policy')
-        if userRole == Registration.UserRole.Instructor:
+        if userRole == UserRole.Instructor:
             assignment = Assignment.objects.create(course=course, assignment_name=assignment_name,
                                                    assignment_type=assignment_type,
                                                    date_released=date_released, date_due=date_due,
@@ -152,7 +152,7 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
         total_score = request.data.get('total_score')
         weight = request.data.get('weight')
         review_assign_policy = request.data.get('review_assign_policy')
-        if userRole == Registration.UserRole.Instructor:
+        if userRole == UserRole.Instructor:
             try:
                 assignment = Assignment.objects.get(pk=assignment_id)
             except Assignment.DoesNotExist:
@@ -181,7 +181,7 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
         course = get_object_or_404(Course, pk=course_id)
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
-        if user.is_staff or Registration.objects.get(user=user, course=course).userRole == Registration.UserRole.Instructor:
+        if user.is_staff or Registration.objects.get(user=user, course=course).userRole == UserRole.Instructor:
             assignment = get_object_or_404(Assignment, pk=assignment_id)
             assignment.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)

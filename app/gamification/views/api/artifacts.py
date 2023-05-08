@@ -13,7 +13,7 @@ from app.gamification.models.user import CustomUser
 from app.gamification.utils.auth import get_user_pk
 from app.gamification.models.artifact import Artifact
 from app.gamification.models.artifact_review import ArtifactReview
-from app.gamification.models.registration import Registration
+from app.gamification.models.registration import Registration, UserRole
 from app.gamification.serializers.answer import ArtifactReviewSerializer
 import pytz
 from datetime import datetime
@@ -24,7 +24,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 
-class SubmitArtifact(generics.ListCreateAPIView):
+class AssignmentArtifact(generics.ListCreateAPIView):
     queryset = ArtifactReview.objects.all()
     serializer_class = ArtifactReviewSerializer
     permission_classes = [permissions.AllowAny]
@@ -54,7 +54,7 @@ class SubmitArtifact(generics.ListCreateAPIView):
             registrations = [i for i in Registration.objects.filter(
                 course=course) if i.user.pk not in team_members]
             for registration in registrations:
-                if registration.userRole == Registration.UserRole.Student:
+                if UserRole == UserRole.Student:
                     # create artifact review if it doesn't exist
                     if not ArtifactReview.objects.filter(artifact=artifact, user=registration).exists():
                         artifact_review = ArtifactReview(
@@ -63,17 +63,17 @@ class SubmitArtifact(generics.ListCreateAPIView):
         else:
             registrations = [i for i in Registration.objects.filter(
                 course=course) if i.id != registration.id]
-            if registration.userRole == Registration.UserRole.Student:
+            if UserRole == UserRole.Student:
                 for single_registration in registrations:
                     # create artifact review if it doesn't exist
-                    if not ArtifactReview.objects.filter(artifact=artifact, user=single_registration).exists() and single_registration.userRole == Registration.UserRole.Student:
+                    if not ArtifactReview.objects.filter(artifact=artifact, user=single_registration).exists() and single_UserRole == UserRole.Student:
                         artifact_review = ArtifactReview(
                             artifact=artifact, user=single_registration)
                         artifact_review.save()
 
     @swagger_auto_schema(
         operation_description="Upload an artifact for an assignment",
-        tags=['Artifacts'],
+        tags=['artifacts'],
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
@@ -81,44 +81,24 @@ class SubmitArtifact(generics.ListCreateAPIView):
             },
         ),
         responses={
-            201: openapi.Response(
+            201: openapi.Schema(
                 description="Artifact uploaded",
-                examples={
-                    "application/json": {
-                        "upload_url": "http://localhost:8000/media/assignment_files/artifact_1_1.pdf",
-                        "download_url": "http://localhost:8000/media/assignment_files/artifact_1_1.pdf"
-                    }
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'upload_url': openapi.Schema(type=openapi.TYPE_STRING),
+                    'download_url': openapi.Schema(type=openapi.TYPE_STRING),
+                    'exp': openapi.Schema(type=openapi.TYPE_INTEGER),
+                    'level': openapi.Schema(type=openapi.TYPE_INTEGER),
+                    'next_level_exp': openapi.Schema(type=openapi.TYPE_INTEGER),
+                    'points': openapi.Schema(type=openapi.TYPE_INTEGER)
                 }
             ),
             404: openapi.Response(
-                description="No team found",
-                examples={
-                    "application/json": {
-                        "messages": "No team found"
-                    }
-                }
+                description='No team found',
             ),
         }
     )
-    def post(self, request, course_id, assignment_id, *args, **kwargs):
-        def add_exp(user, assignment, entity):
-            try:
-                artifact = Artifact.objects.get(
-                    assignment=assignment, entity=entity)
-            except Artifact.DoesNotExist:
-                behavior = Behavior.objects.get(operation='assignment')
-                user.exp += behavior.points
-                user.save()
-
-        def add_points(registration, assignment, entity):
-            try:
-                artifact = Artifact.objects.get(
-                    assignment=assignment, entity=entity)
-            except Artifact.DoesNotExist:
-                behavior = Behavior.objects.get(operation='assignment')
-                registration.points += behavior.points
-                registration.save()
-                
+    def post(self, request, course_id, assignment_id, *args, **kwargs):        
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, pk=user_id)
         assignment = get_object_or_404(Assignment, pk=assignment_id)
@@ -142,9 +122,19 @@ class SubmitArtifact(generics.ListCreateAPIView):
                 entity = Team.objects.get(
                     registration=registration, course=course)
             except Team.DoesNotExist:
-                return Response({"messages": "No team found"}, status=status.HTTP_404_NOT_FOUND)
-        add_exp(user, assignment, entity)
-        add_points(registration, assignment, entity)
+                return Response({ "message": "No team found" }, status=status.HTTP_404_NOT_FOUND)
+            
+
+        # Add user experience and registration points if artifact is new
+        artifact = Artifact.objects.filter(
+                    assignment=assignment, entity=entity)
+        if not artifact.exists():
+            behavior = Behavior.objects.get(operation='assignment')
+            registration.points += behavior.points
+            registration.save()
+            user.exp += behavior.points
+            user.save()
+
         artifact = self.create_artifact(
             request, assignment, registration, entity)
 
@@ -156,6 +146,7 @@ class SubmitArtifact(generics.ListCreateAPIView):
         else:
             upload_url = f'http://{settings.ALLOWED_HOSTS[1]}:8000{artifact.file.url}'
             download_url = f'http://{settings.ALLOWED_HOSTS[1]}:8000{artifact.file.url}'
+        
         self.create_artifact_review(
             artifact, registration, course, assignment_type, entity)
         level = inv_level_func(user.exp)
@@ -172,24 +163,19 @@ class SubmitArtifact(generics.ListCreateAPIView):
 
     @swagger_auto_schema(
         operation_description="Get artifact for an assignment",
-        tags=['Artifacts'],
+        tags=['artifacts'],
         responses={
-            200: openapi.Response(
-                description="Artifact uploaded",
-                examples={
-                    "application/json": {
-                        "create_date": "2020-10-22T21:00:00Z",
-                        "download_url": "http://localhost:8000/media/assignment_files/artifact_1_1.pdf"
-                    }
+            200: openapi.Schema(
+                description="Successfully obtained artifact",
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'create_date': openapi.Schema(type=openapi.TYPE_STRING),
+                    'file_path': openapi.Schema(type=openapi.TYPE_STRING),
+                    'artifact_pk': openapi.Schema(type=openapi.TYPE_INTEGER),
                 }
             ),
             404: openapi.Response(
-                description="No submission",
-                examples={
-                    "application/json": {
-                        "messages": "No submission"
-                    }
-                }
+                description="No submission found",
             ),
         }
     )
@@ -197,20 +183,19 @@ class SubmitArtifact(generics.ListCreateAPIView):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, pk=user_id)
         assignment = get_object_or_404(Assignment, pk=assignment_id)
-        if assignment.assignment_type == "Individual":
+        if assignment.assignment_type == Assignment.AssigmentType.Individual:
             entity = Individual.objects.get(
                 registration__user=user, course__id=course_id)
-        elif assignment.assignment_type == "Team":
+        elif assignment.assignment_type == Assignment.AssigmentType.Team:
             entity = Team.objects.get(
                 registration__user=user, course__id=course_id)
         try:
             artifact = Artifact.objects.get(
                 assignment=assignment, entity=entity)
         except Artifact.DoesNotExist:
-            return Response({"messages": "No submission"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'No submission'}, status=status.HTTP_404_NOT_FOUND)
         data = dict()
         data['create_date'] = artifact.upload_time
-        # get an open file handle (I'm just using a file attached to the model for this example):
         key = artifact.file.name
         path = f'http://{settings.ALLOWED_HOSTS[1]}:8000{artifact.file.url}'
 
@@ -222,32 +207,26 @@ class SubmitArtifact(generics.ListCreateAPIView):
         return Response(data, status=status.HTTP_200_OK)
     
 
-
-class GetArtifact (generics.RetrieveAPIView):
+class ArtifactDetail(generics.RetrieveAPIView):
     queryset = ArtifactReview.objects.all()
     serializer_class = ArtifactReviewSerializer
     permission_classes = [permissions.AllowAny]
 
     @swagger_auto_schema(
         operation_description="Get artifact for an assignment by artifact id",
-        tags=['Artifacts'],
+        tags=['artifacts'],
         responses={
-            200: openapi.Response(
-                description="Artifact uploaded",
-                examples={
-                    "application/json": {
-                        "create_date": "2020-10-22T21:00:00Z",
-                        "download_url": "http://localhost:8000/media/assignment_files/artifact_1_1.pdf"
-                    }
+            200: openapi.Schema(
+                description="Successfully obtained artifact",
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'create_date': openapi.Schema(type=openapi.TYPE_STRING),
+                    'file_path': openapi.Schema(type=openapi.TYPE_STRING),
+                    'artifact_pk': openapi.Schema(type=openapi.TYPE_INTEGER),
                 }
             ),
             404: openapi.Response(
-                description="No submission",
-                examples={
-                    "application/json": {
-                        "messages": "No submission"
-                    }
-                }
+                description="No submission found",
             ),
         }
     )
@@ -261,6 +240,7 @@ class GetArtifact (generics.RetrieveAPIView):
 
         if settings.USE_S3:
             path = generate_presigned_url(key, http_method='GET')
+        data['artifact_pk'] = artifact_id
         data['file_path'] = path
 
         return Response(data, status=status.HTTP_200_OK)
