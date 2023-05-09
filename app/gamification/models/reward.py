@@ -1,19 +1,24 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from app.gamification.models.course import Course
-from app.gamification.models.reward_type import RewardType
 from app.gamification.models.user_reward import UserReward
 
 
 class Reward(models.Model):
+
+    class RewardType(models.TextChoices):
+        OTHER = 'Other'
+        LATE_SUBMISSION = 'Late Submission'
+        BONUS = 'Bonus'
+
 
     name = models.CharField(_('name'), max_length=255, default='', blank=False)
     description = models.TextField(_('description'), default='', blank=False)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     points = models.IntegerField(
         _('points'), default=0, null=True, blank=False)
-    reward_type = models.ForeignKey(
-        RewardType, on_delete=models.CASCADE)
+    reward_type = models.TextField(
+        choices=RewardType.choices, default=RewardType.OTHER)
     inventory = models.IntegerField(
         _('inventory'), default=-1, null=True, blank=True)
     is_active = models.BooleanField(
@@ -39,10 +44,6 @@ class Reward(models.Model):
         self.save()
 
     @property
-    def owner(self):
+    def owners(self):
         owners = UserReward.objects.filter(reward=self)
         return list(owners)
-
-    @property
-    def consumed(self):
-        return self.inventory - len(self.owner)

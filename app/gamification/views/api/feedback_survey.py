@@ -15,29 +15,9 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 
-class IsAdminOrReadOnly(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        registrations = Registration.objects.filter(users=request.user)
-        for registration in registrations:
-            if registration.userRole == Registration.UserRole.Instructor:
-                return True
-        return False
-
-    def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        registrations = Registration.objects.filter(users=request.user)
-        for registration in registrations:
-            if registration.userRole == Registration.UserRole.Instructor:
-                return True
-        return False
-
-
 class SurveyList(generics.ListCreateAPIView):
     serializer_class = SurveySerializer
-    permission_classes = [permissions.AllowAny]  # [IsAdminOrReadOnly]
+    permission_classes = [permissions.AllowAny]
 
     @swagger_auto_schema(
         operation_description="Get survey information",
@@ -78,25 +58,36 @@ class SurveyList(generics.ListCreateAPIView):
     def post(self, request, assignment_id, *args, **kwargs):
         assignment = get_object_or_404(Assignment, pk=assignment_id)
         survey_template_name = request.data.get('template_name').strip()
-        survey_template_instruction = request.data.get('instructions')
+        survey_template_instructions = request.data.get('instructions')
         survey_template_other_info = request.data.get('other_info')
         feedback_survey_date_released = request.data.get('date_released')
         feedback_survey_date_due = request.data.get('date_due')
+        response_data = {
+            'template_name': survey_template_name,
+            'instructions': survey_template_instructions,
+            'other_info': survey_template_other_info,
+            'date_released': feedback_survey_date_released,
+            'date_due': feedback_survey_date_due
+        }
+
         feedback_survey = FeedbackSurvey.objects.filter(assignment=assignment)
-        if len(feedback_survey) > 0:
+        # Check if feedback survey exists
+        if feedback_survey.exists():
             survey_template = feedback_survey[0].template
             survey_template.name = survey_template_name
-            survey_template.instructions = survey_template_instruction
+            survey_template.instructions = survey_template_instructions
             survey_template.other_info = survey_template_other_info
             survey_template.save()
+            # Create new survey
             feedback_survey[0].template = survey_template
             feedback_survey[0].date_released = feedback_survey_date_released
             feedback_survey[0].date_due = feedback_survey_date_due
             feedback_survey[0].save()
-            return Response({"messages": "success"}, status=status.HTTP_200_OK)
+            return Response(response_data, status=status.HTTP_200_OK)
 
+        # Create new template
         survey_template = SurveyTemplate(
-            name=survey_template_name, instructions=survey_template_instruction, other_info=survey_template_other_info)
+            name=survey_template_name, instructions=survey_template_instructions, other_info=survey_template_other_info)
         survey_template.save()
         feedback_survey = FeedbackSurvey(
             assignment=assignment,
@@ -132,7 +123,7 @@ class SurveyList(generics.ListCreateAPIView):
                             number_of_text=default_option.number_of_text,
                         )
                         question_option.save()
-                # Automatically create a section and question for artifact
+        # Automatically create a section and question for artifact
         else:
             artifact_section = SurveySection.objects.create(
                 template=survey_template,
@@ -149,13 +140,14 @@ class SurveyList(generics.ListCreateAPIView):
             QuestionOption.objects.create(
                 question=artifact_question, option_choice=empty_option)
             self.serializer_class(survey_template)
-        return Response({"messages": "success"}, status=status.HTTP_201_CREATED)
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
 
 class SurveyDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = SurveyTemplate.objects.all()
     serializer_class = SurveySerializer
-    # permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [permissions.AllowAny]
 
     @swagger_auto_schema(
         operation_description="Get a survey template",

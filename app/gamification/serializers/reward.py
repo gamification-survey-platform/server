@@ -26,24 +26,23 @@ class RewardSerializer(serializers.ModelSerializer):
         return data
 
     def type_serializer(self, reward):
-        owner = UserReward.objects.filter(reward=reward)
+        owners = UserReward.objects.filter(reward=reward)
         data = {}
         data['pk'] = reward.pk
         data['name'] = reward.name
         data['description'] = reward.description
         data['belong_to'] = reward.course.course_name
-        data['type'] = reward.reward_type.type
+        data['type'] = reward.reward_type
         data['is_active'] = reward.is_active
         data['points'] = reward.points
-        data['consumed'] = reward.consumed
-        data['owner'] = [i.user.andrew_id for i in owner]
+        data['owners'] = [i.user.andrew_id for i in owners]
         if reward.inventory == -1:
             data['inventory'] = 'Unlimited'
         else:
             data['inventory'] = reward.inventory
-        if reward.reward_type.type == 'Bonus' or reward.reward_type.type == 'Late Submission':
+        if reward.reward_type == Reward.RewardType.BONUS or reward.reward_type == Reward.RewardType.LATE_SUBMISSION:
             data['quantity'] = reward.quantity
-        elif reward.reward_type.type == 'Other':
+        elif reward.reward_type == Reward.RewardType.OTHER:
             path = f'http://{settings.ALLOWED_HOSTS[1]}:8000{reward.picture.url}'
             data['picture'] = self.get_picture_url(
                 reward) if settings.USE_S3 else path

@@ -14,31 +14,10 @@ from app.gamification.serializers.survey import OptionChoiceSerializer, OptionCh
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-
-class IsAdminOrReadOnly(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        registrations = Registration.objects.filter(users=request.user)
-        for registration in registrations:
-            if registration.userRole == Registration.UserRole.Instructor:
-                return True
-        return False
-
-    def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        registrations = Registration.objects.filter(users=request.user)
-        for registration in registrations:
-            if registration.userRole == Registration.UserRole.Instructor:
-                return True
-        return False
-
-
 class SurveySectionList(generics.ListCreateAPIView):
     queryset = SurveyTemplate.objects.all()
     serializer_class = SectionSerializer
-    # permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request, survey_pk, *args, **kwargs):
         sections = SurveySection.objects.filter(
@@ -64,13 +43,6 @@ class SurveySectionList(generics.ListCreateAPIView):
         section.save()
         serializer = self.get_serializer(section)
         return Response(serializer.data)
-
-
-class SectionList(generics.ListAPIView):
-    queryset = SurveySection.objects.all()
-    serializer_class = SectionSerializer
-    # permission_classes = [IsAdminOrReadOnly]
-
 
 class SectionDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = SurveySection.objects.all()

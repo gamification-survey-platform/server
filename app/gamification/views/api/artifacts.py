@@ -49,12 +49,12 @@ class AssignmentArtifact(generics.ListCreateAPIView):
         return artifact
 
     def create_artifact_review(self, artifact, registration, course, assignment_type, entity):
-        if assignment_type == 'Team':
+        if assignment_type == Assignment.AssigmentType.Team:
             team_members = [i.pk for i in entity.members]
             registrations = [i for i in Registration.objects.filter(
                 course=course) if i.user.pk not in team_members]
             for registration in registrations:
-                if UserRole == UserRole.Student:
+                if registration.userRole == UserRole.Student:
                     # create artifact review if it doesn't exist
                     if not ArtifactReview.objects.filter(artifact=artifact, user=registration).exists():
                         artifact_review = ArtifactReview(
@@ -63,10 +63,10 @@ class AssignmentArtifact(generics.ListCreateAPIView):
         else:
             registrations = [i for i in Registration.objects.filter(
                 course=course) if i.id != registration.id]
-            if UserRole == UserRole.Student:
+            if registration.userRole == UserRole.Student:
                 for single_registration in registrations:
                     # create artifact review if it doesn't exist
-                    if not ArtifactReview.objects.filter(artifact=artifact, user=single_registration).exists() and single_UserRole == UserRole.Student:
+                    if not ArtifactReview.objects.filter(artifact=artifact, user=single_registration).exists() and single_registration.userRole == UserRole.Student:
                         artifact_review = ArtifactReview(
                             artifact=artifact, user=single_registration)
                         artifact_review.save()

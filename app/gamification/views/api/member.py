@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from django.contrib import messages
 from app.gamification.serializers import EntitySerializer
 from django.shortcuts import get_object_or_404
-from app.gamification.models import Assignment, Course, CustomUser, Registration, UserRole, Team, Membership, Artifact, ArtifactReview, Entity
+from app.gamification.models import Assignment, Course, CustomUser, Registration, UserRole, Individual, Team, Membership, Artifact, ArtifactReview, Entity
 import pytz
 from pytz import timezone
 from datetime import datetime
@@ -254,6 +254,10 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
                     user=user, course=course, userRole=userRole
                 )
                 registration.save()
+                individual = Individual(course=course)
+                individual.save()
+                membership = Membership(student=registration, entity=individual)
+                membership.save()
             else:
                 registration = get_object_or_404(
                     Registration, user=user, course=course)

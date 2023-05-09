@@ -16,5 +16,4 @@ from .user import *
 from .todo_list import *
 from .reward import *
 from .user_reward import *
-from .reward_type import *
 from .behavior import *
