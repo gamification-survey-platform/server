@@ -20,9 +20,10 @@ from django.urls import include, path
 
 
 urlpatterns = [
-    path("api/", include("app.gamification.views.api.urls")),
-    path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
+    path('api/', include('app.gamification.views.api.urls')),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)

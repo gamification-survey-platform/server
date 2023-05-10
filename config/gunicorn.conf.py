@@ -1,5 +1,5 @@
 def when_ready(server):
-    open("/tmp/app-initialized", "w").close()
+    open('/tmp/app-initialized', 'w').close()
 
 
-bind = "localhost:8000"
+bind = 'localhost:8000'
