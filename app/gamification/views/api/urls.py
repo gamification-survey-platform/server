@@ -16,7 +16,7 @@ from app.gamification.views.api.artifacts import ArtifactDetail, AssignmentArtif
 from .answer import ArtifactAnswerKeywordList, ArtifactAnswerMultipleChoiceList
 from .assignment import AssignmentDetail, AssignmentList
 from .course import CourseDetail, CourseList
-from .feedback_survey import SurveyList
+from .feedback_survey import SurveyDetail, SurveyList
 from .member import MemberList
 from .reward import (
     CourseRewardDetail,
@@ -99,6 +99,12 @@ urlpatterns = [
         "courses/<str:course_id>/assignments/<str:assignment_id>/surveys/",
         SurveyGetInfo.as_view(),
         name="survey-get-info",
+    ),
+    # PATCH, DELETE survey template
+    path(
+        "feedback_surveys/<str:feedback_survey_pk>",
+        SurveyDetail.as_view(),
+        name="survey-detail",
     ),
     # GET user artifact reviews
     path("artifact_reviews/", UserArtifactReviewList.as_view(), name="artifact-review-list"),

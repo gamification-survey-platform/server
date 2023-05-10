@@ -168,7 +168,7 @@ class SurveyDetail(generics.RetrieveUpdateDestroyAPIView):
             },
         ),
     )
-    def put(self, request, feedback_survey_pk, *args, **kwargs):
+    def patch(self, request, feedback_survey_pk, *args, **kwargs):
         survey = get_object_or_404(SurveyTemplate, id=feedback_survey_pk)
         name = request.data.get("template_name").strip()
         if name == "":

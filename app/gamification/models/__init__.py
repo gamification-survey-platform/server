@@ -2,6 +2,7 @@ from .answer import *
 from .artifact import *
 from .artifact_review import *
 from .assignment import *
+from .behavior import *
 from .course import *
 from .entity import *
 from .feedback_survey import *
@@ -10,10 +11,9 @@ from .option_choice import *
 from .question import *
 from .question_option import *
 from .registration import *
+from .reward import *
 from .survey_section import *
 from .survey_template import *
-from .user import *
 from .todo_list import *
-from .reward import *
+from .user import *
 from .user_reward import *
-from .behavior import *
