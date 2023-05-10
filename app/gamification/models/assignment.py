@@ -7,57 +7,52 @@ from app.gamification.models.feedback_survey import FeedbackSurvey
 
 
 class Assignment(models.Model):
-
     class AssigmentType(models.TextChoices):
-        Individual = 'Individual'
-        Team = 'Team'
+        Individual = "Individual"
+        Team = "Team"
 
     class SubmissionType(models.TextChoices):
-        File = 'File'
-        URL = 'URL'
-        Text = 'Text'
+        File = "File"
+        URL = "URL"
+        Text = "Text"
 
     class ReviewerAssignPolicy(models.TextChoices):
-        A = 'A'
-        B = 'B'
-        C = 'C'
+        A = "A"
+        B = "B"
+        C = "C"
 
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
-    assignment_name = models.CharField(
-        _('assignment name'), max_length=150, blank=True)
+    assignment_name = models.CharField(_("assignment name"), max_length=150, blank=True)
 
-    description = models.TextField(_('description'), blank=True)
+    description = models.TextField(_("description"), blank=True)
 
-    assignment_type = models.TextField(
-        choices=AssigmentType.choices, default=AssigmentType.Individual, blank=True)
+    assignment_type = models.TextField(choices=AssigmentType.choices, default=AssigmentType.Individual, blank=True)
 
-    submission_type = models.TextField(
-        choices=SubmissionType.choices, default=SubmissionType.File, blank=True)
+    submission_type = models.TextField(choices=SubmissionType.choices, default=SubmissionType.File, blank=True)
 
     total_score = models.FloatField(null=True, blank=True)
 
     weight = models.FloatField(null=True, blank=True)
 
-    date_created = models.DateTimeField(
-        _('date created'), null=True, default=now, blank=True)
+    date_created = models.DateTimeField(_("date created"), null=True, default=now, blank=True)
 
-    date_released = models.DateTimeField(
-        _('date released'),  null=True, blank=True)
+    date_released = models.DateTimeField(_("date released"), null=True, blank=True)
 
-    date_due = models.DateTimeField(_('date due'),  null=True, blank=True)
+    date_due = models.DateTimeField(_("date due"), null=True, blank=True)
 
     review_assign_policy = models.TextField(
-        choices=ReviewerAssignPolicy.choices, default=ReviewerAssignPolicy.A, blank=True)
-    
+        choices=ReviewerAssignPolicy.choices, default=ReviewerAssignPolicy.A, blank=True
+    )
+
     ipsatization_min = models.IntegerField(null=True, default=80, blank=True)
-    
+
     ipsatization_max = models.IntegerField(null=True, default=100, blank=True)
 
     class Meta:
-        db_table = 'assignment'
-        verbose_name = _('assignment')
-        verbose_name_plural = _('assignments')
+        db_table = "assignment"
+        verbose_name = _("assignment")
+        verbose_name_plural = _("assignments")
 
     @property
     def survey_template(self):
@@ -69,4 +64,4 @@ class Assignment(models.Model):
             return None
 
     def __str__(self):
-        return f'{self.assignment_name}'
+        return f"{self.assignment_name}"

@@ -7,7 +7,7 @@ htmlcov/
 db.sqlite3
 
 __pycache__/
-env/
+venv/
 media/
 static/three.js-master/
 

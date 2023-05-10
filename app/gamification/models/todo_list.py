@@ -5,7 +5,6 @@ from .user import CustomUser
 
 
 class TodoList(models.Model):
-
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
     text = models.CharField(max_length=200)
@@ -19,6 +18,6 @@ class TodoList(models.Model):
     mandatory = models.BooleanField(default=False)
 
     class Meta:
-        db_table = 'todo_list'
-        verbose_name = _('todo_list')
-        verbose_name_plural = _('todo_lists')
+        db_table = "todo_list"
+        verbose_name = _("todo_list")
+        verbose_name_plural = _("todo_lists")

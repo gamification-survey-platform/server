@@ -1,120 +1,117 @@
+import pandas as pd
 from django.forms import model_to_dict
+from django.shortcuts import get_object_or_404
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
+
+from app.gamification.models.answer import Answer, ArtifactFeedback
+from app.gamification.models.artifact import Artifact
+from app.gamification.models.artifact_review import ArtifactReview
 from app.gamification.models.assignment import Assignment
-from app.gamification.models.entity import Team, Individual
+from app.gamification.models.behavior import Behavior
 from app.gamification.models.course import Course
+from app.gamification.models.entity import Individual, Team
 from app.gamification.models.feedback_survey import FeedbackSurvey
 from app.gamification.models.membership import Membership
-from app.gamification.models.user import CustomUser
-from app.gamification.utils.auth import get_user_pk
-from app.gamification.utils.levels import level_func, inv_level_func
-from app.gamification.utils.survey import check_survey_status
-from app.gamification.models.artifact import Artifact
-from app.gamification.models.answer import Answer, ArtifactFeedback
-from app.gamification.models.artifact_review import ArtifactReview
-from app.gamification.models.behavior import Behavior
 from app.gamification.models.question import Question
 from app.gamification.models.question_option import QuestionOption
 from app.gamification.models.registration import Registration, UserRole
+from app.gamification.models.user import CustomUser
 from app.gamification.serializers.answer import ArtifactReviewSerializer
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-import pandas as pd
+from app.gamification.utils.auth import get_user_pk
+from app.gamification.utils.levels import inv_level_func, level_func
+from app.gamification.utils.survey import check_survey_status
 
 base_artifact_review_schema = {
-    'sections': openapi.Schema(
+    "sections": openapi.Schema(
         type=openapi.TYPE_ARRAY,
         items=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                'pk': openapi.Schema(type=openapi.TYPE_INTEGER),
-                'questions': openapi.Schema(
+                "pk": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "questions": openapi.Schema(
                     type=openapi.TYPE_ARRAY,
                     items=openapi.Schema(
                         type=openapi.TYPE_OBJECT,
                         properties={
-                            'pk': openapi.Schema(type=openapi.TYPE_INTEGER),
-                            'answer': openapi.Schema(
+                            "pk": openapi.Schema(type=openapi.TYPE_INTEGER),
+                            "answer": openapi.Schema(
                                 type=openapi.TYPE_ARRAY,
                                 items=openapi.Schema(
                                     type=openapi.TYPE_OBJECT,
                                     properties={
-                                        'text': openapi.Schema(type=openapi.TYPE_STRING),
-                                        'page': openapi.Schema(type=openapi.TYPE_INTEGER)
-                                    }
-                                )
-                            )
-                        }
-                    )
-                )
-            }
-        )
+                                        "text": openapi.Schema(type=openapi.TYPE_STRING),
+                                        "page": openapi.Schema(type=openapi.TYPE_INTEGER),
+                                    },
+                                ),
+                            ),
+                        },
+                    ),
+                ),
+            },
+        ),
     )
 }
+
 
 class AssignmentArtifactReviewList(generics.GenericAPIView):
     queryset = ArtifactReview.objects.all()
     serializer_class = ArtifactReviewSerializer
     permission_classes = [permissions.AllowAny]
-    
+
     @swagger_auto_schema(
         operation_description="Create specific artifact review for a student",
-        tags=['artifact_reviews'],
+        tags=["artifact_reviews"],
         responses={
             200: openapi.Schema(
                 description="Create artifact review for a student",
                 type=openapi.TYPE_OBJECT,
                 properties={
-                    'id': openapi.Schema(type=openapi.TYPE_INTEGER),
-                    'artifact': openapi.Schema(type=openapi.TYPE_INTEGER),
-                    'user': openapi.Schema(type=openapi.TYPE_INTEGER),
-                    'status': openapi.Schema(type=openapi.TYPE_STRING, enum=['COMPLETED', 'INCOMPLETE', 'LATE']),
-                    'max_artifact_review_score': openapi.Schema(type=openapi.TYPE_INTEGER),
-                    'artifact_review_score': openapi.Schema(type=openapi.TYPE_INTEGER),
-                    'reviewing': openapi.Schema(type=openapi.TYPE_STRING),
-                    'course_id': openapi.Schema(type=openapi.TYPE_INTEGER),
-                    'assignment_id': openapi.Schema(type=openapi.TYPE_INTEGER),
-                }
+                    "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "artifact": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "user": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "status": openapi.Schema(type=openapi.TYPE_STRING, enum=["COMPLETED", "INCOMPLETE", "LATE"]),
+                    "max_artifact_review_score": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "artifact_review_score": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "reviewing": openapi.Schema(type=openapi.TYPE_STRING),
+                    "course_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "assignment_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                },
             )
-        }
+        },
     )
     def post(self, request, course_id, assignment_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
         assignment = get_object_or_404(Assignment, pk=assignment_id)
-        reviewer_andrew_id = request.data.get('reviewer')
-        reviewee_andrew_id = request.data.get('reviewee')
+        reviewer_andrew_id = request.data.get("reviewer")
+        reviewee_andrew_id = request.data.get("reviewee")
         reviewer = get_object_or_404(CustomUser, andrew_id=reviewer_andrew_id)
         reviewee = get_object_or_404(CustomUser, andrew_id=reviewee_andrew_id)
-        reviewer_registration = get_object_or_404(
-            Registration, user=reviewer, course=course)
-        reviewee_registration = get_object_or_404(
-            Registration, user=reviewee, course=course)
+        reviewer_registration = get_object_or_404(Registration, user=reviewer, course=course)
+        reviewee_registration = get_object_or_404(Registration, user=reviewee, course=course)
         if assignment.assignment_type == "Individual":
             try:
-                entity = Individual.objects.get(
-                    registration=reviewee_registration, course=course)
+                entity = Individual.objects.get(registration=reviewee_registration, course=course)
             except Individual.DoesNotExist:
                 return Response({"message": "No team found"}, status=status.HTTP_404_NOT_FOUND)
         elif assignment.assignment_type == "Team":
             try:
-                entity = Team.objects.get(
-                    registration=reviewee_registration, course=course)
+                entity = Team.objects.get(registration=reviewee_registration, course=course)
             except Team.DoesNotExist:
                 return Response({"message": "No team found"}, status=status.HTTP_404_NOT_FOUND)
         artifact = get_object_or_404(Artifact, entity=entity)
-        artifact_review = ArtifactReview(
-            artifact=artifact, user=reviewer_registration)
+        artifact_review = ArtifactReview(artifact=artifact, user=reviewer_registration)
         artifact_review.save()
         response_data = model_to_dict(artifact_review)
-        response_data['reviewer'] = reviewer_andrew_id
-        response_data['reviewing'] = reviewee_andrew_id
+        response_data["reviewer"] = reviewer_andrew_id
+        response_data["reviewing"] = reviewee_andrew_id
         return Response(response_data, status=status.HTTP_201_CREATED)
-    
+
     @swagger_auto_schema(
         operation_description="Get artifact reviews for a specific assignment",
-        tags=['artifact_reviews'],
+        tags=["artifact_reviews"],
         responses={
             200: openapi.Schema(
                 description="List of artifact reviews for a user in an assignment",
@@ -122,21 +119,20 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                 items=openapi.Items(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        'id': openapi.Schema(type=openapi.TYPE_INTEGER),
-                        'artifact': openapi.Schema(type=openapi.TYPE_INTEGER),
-                        'user': openapi.Schema(type=openapi.TYPE_INTEGER),
-                        'status': openapi.Schema(type=openapi.TYPE_STRING, enum=['COMPLETED', 'INCOMPLETE', 'LATE']),
-                        'max_artifact_review_score': openapi.Schema(type=openapi.TYPE_INTEGER),
-                        'artifact_review_score': openapi.Schema(type=openapi.TYPE_INTEGER),
-                        'reviewing': openapi.Schema(type=openapi.TYPE_STRING),
-                        'course_id': openapi.Schema(type=openapi.TYPE_INTEGER),
-                        'assignment_id': openapi.Schema(type=openapi.TYPE_INTEGER),
-                    }
-                )
+                        "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "artifact": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "user": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "status": openapi.Schema(type=openapi.TYPE_STRING, enum=["COMPLETED", "INCOMPLETE", "LATE"]),
+                        "max_artifact_review_score": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "artifact_review_score": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "reviewing": openapi.Schema(type=openapi.TYPE_STRING),
+                        "course_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "assignment_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    },
+                ),
             )
-        }
+        },
     )
-    
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         user_id = get_user_pk(request)
         print(user_id, course_id, assignment_id)
@@ -144,29 +140,26 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
         course = get_object_or_404(Course, id=course_id)
         assignment = get_object_or_404(Assignment, id=assignment_id)
         feedbackSurvey = FeedbackSurvey.objects.filter(assignment=assignment)
-        registration = get_object_or_404(
-            Registration, user=user, course=course)
-        artifacts = Artifact.objects.filter(
-            assignment_id=assignment_id)
+        registration = get_object_or_404(Registration, user=user, course=course)
+        artifacts = Artifact.objects.filter(assignment_id=assignment_id)
         response_data = []
         # Instructors get all artifacts for assignment
         if registration.userRole == UserRole.Instructor:
             for artifact in artifacts:
-                artifact_reviews = ArtifactReview.objects.filter(
-                    artifact=artifact)
+                artifact_reviews = ArtifactReview.objects.filter(artifact=artifact)
                 for artifact_review in artifact_reviews:
                     artifact_review_dict = model_to_dict(artifact_review)
                     reviewer_registration = artifact_review.user
-                    reviewer = get_object_or_404(
-                        CustomUser, id=reviewer_registration.user_id)
-                    artifact_review_dict['reviewer'] = reviewer.andrew_id
-                    if assignment.assignment_type == 'Individual':
-                        artifact_review_dict['reviewing'] = Membership.objects.get(
-                            entity=artifact.entity).student.user.name_or_andrew_id()
+                    reviewer = get_object_or_404(CustomUser, id=reviewer_registration.user_id)
+                    artifact_review_dict["reviewer"] = reviewer.andrew_id
+                    if assignment.assignment_type == "Individual":
+                        artifact_review_dict["reviewing"] = Membership.objects.get(
+                            entity=artifact.entity
+                        ).student.user.name_or_andrew_id()
                     else:
-                        artifact_review_dict['reviewing'] = artifact.entity.team.name
-                    artifact_review_dict['course_id'] = registration.course_id
-                    artifact_review_dict['assignment_id'] = assignment.id
+                        artifact_review_dict["reviewing"] = artifact.entity.team.name
+                    artifact_review_dict["course_id"] = registration.course_id
+                    artifact_review_dict["assignment_id"] = assignment.id
                     response_data.append(artifact_review_dict)
         # Students get all artifacts he/she should review
         else:
@@ -178,38 +171,31 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                 if user in artifact_members:
                     continue
                 try:
-                    artifact_review = ArtifactReview.objects.get(
-                        artifact=artifact, user=registration)
+                    artifact_review = ArtifactReview.objects.get(artifact=artifact, user=registration)
                 except ArtifactReview.DoesNotExist:
-                    artifact_review = ArtifactReview(
-                        artifact=artifact, user=registration)
+                    artifact_review = ArtifactReview(artifact=artifact, user=registration)
                     artifact_review.save()
                 artifact_review_dict = model_to_dict(artifact_review)
-                if assignment.assignment_type == 'Individual':
-                    artifact_review_dict['reviewing'] = Membership.objects.get(
-                        entity=artifact.entity).student.user.name_or_andrew_id()
+                if assignment.assignment_type == "Individual":
+                    artifact_review_dict["reviewing"] = Membership.objects.get(
+                        entity=artifact.entity
+                    ).student.user.name_or_andrew_id()
                 else:
-                    artifact_review_dict['reviewing'] = artifact.entity.team.name
-                artifact_review_dict['course_id'] = registration.course_id
-                artifact_review_dict['assignment_id'] = assignment.id
+                    artifact_review_dict["reviewing"] = artifact.entity.team.name
+                artifact_review_dict["course_id"] = registration.course_id
+                artifact_review_dict["assignment_id"] = assignment.id
                 response_data.append(artifact_review_dict)
 
         return Response(response_data, status=status.HTTP_200_OK)
-    
+
     @swagger_auto_schema(
         operation_description="Unassign specific artifact review for a student",
-        tags=['artifact_reviews'],
-        responses={
-            '204': openapi.Response(
-                description="Successfully unassigned review."
-            )
-        }
+        tags=["artifact_reviews"],
+        responses={"204": openapi.Response(description="Successfully unassigned review.")},
     )
-    
     def delete(self, request, course_id, assignment_id, *args, **kwargs):
-        artifact_review_id = request.data.get('artifact_review_id')
-        artifact_review = get_object_or_404(
-            ArtifactReview, id=artifact_review_id)
+        artifact_review_id = request.data.get("artifact_review_id")
+        artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_id)
         artifact_review.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -221,7 +207,7 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
 
     @swagger_auto_schema(
         operation_description="Get artifact reviews for a specific user",
-        tags=['artifact_reviews'],
+        tags=["artifact_reviews"],
         responses={
             200: openapi.Schema(
                 description="Artifact reviews for a user",
@@ -229,19 +215,19 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                 items=openapi.Items(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        'id': openapi.Schema(type=openapi.TYPE_INTEGER),
-                        'artifact': openapi.Schema(type=openapi.TYPE_INTEGER),
-                        'user': openapi.Schema(type=openapi.TYPE_INTEGER),
-                        'status': openapi.Schema(type=openapi.TYPE_STRING, enum=['COMPLETED', 'INCOMPLETE', 'LATE']),
-                        'max_artifact_review_score': openapi.Schema(type=openapi.TYPE_INTEGER),
-                        'artifact_review_score': openapi.Schema(type=openapi.TYPE_INTEGER),
-                        'reviewing': openapi.Schema(type=openapi.TYPE_STRING),
-                        'course_id': openapi.Schema(type=openapi.TYPE_INTEGER),
-                        'assignment_id': openapi.Schema(type=openapi.TYPE_INTEGER),
-                    }
-                )
+                        "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "artifact": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "user": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "status": openapi.Schema(type=openapi.TYPE_STRING, enum=["COMPLETED", "INCOMPLETE", "LATE"]),
+                        "max_artifact_review_score": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "artifact_review_score": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "reviewing": openapi.Schema(type=openapi.TYPE_STRING),
+                        "course_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "assignment_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    },
+                ),
             )
-        }
+        },
     )
     def get(self, request, *args, **kwargs):
         user_id = get_user_pk(request)
@@ -249,24 +235,23 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
         registrations = Registration.objects.filter(user=user)
         response_data = []
         for registration in registrations:
-            artifact_reviews = ArtifactReview.objects.filter(
-                user=registration)
+            artifact_reviews = ArtifactReview.objects.filter(user=registration)
             for artifact_review in artifact_reviews:
-                artifact = get_object_or_404(
-                    Artifact, id=artifact_review.artifact_id)
+                artifact = get_object_or_404(Artifact, id=artifact_review.artifact_id)
 
                 artifact_review_data = model_to_dict(artifact_review)
-                assignment = get_object_or_404(
-                    Assignment, id=artifact.assignment_id)
+                assignment = get_object_or_404(Assignment, id=artifact.assignment_id)
                 if assignment.assignment_type == Assignment.AssigmentType.Individual:
-                    artifact_review_data['reviewing'] = Membership.objects.get(
-                        entity=artifact.entity).student.user.name_or_andrew_id()
+                    artifact_review_data["reviewing"] = Membership.objects.get(
+                        entity=artifact.entity
+                    ).student.user.name_or_andrew_id()
                 else:
-                    artifact_review_data['reviewing'] = artifact.entity.team.name
-                artifact_review_data['course_id'] = registration.course_id
-                artifact_review_data['assignment_id'] = assignment.id
+                    artifact_review_data["reviewing"] = artifact.entity.team.name
+                artifact_review_data["course_id"] = registration.course_id
+                artifact_review_data["assignment_id"] = assignment.id
                 response_data.append(artifact_review_data)
         return Response(response_data, status=status.HTTP_200_OK)
+
 
 class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.AllowAny]
@@ -275,142 +260,139 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
 
     @swagger_auto_schema(
         operation_description="Get artifact review details",
-        tags=['artifact_reviews'],
+        tags=["artifact_reviews"],
         responses={
             200: openapi.Schema(
-                description='Artifact review contents',
+                description="Artifact review contents",
                 type=openapi.TYPE_OBJECT,
                 properties={
-                    'pk': openapi.Schema(type=openapi.TYPE_INTEGER),
-                    'instructions': openapi.Schema(type=openapi.TYPE_STRING),
-                    'other_info': openapi.Schema(type=openapi.TYPE_STRING),
-                    'artifact_pk': openapi.Schema(type=openapi.TYPE_INTEGER),
-                    **base_artifact_review_schema
-                }
+                    "pk": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "instructions": openapi.Schema(type=openapi.TYPE_STRING),
+                    "other_info": openapi.Schema(type=openapi.TYPE_STRING),
+                    "artifact_pk": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    **base_artifact_review_schema,
+                },
             )
-        }
+        },
     )
-    def get(self, request, course_id, assignment_id,  artifact_review_pk, *args, **kwargs):
-        artifact_review = get_object_or_404(
-            ArtifactReview, id=artifact_review_pk)
+    def get(self, request, course_id, assignment_id, artifact_review_pk, *args, **kwargs):
+        artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_pk)
         artifact = artifact_review.artifact
         assignment = get_object_or_404(Assignment, id=assignment_id)
         survey_template = assignment.survey_template
         if not survey_template:
-            return Response({'message': 'Survey has not been created.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "Survey has not been created."}, status=status.HTTP_400_BAD_REQUEST)
         data = dict()
-        data['pk'] = survey_template.pk
-        data['name'] = survey_template.name
-        data['artifact_pk'] = artifact.pk
-        data['instructions'] = survey_template.instructions
-        data['other_info'] = survey_template.other_info
-        data['sections'] = []
+        data["pk"] = survey_template.pk
+        data["name"] = survey_template.name
+        data["artifact_pk"] = artifact.pk
+        data["instructions"] = survey_template.instructions
+        data["other_info"] = survey_template.other_info
+        data["sections"] = []
         for section in survey_template.sections:
             curr_section = dict()
-            curr_section['pk'] = section.pk
-            curr_section['title'] = section.title
-            curr_section['is_required'] = section.is_required
-            curr_section['questions'] = []
+            curr_section["pk"] = section.pk
+            curr_section["title"] = section.title
+            curr_section["is_required"] = section.is_required
+            curr_section["questions"] = []
             for question in section.questions:
                 curr_question = dict()
-                curr_question['pk'] = question.pk
-                curr_question['text'] = question.text
-                curr_question['is_required'] = question.is_required
-                curr_question['question_type'] = question.question_type
+                curr_question["pk"] = question.pk
+                curr_question["text"] = question.text
+                curr_question["is_required"] = question.is_required
+                curr_question["question_type"] = question.question_type
 
-                curr_question['answer'] = []
-                answer_filter = {
-                    'artifact_review_id': artifact_review_pk,
-                    'question_option__question': question
-                }
-                answers = Answer.objects.filter(**answer_filter) if question.question_type != Question.QuestionType.SLIDEREVIEW else ArtifactFeedback.objects.filter(
-                    **answer_filter)
+                curr_question["answer"] = []
+                answer_filter = {"artifact_review_id": artifact_review_pk, "question_option__question": question}
+                answers = (
+                    Answer.objects.filter(**answer_filter)
+                    if question.question_type != Question.QuestionType.SLIDEREVIEW
+                    else ArtifactFeedback.objects.filter(**answer_filter)
+                )
 
                 for answer in answers:
                     curr_answer = dict()
 
-                    curr_answer['page'] = answer.page if question.question_type == Question.QuestionType.SLIDEREVIEW else None
+                    curr_answer["page"] = (
+                        answer.page if question.question_type == Question.QuestionType.SLIDEREVIEW else None
+                    )
 
-                    curr_answer['text'] = answer.answer_text
-                    curr_question['answer'].append(
-                        curr_answer)
+                    curr_answer["text"] = answer.answer_text
+                    curr_question["answer"].append(curr_answer)
                 if question.question_type == Question.QuestionType.MULTIPLECHOICE:
-                    curr_question['option_choices'] = []
+                    curr_question["option_choices"] = []
                     for option_choice in question.options:
                         curr_option_choice = dict()
-                        curr_option_choice['pk'] = option_choice.option_choice.pk
-                        curr_option_choice['text'] = option_choice.option_choice.text
-                        curr_question['option_choices'].append(
-                            curr_option_choice)
+                        curr_option_choice["pk"] = option_choice.option_choice.pk
+                        curr_option_choice["text"] = option_choice.option_choice.text
+                        curr_question["option_choices"].append(curr_option_choice)
 
                 elif question.question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
-                    curr_question['number_of_scale'] = question.number_of_scale
+                    curr_question["number_of_scale"] = question.number_of_scale
                 else:
-                    question_option = get_object_or_404(
-                        QuestionOption, question=question)
-                    curr_question['number_of_text'] = question_option.number_of_text
-                curr_section['questions'].append(curr_question)
-            data['sections'].append(curr_section)
+                    question_option = get_object_or_404(QuestionOption, question=question)
+                    curr_question["number_of_text"] = question_option.number_of_text
+                curr_section["questions"].append(curr_question)
+            data["sections"].append(curr_section)
         return Response(data)
 
     @swagger_auto_schema(
         operation_description="Update artifact review details",
-        tags=['artifact_reviews'],
+        tags=["artifact_reviews"],
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                'artifact_review_detail': openapi.Schema(
+                "artifact_review_detail": openapi.Schema(
                     type=openapi.TYPE_ARRAY,
                     items=openapi.Items(
                         type=openapi.TYPE_OBJECT,
                         properties={
-                            'question_pk': openapi.Schema(type=openapi.TYPE_INTEGER),
-                            'answer_text': openapi.Schema(type=openapi.TYPE_STRING),
-                        }
-                    )
+                            "question_pk": openapi.Schema(type=openapi.TYPE_INTEGER),
+                            "answer_text": openapi.Schema(type=openapi.TYPE_STRING),
+                        },
+                    ),
                 )
-            }
+            },
         ),
         responses={
             200: openapi.Schema(
                 description="Artifact successfully updated",
                 type=openapi.TYPE_OBJECT,
                 properties={
-                    'exp': openapi.Schema(type=openapi.TYPE_INTEGER),
-                    'level': openapi.Schema(type=openapi.TYPE_INTEGER),
-                    'next_level_exp': openapi.Schema(type=openapi.TYPE_INTEGER),
-                    'points': openapi.Schema(type=openapi.TYPE_INTEGER)
-                }
+                    "exp": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "level": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "next_level_exp": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "points": openapi.Schema(type=openapi.TYPE_INTEGER),
+                },
             ),
-        }
+        },
     )
-    def patch(self, request, course_id, assignment_id, artifact_review_pk, *args, **kwargs):           
+    def patch(self, request, course_id, assignment_id, artifact_review_pk, *args, **kwargs):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
         course = get_object_or_404(Course, id=course_id)
         registration = get_object_or_404(Registration, course=course, user=user)
         assignment = get_object_or_404(Assignment, id=assignment_id)
         artifact_status = check_survey_status(assignment)
-        artifact_review_detail = request.data.get('artifact_review_detail')
-        artifact_review = get_object_or_404(
-            ArtifactReview, id=artifact_review_pk)
-        
+        artifact_review_detail = request.data.get("artifact_review_detail")
+        artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_pk)
+
         # Add points and experience if not previously completed
         if artifact_review.status != ArtifactReview.ArtifactReviewType.COMPLETED:
-                behavior = Behavior.objects.get(operation='survey')
-                user.exp += behavior.points
-                user.save()
-                registration.points += behavior.points
-                registration.save()
+            behavior = Behavior.objects.get(operation="survey")
+            user.exp += behavior.points
+            user.save()
+            registration.points += behavior.points
+            registration.save()
 
         # Delete old answers
         Answer.objects.filter(artifact_review_id=artifact_review_pk).delete()
         grade = 0
         max_grade = 0
         # For now, here we only consider about five scale SCALEMULTIPLECHOICE question for grading
-        # grading rule: {'strongly disagree': 0, 'disagree': 1, 'neutral': 2, 'agree': 3, 'strongly agree': 4} and max_grade add 4
-        grading_rule = {'strongly disagree': 0, 'disagree': 1,
-                        'neutral': 2, 'agree': 3, 'strongly agree': 4}
+        # grading rule: {'strongly disagree': 0, 'disagree': 1, 'neutral': 2, 'agree': 3, 'strongly agree': 4}
+        # and max_grade add 4
+        grading_rule = {"strongly disagree": 0, "disagree": 1, "neutral": 2, "agree": 3, "strongly agree": 4}
         MAX_GRADE_FOR_EACH_QUESTION = 4
 
         for answer in artifact_review_detail:
@@ -419,8 +401,8 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             question = Question.objects.get(id=question_pk)
             question_type = question.question_type
             is_required = question.is_required
-            #if is_required and answer_text == "":
-            #    return Response({"error": "Please answer all required questions."}, status=status.HTTP_400_BAD_REQUEST)
+            if is_required and answer_text == "":
+                return Response({"error": "Please answer all required questions."}, status=status.HTTP_400_BAD_REQUEST)
             if answer_text == "":
                 continue
             question_options = question.options.all()
@@ -446,11 +428,15 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                             grade += grading_rule[answer_text]
                             max_grade += MAX_GRADE_FOR_EACH_QUESTION
                         else:
-                            print(
-                                "Error: grading rule does not contain this answer text, update grading rule ASAP")
+                            print("Error: grading rule does not contain this answer text, update grading rule ASAP")
                         break
 
-            elif question_type == Question.QuestionType.FIXEDTEXT or question_type == Question.QuestionType.MULTIPLETEXT or question_type == Question.QuestionType.TEXTAREA or question_type == Question.QuestionType.NUMBER:
+            elif (
+                question_type == Question.QuestionType.FIXEDTEXT
+                or question_type == Question.QuestionType.MULTIPLETEXT
+                or question_type == Question.QuestionType.TEXTAREA
+                or question_type == Question.QuestionType.NUMBER
+            ):
                 question_option = question_options[0]
                 answer = Answer()
                 answer.question_option = question_option
@@ -465,7 +451,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
 
                 artifact_feedback.question_option = question_option
                 artifact_feedback.answer_text = answer_text
-                page = answer['page']
+                page = answer["page"]
 
                 artifact_feedback.page = page
                 artifact_feedback.save()
@@ -477,12 +463,13 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         level = inv_level_func(user.exp)
         next_level_exp = level_func(level + 1)
         response_data = {
-            'exp': user.exp,
-            'level': level,
-            'next_level_exp': next_level_exp,
-            'points': registration.points
+            "exp": user.exp,
+            "level": level,
+            "next_level_exp": next_level_exp,
+            "points": registration.points,
         }
         return Response(response_data, status=status.HTTP_200_OK)
+
 
 class ArtifactReviewIpsatization(generics.RetrieveAPIView):
     queryset = ArtifactReview.objects.all()
@@ -491,31 +478,29 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
 
     @swagger_auto_schema(
         operation_description="Get artifact review ipsatization",
-        tags=['reports'],
+        tags=["reports"],
     )
     def get(self, request, course_id, assignment_id, *args, **kwargs):
-        artifact_reviews = ArtifactReview.objects.filter(
-            artifact__assignment_id=assignment_id)
+        artifact_reviews = ArtifactReview.objects.filter(artifact__assignment_id=assignment_id)
         artifacts = Artifact.objects.filter(assignment_id=assignment_id)
         registrations = Registration.objects.filter(courses_id=course_id)
         # List of registration ids (row)
-        registrations_id_list = [
-            registration.id for registration in registrations]
+        registrations_id_list = [registration.id for registration in registrations]
         # List of artifact ids (column)
         artifacts_id_list = [artifact.id for artifact in artifacts]
 
         # 2d matrix of artifact_reviews by (registration_ids x artifact_ids)
-        matrix = [[None for j in range(len(artifacts_id_list))]
-                  for i in range(len(registrations_id_list))]
-        
+        matrix = [[None for j in range(len(artifacts_id_list))] for i in range(len(registrations_id_list))]
+
         for artifact_review in artifact_reviews:
             artifact = artifact_review.artifact
             user = artifact_review.user
             if artifact_review.status == ArtifactReview.ArtifactReviewType.INCOMPLETE:
                 continue
             # fill in the matrix with artifact_review_score / max_artifact_review_score
-            matrix[registrations_id_list.index(user.id)][artifacts_id_list.index(
-                artifact.id)] = artifact_review.artifact_review_score / artifact_review.max_artifact_review_score
+            matrix[registrations_id_list.index(user.id)][artifacts_id_list.index(artifact.id)] = (
+                artifact_review.artifact_review_score / artifact_review.max_artifact_review_score
+            )
 
         ipsatization_MAX = 100
         ipsatization_MIN = 80
@@ -525,9 +510,9 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
             ipsatization_MAX = assignment.ipsatization_max
             ipsatization_MIN = assignment.ipsatization_min
 
-        if 'ipsatization_MAX' in request.query_params and 'ipsatization_MIN' in request.query_params:
-            ipsatization_MAX = int(request.query_params['ipsatization_MAX'])
-            ipsatization_MIN = int(request.query_params['ipsatization_MIN'])
+        if "ipsatization_MAX" in request.query_params and "ipsatization_MIN" in request.query_params:
+            ipsatization_MAX = int(request.query_params["ipsatization_MAX"])
+            ipsatization_MIN = int(request.query_params["ipsatization_MIN"])
 
         # calculate ipsatizated score at backend
         def ipsatization(data, ipsatization_MAX, ipsatization_MIN):
@@ -540,10 +525,10 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
                 max_value = max(data)
                 normalized_data = []
                 for value in data:
-                    normalized_value = (value - min_value) / \
-                        (max_value - min_value)
+                    normalized_value = (value - min_value) / (max_value - min_value)
                     normalized_data.append(normalized_value)
                 return normalized_data
+
             # Calculate the mean and standard deviation of each survey
             means = data.mean(axis=1)
             stds = data.std(axis=1)
@@ -552,18 +537,16 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
             for i in range(len(data)):
                 for j in range(len(data.columns)):
                     i_data.iloc[i, j] = (
-                        data.iloc[i, j] - means[i]) / stds[i] if stds[i] != 0 else convert(data.iloc[i, j])
+                        (data.iloc[i, j] - means[i]) / stds[i] if stds[i] != 0 else convert(data.iloc[i, j])
+                    )
             # Calculate the means of each survey as their score
             i_means = i_data.mean()
-            i_stds = i_data.std()
-
             # Normalize the scores
             normalized_means = min_max_scale(i_means)
 
             # Convert scores to desired range
             ipsatization_range = ipsatization_MAX - ipsatization_MIN
-            final_means = [score * ipsatization_range +
-                           ipsatization_MIN for score in normalized_means]
+            final_means = [score * ipsatization_range + ipsatization_MIN for score in normalized_means]
             return final_means
 
         df = pd.DataFrame(matrix, columns=artifacts_id_list, dtype=float)
@@ -573,16 +556,15 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
             df.iloc[:, i] = df.iloc[:, i].fillna(m)
         ipsatizated_data = ipsatization(df, ipsatization_MAX, ipsatization_MIN)
         # final result
-        artifacts_id_and_scores_dict = dict(
-            zip(artifacts_id_list, ipsatizated_data))
+        artifacts_id_and_scores_dict = dict(zip(artifacts_id_list, ipsatizated_data))
         # retrive entities with artifacts_id_list
         entities = []
-        if assignment.assignment_type == 'Individual':
+        if assignment.assignment_type == "Individual":
             for artifact_id in artifacts_id_list:
                 artifact = get_object_or_404(Artifact, id=artifact_id)
                 entity = artifact.entity
                 member = entity.members.first()
-                first_and_last_name = member.first_name + ' ' + member.last_name
+                first_and_last_name = member.first_name + " " + member.last_name
                 entities.append(first_and_last_name)
         else:
             # Team assignment
@@ -591,16 +573,14 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
                 entity = artifact.entity
                 group_name = entity.team.name
                 members = entity.members
-                members_first_and_last_name = [
-                    member.first_name + ' ' + member.last_name for member in members]
-                entities.append(
-                    group_name + ' (' + ', '.join(members_first_and_last_name) + ')')
+                members_first_and_last_name = [member.first_name + " " + member.last_name for member in members]
+                entities.append(group_name + " (" + ", ".join(members_first_and_last_name) + ")")
 
-        content = {'artifacts_id_and_scores_dict': artifacts_id_and_scores_dict,
-                   'ipsatization_MAX': ipsatization_MAX,
-                   'ipsatization_MIN': ipsatization_MIN,
-                   'assignment_type': assignment.assignment_type,
-                   'entities': entities
-                   }
+        content = {
+            "artifacts_id_and_scores_dict": artifacts_id_and_scores_dict,
+            "ipsatization_MAX": ipsatization_MAX,
+            "ipsatization_MIN": ipsatization_MIN,
+            "assignment_type": assignment.assignment_type,
+            "entities": entities,
+        }
         return Response(content, status=status.HTTP_200_OK)
-    

@@ -1,18 +1,25 @@
 import json
+
+from django.shortcuts import get_object_or_404
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, mixins, permissions, status
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
+
 from app.gamification.models.assignment import Assignment
-from app.gamification.models.feedback_survey import FeedbackSurvey
 from app.gamification.models.option_choice import OptionChoice
 from app.gamification.models.question import Question
 from app.gamification.models.question_option import QuestionOption
-from app.gamification.models.registration import Registration
 from app.gamification.models.survey_section import SurveySection
 from app.gamification.models.survey_template import SurveyTemplate
-from app.gamification.serializers.survey import OptionChoiceSerializer, OptionChoiceWithoutNumberOfTextSerializer, QuestionSerializer, SectionSerializer, SurveySerializer, TemplateSectionSerializer
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from app.gamification.serializers.survey import (
+    OptionChoiceSerializer,
+    OptionChoiceWithoutNumberOfTextSerializer,
+    QuestionSerializer,
+    SectionSerializer,
+    SurveySerializer,
+)
+
 
 class SurveySectionList(generics.ListCreateAPIView):
     queryset = SurveyTemplate.objects.all()
@@ -20,50 +27,44 @@ class SurveySectionList(generics.ListCreateAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, survey_pk, *args, **kwargs):
-        sections = SurveySection.objects.filter(
-            template=survey_pk).order_by('pk')
+        sections = SurveySection.objects.filter(template=survey_pk).order_by("pk")
         serializer = self.get_serializer(sections, many=True)
         return Response(serializer.data)
 
     def post(self, request, survey_pk, *args, **kwargs):
-        title = request.data.get('title').strip()
-        if title == '':
-            content = {'message': 'Section title cannot be empty'}
+        title = request.data.get("title").strip()
+        if title == "":
+            content = {"message": "Section title cannot be empty"}
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
-        if title == 'Artifact':
-            content = {
-                'message': 'Artifact is a reserved section title. Please choose another title.'}
+        if title == "Artifact":
+            content = {"message": "Artifact is a reserved section title. Please choose another title."}
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
-        description = request.data.get('description')
-        is_required = True if request.data.get(
-            'is_required') == 'true' else False
+        description = request.data.get("description")
+        is_required = True if request.data.get("is_required") == "true" else False
         survey = get_object_or_404(SurveyTemplate, id=survey_pk)
-        section = SurveySection(template=survey, title=title,
-                                description=description, is_required=is_required)
+        section = SurveySection(template=survey, title=title, description=description, is_required=is_required)
         section.save()
         serializer = self.get_serializer(section)
         return Response(serializer.data)
+
 
 class SectionDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = SurveySection.objects.all()
     serializer_class = SectionSerializer
 
     def get(self, request, section_pk, *args, **kwargs):
-        section = get_object_or_404(
-            SurveySection, id=section_pk)
+        section = get_object_or_404(SurveySection, id=section_pk)
         serializer = self.get_serializer(section)
         return Response(serializer.data)
 
     def put(self, request, section_pk, *args, **kwargs):
-        section = get_object_or_404(
-            SurveySection, id=section_pk)
-        title = request.data.get('title').strip()
-        if title == '':
-            content = {'message': 'Section title cannot be empty'}
+        section = get_object_or_404(SurveySection, id=section_pk)
+        title = request.data.get("title").strip()
+        if title == "":
+            content = {"message": "Section title cannot be empty"}
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
-        description = request.data.get('description')
-        is_required = True if request.data.get(
-            'is_required') == 'true' else False
+        description = request.data.get("description")
+        is_required = True if request.data.get("is_required") == "true" else False
         section.title = title
         section.description = description
         section.is_required = is_required
@@ -72,8 +73,7 @@ class SectionDetail(generics.RetrieveUpdateDestroyAPIView):
         return Response(serializer.data)
 
     def delete(self, request, section_pk, *args, **kwargs):
-        section = get_object_or_404(
-            SurveySection, id=section_pk)
+        section = get_object_or_404(SurveySection, id=section_pk)
         section.delete()
         return Response(status=204)
 
@@ -84,105 +84,81 @@ class SectionQuestionList(generics.ListCreateAPIView):
     # permission_classes = [IsAdminOrReadOnly]
 
     def get(self, request, section_pk, *args, **kwargs):
-        questions = Question.objects.filter(section=section_pk).order_by('pk')
+        questions = Question.objects.filter(section=section_pk).order_by("pk")
         serializer = self.get_serializer(questions, many=True)
         return Response(serializer.data)
 
     def post(self, request, section_pk, *args, **kwargs):
-        text = request.data.get('text').strip()
-        if text == '':
-            content = {'message': 'Question text cannot be empty'}
+        text = request.data.get("text").strip()
+        if text == "":
+            content = {"message": "Question text cannot be empty"}
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
-        is_required = True if request.data.get(
-            'is_required') == 'true' else False
-        is_multiple = True if request.data.get(
-            'is_multiple') == 'true' else False
-        dependent_question = request.data.get('dependent_question') if request.data.get(
-            'dependent_question') != '' else None
-        question_type = request.data.get('question_type')
-        number_of_scale = request.data.get('number_of_scale', -1)
+        is_required = True if request.data.get("is_required") == "true" else False
+        is_multiple = True if request.data.get("is_multiple") == "true" else False
+        dependent_question = (
+            request.data.get("dependent_question") if request.data.get("dependent_question") != "" else None
+        )
+        question_type = request.data.get("question_type")
+        number_of_scale = request.data.get("number_of_scale", -1)
         section = SurveySection.objects.get(id=section_pk)
         question = Question(
-            text=text, is_required=is_required, is_multiple=is_multiple, number_of_scale=number_of_scale, dependent_question=dependent_question, question_type=question_type, section=section)
+            text=text,
+            is_required=is_required,
+            is_multiple=is_multiple,
+            number_of_scale=number_of_scale,
+            dependent_question=dependent_question,
+            question_type=question_type,
+            section=section,
+        )
         question.save()
         if question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
             if question.number_of_scale == 3:
-                option_choice, _ = OptionChoice.objects.get_or_create(
-                    text="agree")
-                question_option = QuestionOption(
-                    option_choice=option_choice, question=question)
+                option_choice, _ = OptionChoice.objects.get_or_create(text="agree")
+                question_option = QuestionOption(option_choice=option_choice, question=question)
                 question_option.save()
-                option_choice, _ = OptionChoice.objects.get_or_create(
-                    text="neutral")
-                question_option = QuestionOption(
-                    option_choice=option_choice, question=question)
+                option_choice, _ = OptionChoice.objects.get_or_create(text="neutral")
+                question_option = QuestionOption(option_choice=option_choice, question=question)
                 question_option.save()
-                option_choice, _ = OptionChoice.objects.get_or_create(
-                    text="disagree")
-                question_option = QuestionOption(
-                    option_choice=option_choice, question=question)
+                option_choice, _ = OptionChoice.objects.get_or_create(text="disagree")
+                question_option = QuestionOption(option_choice=option_choice, question=question)
                 question_option.save()
             elif question.number_of_scale == 5:
-                option_choice, _ = OptionChoice.objects.get_or_create(
-                    text="strongly agree")
-                question_option = QuestionOption(
-                    option_choice=option_choice, question=question)
+                option_choice, _ = OptionChoice.objects.get_or_create(text="strongly agree")
+                question_option = QuestionOption(option_choice=option_choice, question=question)
                 question_option.save()
-                option_choice, _ = OptionChoice.objects.get_or_create(
-                    text="agree")
-                question_option = QuestionOption(
-                    option_choice=option_choice, question=question)
+                option_choice, _ = OptionChoice.objects.get_or_create(text="agree")
+                question_option = QuestionOption(option_choice=option_choice, question=question)
                 question_option.save()
-                option_choice, _ = OptionChoice.objects.get_or_create(
-                    text="neutral")
-                question_option = QuestionOption(
-                    option_choice=option_choice, question=question)
+                option_choice, _ = OptionChoice.objects.get_or_create(text="neutral")
+                question_option = QuestionOption(option_choice=option_choice, question=question)
                 question_option.save()
-                option_choice, _ = OptionChoice.objects.get_or_create(
-                    text="disagree")
-                question_option = QuestionOption(
-                    option_choice=option_choice, question=question)
+                option_choice, _ = OptionChoice.objects.get_or_create(text="disagree")
+                question_option = QuestionOption(option_choice=option_choice, question=question)
                 question_option.save()
-                option_choice, _ = OptionChoice.objects.get_or_create(
-                    text="strongly disagree")
-                question_option = QuestionOption(
-                    option_choice=option_choice, question=question)
+                option_choice, _ = OptionChoice.objects.get_or_create(text="strongly disagree")
+                question_option = QuestionOption(option_choice=option_choice, question=question)
                 question_option.save()
             else:
-                option_choice, _ = OptionChoice.objects.get_or_create(
-                    text="strongly agree")
-                question_option = QuestionOption(
-                    option_choice=option_choice, question=question)
+                option_choice, _ = OptionChoice.objects.get_or_create(text="strongly agree")
+                question_option = QuestionOption(option_choice=option_choice, question=question)
                 question_option.save()
-                option_choice, _ = OptionChoice.objects.get_or_create(
-                    text="agree")
-                question_option = QuestionOption(
-                    option_choice=option_choice, question=question)
+                option_choice, _ = OptionChoice.objects.get_or_create(text="agree")
+                question_option = QuestionOption(option_choice=option_choice, question=question)
                 question_option.save()
-                option_choice, _ = OptionChoice.objects.get_or_create(
-                    text="weakly agree")
-                question_option = QuestionOption(
-                    option_choice=option_choice, question=question)
+                option_choice, _ = OptionChoice.objects.get_or_create(text="weakly agree")
+                question_option = QuestionOption(option_choice=option_choice, question=question)
                 question_option.save()
-                option_choice, _ = OptionChoice.objects.get_or_create(
-                    text="neutral")
-                question_option = QuestionOption(
-                    option_choice=option_choice, question=question)
+                option_choice, _ = OptionChoice.objects.get_or_create(text="neutral")
+                question_option = QuestionOption(option_choice=option_choice, question=question)
                 question_option.save()
-                option_choice, _ = OptionChoice.objects.get_or_create(
-                    text="weakly disagree")
-                question_option = QuestionOption(
-                    option_choice=option_choice, question=question)
+                option_choice, _ = OptionChoice.objects.get_or_create(text="weakly disagree")
+                question_option = QuestionOption(option_choice=option_choice, question=question)
                 question_option.save()
-                option_choice, _ = OptionChoice.objects.get_or_create(
-                    text="disagree")
-                question_option = QuestionOption(
-                    option_choice=option_choice, question=question)
+                option_choice, _ = OptionChoice.objects.get_or_create(text="disagree")
+                question_option = QuestionOption(option_choice=option_choice, question=question)
                 question_option.save()
-                option_choice, _ = OptionChoice.objects.get_or_create(
-                    text="strongly disagree")
-                question_option = QuestionOption(
-                    option_choice=option_choice, question=question)
+                option_choice, _ = OptionChoice.objects.get_or_create(text="strongly disagree")
+                question_option = QuestionOption(option_choice=option_choice, question=question)
                 question_option.save()
         serializer = self.get_serializer(question)
         return Response(serializer.data)
@@ -200,25 +176,22 @@ class QuestionDetail(generics.RetrieveUpdateDestroyAPIView):
     # permission_classes = [IsAdminOrReadOnly]
 
     def get(self, request, question_pk, *args, **kwargs):
-        question = get_object_or_404(
-            Question, id=question_pk)
+        question = get_object_or_404(Question, id=question_pk)
         serializer = self.get_serializer(question)
         return Response(serializer.data)
 
     def put(self, request, question_pk, *args, **kwargs):
-        question = get_object_or_404(
-            Question, id=question_pk)
-        text = request.data.get('text').strip()
-        if text == '':
-            content = {'message': 'Question text cannot be empty'}
+        question = get_object_or_404(Question, id=question_pk)
+        text = request.data.get("text").strip()
+        if text == "":
+            content = {"message": "Question text cannot be empty"}
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
-        is_required = True if request.data.get(
-            'is_required') == 'true' else False
-        is_multiple = True if request.data.get(
-            'is_multiple') == 'true' else False
-        dependent_question = request.data.get('dependent_question') if request.data.get(
-            'dependent_question') != '' else None
-        question_type = request.data.get('question_type')
+        is_required = True if request.data.get("is_required") == "true" else False
+        is_multiple = True if request.data.get("is_multiple") == "true" else False
+        dependent_question = (
+            request.data.get("dependent_question") if request.data.get("dependent_question") != "" else None
+        )
+        question_type = request.data.get("question_type")
         question.text = text
         question.is_required = is_required
         question.is_multiple = is_multiple
@@ -243,8 +216,7 @@ class QuestionOptionList(generics.ListCreateAPIView, mixins.UpdateModelMixin, ge
         question = get_object_or_404(Question, id=question_pk)
         options = question.option_choices.all()
         for option in options:
-            number_of_text = QuestionOption.objects.get(
-                question=question, option_choice=option).number_of_text
+            number_of_text = QuestionOption.objects.get(question=question, option_choice=option).number_of_text
 
             option.number_of_text = number_of_text
         serializer = self.get_serializer(options, many=True)
@@ -253,44 +225,37 @@ class QuestionOptionList(generics.ListCreateAPIView, mixins.UpdateModelMixin, ge
     def put(self, request, question_pk, *args, **kwargs):
         question = get_object_or_404(Question, id=question_pk)
         original_option_choices = question.option_choices.all()
-        original_texts = [
-            option_choice.text for option_choice in original_option_choices]
+        original_texts = [option_choice.text for option_choice in original_option_choices]
         texts = json.loads(request.body.decode())
         for text in texts:
             if text not in original_texts:
-                option_choice, _ = OptionChoice.objects.get_or_create(
-                    text=text)
-                question_option = QuestionOption(
-                    option_choice=option_choice, question=question)
+                option_choice, _ = OptionChoice.objects.get_or_create(text=text)
+                question_option = QuestionOption(option_choice=option_choice, question=question)
                 question_option.save()
 
         for original_option_choice in original_option_choices:
             if original_option_choice.text not in texts:
-                question_option = QuestionOption.objects.get(
-                    question=question, option_choice=original_option_choice)
+                question_option = QuestionOption.objects.get(question=question, option_choice=original_option_choice)
                 question_option.delete()
 
         option_choices = question.option_choices.all()
         for option_choice in option_choices:
-            number_of_text = QuestionOption.objects.get(
-                question=question, option_choice=option_choice).number_of_text
+            number_of_text = QuestionOption.objects.get(question=question, option_choice=option_choice).number_of_text
             option_choice.number_of_text = number_of_text
         serializer = self.get_serializer(option_choices, many=True)
         return Response(serializer.data)
 
     def post(self, request, question_pk, *args, **kwargs):
         question = get_object_or_404(Question, id=question_pk)
-        text = request.data.get('text').strip()
-        number_of_text = request.data.get('number_of_text', 1)
-        number_of_scale = request.data.get('number_of_scale', -1)
+        text = request.data.get("text").strip()
+        number_of_text = request.data.get("number_of_text", 1)
+        number_of_scale = request.data.get("number_of_scale", -1)
         option_choice, _ = OptionChoice.objects.get_or_create(text=text)
         if number_of_scale != -1:
             question.number_of_scale = number_of_scale
             question.save()
         QuestionOption.objects.get_or_create(
-            option_choice=option_choice,
-            question=question,
-            number_of_text=number_of_text
+            option_choice=option_choice, question=question, number_of_text=number_of_text
         )
         option_choice.number_of_text = number_of_text
         serializer = self.get_serializer(option_choice)
@@ -303,12 +268,11 @@ class QuestionOptionDetail(mixins.UpdateModelMixin, mixins.DestroyModelMixin, ge
     # permission_classes = [IsAdminOrReadOnly]
 
     def put(self, request, question_pk, option_pk, *args, **kwargs):
-        question_option = get_object_or_404(
-            QuestionOption, option_choice_id=option_pk, question_id=question_pk)
-        text = request.data.get('text').strip()
+        question_option = get_object_or_404(QuestionOption, option_choice_id=option_pk, question_id=question_pk)
+        text = request.data.get("text").strip()
         option, _ = OptionChoice.objects.get_or_create(text=text)
         question_option.option_choice = option
-        number_of_text = request.data.get('number_of_text', 1)
+        number_of_text = request.data.get("number_of_text", 1)
         question_option.number_of_text = number_of_text
         question_option.save()
 
@@ -317,8 +281,7 @@ class QuestionOptionDetail(mixins.UpdateModelMixin, mixins.DestroyModelMixin, ge
         return Response(serializer.data)
 
     def delete(self, request, question_pk, option_pk, *args, **kwargs):
-        question_option = get_object_or_404(
-            QuestionOption, option_choice_id=option_pk, question_id=question_pk)
+        question_option = get_object_or_404(QuestionOption, option_choice_id=option_pk, question_id=question_pk)
         question_option.delete()
         return Response(status=204)
 
@@ -341,9 +304,9 @@ class OptionDetail(generics.RetrieveUpdateDestroyAPIView):
 
     def put(self, request, option_pk, *args, **kwargs):
         option = get_object_or_404(OptionChoice, id=option_pk)
-        text = request.data.get('text').strip()
-        if text == '':
-            content = {'message': 'Question text cannot be empty'}
+        text = request.data.get("text").strip()
+        if text == "":
+            content = {"message": "Question text cannot be empty"}
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
         option.text = text
         option.save()
@@ -358,43 +321,40 @@ class OptionDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class TemplateSectionList(generics.ListAPIView):
     def get(self, request, *args, **kwargs):
-        survey_template = get_object_or_404(
-            SurveyTemplate, is_template=True)
+        survey_template = get_object_or_404(SurveyTemplate, is_template=True)
         data = dict()
-        data['pk'] = survey_template.pk
-        data['is_template'] = survey_template.is_template
-        data['name'] = survey_template.name
-        data['instructions'] = survey_template.instructions
-        data['other_info'] = survey_template.other_info
-        data['sections'] = []
+        data["pk"] = survey_template.pk
+        data["is_template"] = survey_template.is_template
+        data["name"] = survey_template.name
+        data["instructions"] = survey_template.instructions
+        data["other_info"] = survey_template.other_info
+        data["sections"] = []
         for section in survey_template.sections:
             curr_section = dict()
-            curr_section['pk'] = section.pk
-            curr_section['title'] = section.title
-            curr_section['is_required'] = section.is_required
-            curr_section['questions'] = []
+            curr_section["pk"] = section.pk
+            curr_section["title"] = section.title
+            curr_section["is_required"] = section.is_required
+            curr_section["questions"] = []
             for question in section.questions:
                 curr_question = dict()
-                curr_question['pk'] = question.pk
-                curr_question['text'] = question.text
-                curr_question['is_required'] = question.is_required
-                curr_question['question_type'] = question.question_type
+                curr_question["pk"] = question.pk
+                curr_question["text"] = question.text
+                curr_question["is_required"] = question.is_required
+                curr_question["question_type"] = question.question_type
                 if question.question_type == Question.QuestionType.MULTIPLECHOICE:
-                    curr_question['option_choices'] = []
+                    curr_question["option_choices"] = []
                     for option_choice in question.options:
                         curr_option_choice = dict()
-                        curr_option_choice['pk'] = option_choice.option_choice.pk
-                        curr_option_choice['text'] = option_choice.option_choice.text
-                        curr_question['option_choices'].append(
-                            curr_option_choice)
+                        curr_option_choice["pk"] = option_choice.option_choice.pk
+                        curr_option_choice["text"] = option_choice.option_choice.text
+                        curr_question["option_choices"].append(curr_option_choice)
                 elif question.question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
-                    curr_question['number_of_scale'] = question.number_of_scale
+                    curr_question["number_of_scale"] = question.number_of_scale
                 else:
-                    question_option = get_object_or_404(
-                        QuestionOption, question=question)
-                    curr_question['number_of_text'] = question_option.number_of_text
-                curr_section['questions'].append(curr_question)
-            data['sections'].append(curr_section)
+                    question_option = get_object_or_404(QuestionOption, question=question)
+                    curr_question["number_of_text"] = question_option.number_of_text
+                curr_section["questions"].append(curr_question)
+            data["sections"].append(curr_section)
         return Response(json.dumps(data))
 
 
@@ -405,7 +365,7 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
 
     @swagger_auto_schema(
         operation_description="Get student survey answers",
-        tags=['surveys'],
+        tags=["surveys"],
         responses={
             200: openapi.Response(
                 description="Survey information",
@@ -417,44 +377,42 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
         assignment = get_object_or_404(Assignment, id=assignment_id)
         survey_template = assignment.survey_template
         data = dict()
-        data['pk'] = survey_template.pk
-        data['name'] = survey_template.name
-        data['instructions'] = survey_template.instructions
-        data['other_info'] = survey_template.other_info
-        data['sections'] = []
+        data["pk"] = survey_template.pk
+        data["name"] = survey_template.name
+        data["instructions"] = survey_template.instructions
+        data["other_info"] = survey_template.other_info
+        data["sections"] = []
         for section in survey_template.sections:
             curr_section = dict()
-            curr_section['pk'] = section.pk
-            curr_section['title'] = section.title
-            curr_section['is_required'] = section.is_required
-            curr_section['questions'] = []
+            curr_section["pk"] = section.pk
+            curr_section["title"] = section.title
+            curr_section["is_required"] = section.is_required
+            curr_section["questions"] = []
             for question in section.questions:
                 curr_question = dict()
-                curr_question['pk'] = question.pk
-                curr_question['text'] = question.text
-                curr_question['is_required'] = question.is_required
-                curr_question['question_type'] = question.question_type
+                curr_question["pk"] = question.pk
+                curr_question["text"] = question.text
+                curr_question["is_required"] = question.is_required
+                curr_question["question_type"] = question.question_type
                 if question.question_type == Question.QuestionType.MULTIPLECHOICE:
-                    curr_question['option_choices'] = []
+                    curr_question["option_choices"] = []
                     for option_choice in question.options:
                         curr_option_choice = dict()
-                        curr_option_choice['pk'] = option_choice.option_choice.pk
-                        curr_option_choice['text'] = option_choice.option_choice.text
-                        curr_question['option_choices'].append(
-                            curr_option_choice)
+                        curr_option_choice["pk"] = option_choice.option_choice.pk
+                        curr_option_choice["text"] = option_choice.option_choice.text
+                        curr_question["option_choices"].append(curr_option_choice)
                 elif question.question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
-                    curr_question['number_of_scale'] = question.number_of_scale
+                    curr_question["number_of_scale"] = question.number_of_scale
                 else:
-                    question_option = get_object_or_404(
-                        QuestionOption, question=question)
-                    curr_question['number_of_text'] = question_option.number_of_text
-                curr_section['questions'].append(curr_question)
-            data['sections'].append(curr_section)
+                    question_option = get_object_or_404(QuestionOption, question=question)
+                    curr_question["number_of_text"] = question_option.number_of_text
+                curr_section["questions"].append(curr_question)
+            data["sections"].append(curr_section)
         return Response(data)
 
     @swagger_auto_schema(
         operation_description="Update student survey answers",
-        tags=['surveys'],
+        tags=["surveys"],
         responses={
             200: openapi.Response(
                 description="Survey information",
@@ -463,9 +421,8 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
         },
     )
     def patch(self, request, course_id, assignment_id, *args, **kwargs):
-        survey_info = request.data.get('survey_info')
-        survey_template = get_object_or_404(
-            SurveyTemplate, id=survey_info["pk"])
+        survey_info = request.data.get("survey_info")
+        survey_template = get_object_or_404(SurveyTemplate, id=survey_info["pk"])
         sections = SurveySection.objects.filter(template=survey_template)
         for section in sections:
             questions = Question.objects.filter(section=section)
@@ -486,8 +443,7 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                 question_template.question_type = question["question_type"]
                 question_template.save()
                 if question["question_type"] == Question.QuestionType.MULTIPLECHOICE:
-                    question_option = QuestionOption.objects.filter(
-                        question=question_template)
+                    question_option = QuestionOption.objects.filter(question=question_template)
                     for option in question_template.options:
                         option.delete()
                     for option_choice in question["option_choices"]:

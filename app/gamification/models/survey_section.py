@@ -8,7 +8,8 @@ class SurveySection(models.Model):
     """
     Model for SurveySection
     """
-    template = models.ForeignKey('SurveyTemplate', on_delete=models.CASCADE)
+
+    template = models.ForeignKey("SurveyTemplate", on_delete=models.CASCADE)
 
     title = models.CharField(max_length=150)
 
@@ -19,13 +20,13 @@ class SurveySection(models.Model):
     is_template = models.BooleanField(default=False)
 
     class Meta:
-        db_table = 'survey_section'
-        verbose_name = _('survey section')
-        verbose_name_plural = _('survey sections')
+        db_table = "survey_section"
+        verbose_name = _("survey section")
+        verbose_name_plural = _("survey sections")
 
     @property
     def questions(self):
-        return Question.objects.filter(section=self).order_by('pk')
+        return Question.objects.filter(section=self).order_by("pk")
 
     def __str__(self):
         return self.title

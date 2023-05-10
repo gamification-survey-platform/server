@@ -1,20 +1,21 @@
-from django.core import signing
 import hashlib
-from django.core.cache import cache
-import time
-import jwt
 import os
+import time
 
-HEADER = {'typ': 'JWP', 'alg': 'default'}
-KEY = 'GAMIFICATION'
-SALT = 'gamification_platform'
+import jwt
+from django.core import signing
+from django.core.cache import cache
+
+HEADER = {"typ": "JWP", "alg": "default"}
+KEY = "GAMIFICATION"
+SALT = "gamification_platform"
 TIME_OUT = 30 * 60  # 30min
 
 
 def get_user_pk(request):
-    token = request.META.get('HTTP_AUTHORIZATION').split()[1]
-    token_data = jwt.decode(token, os.getenv('SECRET_KEY'), algorithm='HS256')
-    return token_data['id']
+    token = request.META.get("HTTP_AUTHORIZATION").split()[1]
+    token_data = jwt.decode(token, os.getenv("SECRET_KEY"), algorithm="HS256")
+    return token_data["id"]
 
 
 def encrypt(obj):
@@ -42,14 +43,14 @@ def create_token(username):
 
 
 def get_payload(token):
-    payload = str(token).split('.')[1]
+    payload = str(token).split(".")[1]
     payload = decrypt(payload)
     return payload
 
 
 def get_username(token):
     payload = get_payload(token)
-    return payload['username']
+    return payload["username"]
 
 
 def check_token(token):
