@@ -79,7 +79,7 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
             picture=picture,
         )
         course.save()
-        registration = Registration(user=user, course=course, userRole=Registration.UserRole.Instructor)
+        registration = Registration(user=user, course=course, userRole=UserRole.Instructor)
         registration.save()
         serializer = CourseSerializer(course)
         return Response(serializer.data)
@@ -115,12 +115,12 @@ class CourseDetail(generics.ListCreateAPIView):
         user = CustomUser.objects.get(andrew_id=andrew_id)
         course = get_object_or_404(Course, pk=course_id)
         registration = get_object_or_404(Registration, user=user, course=course)
-        if course.visible is False and registration.userRole == UserRole.Student:
+        if course.visible is False and UserRole == UserRole.Student:
             return Response({"message": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
         serializer = CourseSerializer(course)
         response_data = serializer.data
         response_data["points"] = registration.points
-        response_data["userRole"] = registration.userRole
+        response_data["userRole"] = UserRole
 
         return Response(response_data)
 
@@ -157,11 +157,7 @@ class CourseDetail(generics.ListCreateAPIView):
     )
     def put(self, request, course_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
-        user_pk = get_user_pk(request)
-        user = CustomUser.objects.get(pk=user_pk)
-        registration = get_object_or_404(Registration, user=user, course=course)
-
-        if registration.userRole == Registration.UserRole.Student:
+        if UserRole == UserRole.Student:
             return Response({"message": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
         course_number = request.data.get("course_number").strip()
         course_name = request.data.get("course_name").strip()
@@ -194,10 +190,7 @@ class CourseDetail(generics.ListCreateAPIView):
     )
     def delete(self, request, course_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=int(course_id))
-        user_pk = get_user_pk(request)
-        user = CustomUser.objects.get(pk=user_pk)
-        registration = get_object_or_404(Registration, user=user, course=course)
-        if registration.userRole == Registration.UserRole.Student:
+        if UserRole == UserRole.Student:
             return Response({"message": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
         try:
             course.delete()
