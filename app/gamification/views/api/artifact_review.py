@@ -319,7 +319,10 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
 
                     curr_answer["text"] = answer.answer_text
                     curr_question["answer"].append(curr_answer)
-                if question.question_type == Question.QuestionType.MULTIPLECHOICE:
+                if (
+                    question.question_type == Question.QuestionType.MULTIPLECHOICE
+                    or question.question_type == Question.QuestionType.MULTIPLESELECT
+                ):
                     curr_question["option_choices"] = []
                     for option_choice in question.options:
                         curr_option_choice = dict()
@@ -400,7 +403,10 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             if answer_text == "":
                 continue
             question_options = question.options.all()
-            if question_type == Question.QuestionType.MULTIPLECHOICE:
+            if (
+                question_type == Question.QuestionType.MULTIPLECHOICE
+                or question_type == Question.QuestionType.MULTIPLESELECT
+            ):
                 for question_option in question_options:
                     if question_option.option_choice.text == answer_text:
                         answer = Answer()

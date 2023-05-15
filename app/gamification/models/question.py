@@ -16,6 +16,7 @@ class Question(models.Model):
         TEXTAREA = "TEXTAREA"
         NUMBER = "NUMBER"
         SCALEMULTIPLECHOICE = "SCALEMULTIPLECHOICE"
+        MULTIPLESELECT = "MULTIPLESELECT"
 
     section = models.ForeignKey("SurveySection", on_delete=models.CASCADE)
 

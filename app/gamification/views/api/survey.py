@@ -106,7 +106,10 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                 if question["question_type"] == Question.QuestionType.SCALEMULTIPLECHOICE:
                     question_template.number_of_scale = question["number_of_scale"]
                 question_template.save()
-                if question["question_type"] == Question.QuestionType.MULTIPLECHOICE:
+                if (
+                    question["question_type"] == Question.QuestionType.MULTIPLECHOICE
+                    or question["question_type"] == Question.QuestionType.MULTIPLESELECT
+                ):
                     question_option = QuestionOption.objects.filter(question=question_template)
                     for option in question_template.options:
                         option.delete()
