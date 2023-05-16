@@ -14,7 +14,6 @@ import os
 from django.conf.global_settings import DATETIME_INPUT_FORMATS
 from pathlib import Path
 
-import dj_database_url
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -109,19 +108,28 @@ LOGIN_URL = "/signin/"
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASE_URL = os.getenv("DATABASE_URL", None)
+ENV = os.getenv("ENV", None)
 
-if DATABASE_URL:
-    DATABASES = {"default": dj_database_url.parse(DATABASE_URL)}
+if ENV == "prod":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DB_NAME", None),  # Database name
+            "USER": os.getenv("DB_USER", None),
+            "PASSWORD": os.getenv("DB_PASSWORD", None),
+            "HOST": os.getenv("DB_HOST", None),
+            "PORT": os.getenv("DB_PORT", None),
+        }
+    }
 else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("DB_NAME", "dev"),  # Database name
-            "USER": os.getenv("DB_USER", "dbuser"),
-            "PASSWORD": os.getenv("DB_PASSWORD", "dbuser"),
-            "HOST": os.getenv("DB_HOST", "localhost"),
-            "PORT": os.getenv("DB_PORT", "5432"),
+            "NAME": "dev",  # Database name
+            "USER": "dbuser",
+            "PASSWORD": "dbuser",
+            "HOST": "localhost",
+            "PORT": "5432",
         },
     }
 

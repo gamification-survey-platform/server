@@ -1,5 +1,4 @@
 asgiref==3.6.0
-autoflake==2.1.1
 black==23.3.0
 blis==0.7.9
 boto3==1.24.31
@@ -27,7 +26,7 @@ djangorestframework==3.13.1
 djangorestframework-jwt==1.11.0
 drf-yasg==1.20.0
 filelock==3.12.0
-flake8==5.0.4
+flake8
 gunicorn==20.1.0
 identify==2.5.24
 idna==3.4
@@ -58,7 +57,7 @@ preshed==3.0.8
 psycopg2-binary==2.9.5
 pycodestyle==2.9.1
 pydantic==1.10.4
-pyflakes==3.0.1
+pyflakes
 PyJWT==1.7.1
 PyMySQL==1.0.2
 python-dateutil==2.8.2
