@@ -16,7 +16,6 @@ from app.gamification.models.entity import Individual, Team
 from app.gamification.models.feedback_survey import FeedbackSurvey
 from app.gamification.models.membership import Membership
 from app.gamification.models.question import Question
-from app.gamification.models.question_option import QuestionOption
 from app.gamification.models.registration import Registration, UserRole
 from app.gamification.models.user import CustomUser
 from app.gamification.serializers.answer import ArtifactReviewSerializer
@@ -303,7 +302,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 curr_question["question_type"] = question.question_type
 
                 curr_question["answer"] = []
-                answer_filter = {"artifact_review_id": artifact_review_pk, "question_option__question": question}
+                answer_filter = {"artifact_review_id": artifact_review_pk, "option_choice__question": question}
                 answers = (
                     Answer.objects.filter(**answer_filter)
                     if question.question_type != Question.QuestionType.SLIDEREVIEW
@@ -333,8 +332,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 elif question.question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
                     curr_question["number_of_scale"] = question.number_of_scale
                 else:
-                    question_option = get_object_or_404(QuestionOption, question=question)
-                    curr_question["number_of_text"] = question_option.number_of_text
+                    curr_question["number_of_text"] = question.number_of_text
                 curr_section["questions"].append(curr_question)
             data["sections"].append(curr_section)
         return Response(data)
@@ -402,15 +400,15 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 return Response({"error": "Please answer all required questions."}, status=status.HTTP_400_BAD_REQUEST)
             if answer_text == "":
                 continue
-            question_options = question.options.all()
+            option_choices = question.options.all()
             if (
                 question_type == Question.QuestionType.MULTIPLECHOICE
                 or question_type == Question.QuestionType.MULTIPLESELECT
             ):
-                for question_option in question_options:
-                    if question_option.option_choice.text == answer_text:
+                for option_choice in option_choices:
+                    if option_choice.text == answer_text:
                         answer = Answer()
-                        answer.question_option = question_option
+                        answer.option_choice = option_choice
                         answer.artifact_review = artifact_review
                         answer.answer_text = answer_text
                         answer.save()
@@ -422,19 +420,19 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 or question_type == Question.QuestionType.NUMBER
                 or question_type == Question.QuestionType.SCALEMULTIPLECHOICE
             ):
-                question_option = question_options[0]
+                option_choice = option_choices[0]
                 answer = Answer()
-                answer.question_option = question_option
+                answer.option_choice = option_choice
                 answer.artifact_review = artifact_review
                 answer.answer_text = answer_text
                 answer.save()
             else:
                 # question type: slide
-                question_option = question_options[0]
+                option_choice = option_choices[0]
                 artifact_feedback = ArtifactFeedback()
                 artifact_feedback.artifact_review = artifact_review
 
-                artifact_feedback.question_option = question_option
+                artifact_feedback.option_choice = option_choice
                 artifact_feedback.answer_text = answer_text
                 page = answer["page"]
 

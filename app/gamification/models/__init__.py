@@ -9,7 +9,6 @@ from .feedback_survey import *
 from .membership import *
 from .option_choice import *
 from .question import *
-from .question_option import *
 from .registration import *
 from .reward import *
 from .survey_section import *

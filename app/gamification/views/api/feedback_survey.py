@@ -8,7 +8,6 @@ from app.gamification.models.assignment import Assignment
 from app.gamification.models.feedback_survey import FeedbackSurvey
 from app.gamification.models.option_choice import OptionChoice
 from app.gamification.models.question import Question
-from app.gamification.models.question_option import QuestionOption
 from app.gamification.models.survey_section import SurveySection
 from app.gamification.models.survey_template import SurveyTemplate
 from app.gamification.serializers.survey import SurveySerializer
@@ -116,12 +115,12 @@ class SurveyList(generics.ListCreateAPIView):
                     )
                     question.save()
                     for default_option in default_question.options:
-                        question_option = QuestionOption(
+                        option_choice = OptionChoice(
                             question=question,
                             option_choice=default_option.option_choice,
                             number_of_text=default_option.number_of_text,
                         )
-                        question_option.save()
+                        option_choice.save()
         # Automatically create a section and question for artifact
         else:
             artifact_section = SurveySection.objects.create(
@@ -135,8 +134,7 @@ class SurveyList(generics.ListCreateAPIView):
                 text="",
                 question_type=Question.QuestionType.SLIDEREVIEW,
             )
-            empty_option, _ = OptionChoice.objects.get_or_create(text="")
-            QuestionOption.objects.create(question=artifact_question, option_choice=empty_option)
+            empty_option, _ = OptionChoice.objects.get_or_create(text="", question=artifact_question)
             self.serializer_class(survey_template)
 
         return Response(response_data, status=status.HTTP_201_CREATED)

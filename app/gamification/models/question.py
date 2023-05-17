@@ -1,6 +1,6 @@
 from django.db import models
 
-from app.gamification.models.question_option import QuestionOption
+from app.gamification.models.option_choice import OptionChoice
 
 
 class Question(models.Model):
@@ -24,17 +24,11 @@ class Question(models.Model):
 
     is_required = models.BooleanField(default=False)
 
-    is_multiple = models.BooleanField(default=False)
-
-    is_template = models.BooleanField(default=False)
-
-    dependent_question = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True)
-
     question_type = models.TextField(choices=QuestionType.choices, default=QuestionType.MULTIPLECHOICE)
 
-    option_choices = models.ManyToManyField("OptionChoice", through="QuestionOption")
-
     number_of_scale = models.IntegerField(default=5, null=True, blank=True)
+
+    number_of_text = models.PositiveIntegerField(default=1)
 
     class Meta:
         db_table = "question"
@@ -43,4 +37,4 @@ class Question(models.Model):
 
     @property
     def options(self):
-        return QuestionOption.objects.filter(question=self).order_by("pk")
+        return OptionChoice.objects.filter(question=self).order_by("pk")

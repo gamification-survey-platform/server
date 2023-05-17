@@ -7,7 +7,6 @@ from rest_framework.response import Response
 from app.gamification.models.assignment import Assignment
 from app.gamification.models.option_choice import OptionChoice
 from app.gamification.models.question import Question
-from app.gamification.models.question_option import QuestionOption
 from app.gamification.models.survey_section import SurveySection
 from app.gamification.models.survey_template import SurveyTemplate
 from app.gamification.serializers.survey import SurveySerializer
@@ -32,6 +31,7 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
         assignment = get_object_or_404(Assignment, id=assignment_id)
         survey_template = assignment.survey_template
         data = dict()
+        print("GET SURVEY INFO")
         data["pk"] = survey_template.pk
         data["name"] = survey_template.name
         data["instructions"] = survey_template.instructions
@@ -59,8 +59,7 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                 elif question.question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
                     curr_question["number_of_scale"] = question.number_of_scale
                 else:
-                    question_option = get_object_or_404(QuestionOption, question=question)
-                    curr_question["number_of_text"] = question_option.number_of_text
+                    curr_question["number_of_text"] = question.number_of_text
                 curr_section["questions"].append(curr_question)
             data["sections"].append(curr_section)
         return Response(data)
@@ -84,10 +83,10 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
         for section in sections:
             questions = Question.objects.filter(section=section)
             for question in questions:
-                for option_choice in question.option_choices.all():
+                for option_choice in question.options.all():
                     option_choice.delete()
-                for question_option in question.options.all():
-                    question_option.delete()
+                for option_choice in question.options.all():
+                    option_choice.delete()
                 question.delete()
             section.delete()
 
@@ -105,29 +104,22 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                 question_template.question_type = question["question_type"]
                 if question["question_type"] == Question.QuestionType.SCALEMULTIPLECHOICE:
                     question_template.number_of_scale = question["number_of_scale"]
+                elif question["question_type"] == Question.QuestionType.MULTIPLETEXT:
+                    question_template.number_of_text = question["number_of_text"]
                 question_template.save()
                 if (
                     question["question_type"] == Question.QuestionType.MULTIPLECHOICE
                     or question["question_type"] == Question.QuestionType.MULTIPLESELECT
                 ):
-                    question_option = QuestionOption.objects.filter(question=question_template)
                     for option in question_template.options:
                         option.delete()
                     for option_choice in question["option_choices"]:
-                        question_option = QuestionOption()
-                        question_option.question = question_template
                         option_choice_template = OptionChoice()
+                        option_choice_template.question = question_template
                         option_choice_template.text = option_choice["text"]
-                        option_choice_template.save()
-                        question_option.option_choice = option_choice_template
-                        question_option.save()
                 else:
-                    question_option = QuestionOption()
-                    question_option.question = question_template
                     option_choice = OptionChoice()
+                    option_choice.question = question_template
+                    # No text field for other Question types
                     option_choice.save()
-                    if question["question_type"] == Question.QuestionType.MULTIPLETEXT:
-                        question_option.number_of_text = question["number_of_text"]
-                    question_option.option_choice = option_choice
-                    question_option.save()
         return Response(status=200)

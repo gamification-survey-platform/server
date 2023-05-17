@@ -3,6 +3,7 @@ from django.db import models
 
 class OptionChoice(models.Model):
     text = models.TextField(blank=True)
+    question = models.ForeignKey("Question", on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         db_table = "option_choice"

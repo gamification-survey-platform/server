@@ -8,9 +8,7 @@ class Answer(models.Model):
 
     artifact_review = models.ForeignKey("ArtifactReview", on_delete=models.CASCADE)
 
-    # registration = models.ForeignKey('Registration', on_delete=models.CASCADE)
-
-    question_option = models.ForeignKey("QuestionOption", on_delete=models.CASCADE)
+    option_choice = models.ForeignKey("OptionChoice", on_delete=models.CASCADE, default=None)
 
     answer_text = models.TextField(blank=True)
 
