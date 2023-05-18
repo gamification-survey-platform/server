@@ -2552,6 +2552,17 @@
         }
     },
     {
+        "model": "gamification.feedbacksurvey",
+        "pk": 1,
+        "fields": {
+            "template": 3,
+            "assignment": 1,
+            "date_created": "2023-05-18T02:56:08.908Z",
+            "date_released": "2023-05-18T14:56:00Z",
+            "date_due": "2023-05-19T14:56:00Z"
+        }
+    },
+    {
         "model": "gamification.assignment",
         "pk": 1,
         "fields": {
@@ -2609,54 +2620,6 @@
         }
     },
     {
-        "model": "gamification.userreward",
-        "pk": 2,
-        "fields": {
-            "user": 3,
-            "reward": 3,
-            "fulfilled": false
-        }
-    },
-    {
-        "model": "gamification.userreward",
-        "pk": 3,
-        "fields": {
-            "user": 3,
-            "reward": 4,
-            "fulfilled": false
-        }
-    },
-    {
-        "model": "gamification.reward",
-        "pk": 3,
-        "fields": {
-            "name": "5 bonus points",
-            "description": "",
-            "course": 1,
-            "points": 5,
-            "reward_type": "4",
-            "inventory": -1,
-            "is_active": true,
-            "picture": "",
-            "quantity": 5
-        }
-    },
-    {
-        "model": "gamification.reward",
-        "pk": 4,
-        "fields": {
-            "name": "10 bonus points",
-            "description": "",
-            "course": 1,
-            "points": 5,
-            "reward_type": "4",
-            "inventory": 9,
-            "is_active": true,
-            "picture": "",
-            "quantity": 10
-        }
-    },
-    {
         "model": "gamification.behavior",
         "pk": 1,
         "fields": {
@@ -2673,111 +2636,595 @@
         }
     },
     {
-        "model": "gamification.surveytemplate",
+        "model": "gamification.optionchoice",
         "pk": 1,
         "fields": {
-            "name": "Survey Template",
-            "instructions": "",
-            "is_template": true,
-            "other_info": ""
+            "text": "",
+            "question": 1
         }
     },
     {
-        "model": "gamification.surveytemplate",
+        "model": "gamification.optionchoice",
         "pk": 2,
         "fields": {
-            "name": "Default Template",
-            "instructions": "",
-            "is_template": false,
-            "other_info": ""
+            "text": "",
+            "question": 2
         }
     },
     {
-        "model": "gamification.surveysection",
-        "pk": 1,
-        "fields": {
-            "template": 1,
-            "title": "Title",
-            "description": "",
-            "is_required": true,
-            "is_template": true
-        }
-    },
-    {
-        "model": "gamification.surveysection",
-        "pk": 2,
-        "fields": {
-            "template": 1,
-            "title": "Software engineering problem (Research question / goal)",
-            "description": "",
-            "is_required": true,
-            "is_template": true
-        }
-    },
-    {
-        "model": "gamification.surveysection",
+        "model": "gamification.optionchoice",
         "pk": 3,
         "fields": {
-            "template": 1,
-            "title": "Proposal / Study / Solution",
-            "description": "",
-            "is_required": true,
-            "is_template": true
+            "text": "",
+            "question": 3
         }
     },
     {
-        "model": "gamification.surveysection",
+        "model": "gamification.optionchoice",
         "pk": 4,
         "fields": {
-            "template": 1,
-            "title": "Methodology",
-            "description": "",
-            "is_required": true,
-            "is_template": true
+            "text": "",
+            "question": 4
         }
     },
     {
-        "model": "gamification.surveysection",
+        "model": "gamification.optionchoice",
         "pk": 5,
         "fields": {
-            "template": 1,
-            "title": "Presentation",
-            "description": "",
-            "is_required": true,
-            "is_template": true
+            "text": "",
+            "question": 5
         }
     },
     {
-        "model": "gamification.surveysection",
+        "model": "gamification.optionchoice",
         "pk": 6,
         "fields": {
-            "template": 1,
-            "title": "Artifact",
-            "description": "",
-            "is_required": false,
-            "is_template": true
+            "text": "",
+            "question": 6
         }
     },
     {
-        "model": "gamification.surveysection",
+        "model": "gamification.optionchoice",
         "pk": 7,
         "fields": {
-            "template": 1,
-            "title": "Aspect",
-            "description": "How do you grade the following aspects?",
-            "is_required": true,
-            "is_template": true
+            "text": "",
+            "question": 7
         }
     },
     {
-        "model": "gamification.surveysection",
-        "pk": 8,
+        "model": "gamification.optionchoice",
+        "pk": 10,
         "fields": {
-            "template": 1,
-            "title": "Optional",
-            "description": "",
-            "is_required": false,
-            "is_template": true
+            "text": "",
+            "question": 10
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 11,
+        "fields": {
+            "text": "",
+            "question": 11
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 12,
+        "fields": {
+            "text": "",
+            "question": 12
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 13,
+        "fields": {
+            "text": "",
+            "question": 13
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 14,
+        "fields": {
+            "text": "",
+            "question": 14
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 15,
+        "fields": {
+            "text": "",
+            "question": 15
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 16,
+        "fields": {
+            "text": "",
+            "question": 16
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 17,
+        "fields": {
+            "text": "",
+            "question": 17
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 18,
+        "fields": {
+            "text": "",
+            "question": 18
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 19,
+        "fields": {
+            "text": "",
+            "question": 19
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 20,
+        "fields": {
+            "text": "",
+            "question": 20
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 21,
+        "fields": {
+            "text": "",
+            "question": 21
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 22,
+        "fields": {
+            "text": "",
+            "question": 22
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 23,
+        "fields": {
+            "text": "",
+            "question": 23
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 24,
+        "fields": {
+            "text": "",
+            "question": 24
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 25,
+        "fields": {
+            "text": "",
+            "question": 25
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 26,
+        "fields": {
+            "text": "",
+            "question": 26
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 27,
+        "fields": {
+            "text": "",
+            "question": 27
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 28,
+        "fields": {
+            "text": "",
+            "question": 28
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 29,
+        "fields": {
+            "text": "",
+            "question": 29
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 30,
+        "fields": {
+            "text": "",
+            "question": 30
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 31,
+        "fields": {
+            "text": "",
+            "question": 31
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 32,
+        "fields": {
+            "text": "",
+            "question": 32
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 33,
+        "fields": {
+            "text": "",
+            "question": 33
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 34,
+        "fields": {
+            "text": "",
+            "question": 34
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 35,
+        "fields": {
+            "text": "",
+            "question": 35
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 36,
+        "fields": {
+            "text": "",
+            "question": 36
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 37,
+        "fields": {
+            "text": "",
+            "question": 37
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 38,
+        "fields": {
+            "text": "",
+            "question": 38
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 39,
+        "fields": {
+            "text": "",
+            "question": 39
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 40,
+        "fields": {
+            "text": "",
+            "question": 40
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 41,
+        "fields": {
+            "text": "",
+            "question": 41
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 42,
+        "fields": {
+            "text": "",
+            "question": 42
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 43,
+        "fields": {
+            "text": "",
+            "question": 43
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 44,
+        "fields": {
+            "text": "",
+            "question": 44
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 45,
+        "fields": {
+            "text": "",
+            "question": 45
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 46,
+        "fields": {
+            "text": "",
+            "question": 46
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 47,
+        "fields": {
+            "text": "",
+            "question": 47
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 48,
+        "fields": {
+            "text": "",
+            "question": 48
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 49,
+        "fields": {
+            "text": "",
+            "question": 49
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 50,
+        "fields": {
+            "text": "",
+            "question": 50
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 51,
+        "fields": {
+            "text": "",
+            "question": 51
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 52,
+        "fields": {
+            "text": "",
+            "question": 52
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 53,
+        "fields": {
+            "text": "",
+            "question": 53
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 54,
+        "fields": {
+            "text": "",
+            "question": 54
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 55,
+        "fields": {
+            "text": "",
+            "question": 55
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 56,
+        "fields": {
+            "text": "",
+            "question": 56
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 57,
+        "fields": {
+            "text": "",
+            "question": 57
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 58,
+        "fields": {
+            "text": "",
+            "question": 58
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 59,
+        "fields": {
+            "text": "",
+            "question": 59
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 60,
+        "fields": {
+            "text": "",
+            "question": 60
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 61,
+        "fields": {
+            "text": "",
+            "question": 61
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 62,
+        "fields": {
+            "text": "",
+            "question": 62
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 63,
+        "fields": {
+            "text": "",
+            "question": 63
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 64,
+        "fields": {
+            "text": "",
+            "question": 64
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 65,
+        "fields": {
+            "text": "",
+            "question": 65
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 66,
+        "fields": {
+            "text": "",
+            "question": 66
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 67,
+        "fields": {
+            "text": "",
+            "question": 67
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 68,
+        "fields": {
+            "text": "",
+            "question": 68
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 69,
+        "fields": {
+            "text": "",
+            "question": 69
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 70,
+        "fields": {
+            "text": "",
+            "question": 70
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 71,
+        "fields": {
+            "text": "",
+            "question": 71
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 72,
+        "fields": {
+            "text": "",
+            "question": 72
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 73,
+        "fields": {
+            "text": "",
+            "question": 73
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 74,
+        "fields": {
+            "text": "",
+            "question": 74
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 75,
+        "fields": {
+            "text": "",
+            "question": 75
+        }
+    },
+    {
+        "model": "gamification.optionchoice",
+        "pk": 76,
+        "fields": {
+            "text": "",
+            "question": 76
         }
     },
     {
@@ -3225,299 +3672,701 @@
         }
     },
     {
-        "model": "gamification.optionchoice",
-        "pk": 1,
+        "model": "gamification.question",
+        "pk": 40,
         "fields": {
-            "question": 1,
-            "text": ""
+            "section": 9,
+            "text": "The title of the presentation was clear.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
         }
     },
     {
-        "model": "gamification.optionchoice",
+        "model": "gamification.question",
+        "pk": 41,
+        "fields": {
+            "section": 9,
+            "text": "The title reflected well the content of the presentation.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 42,
+        "fields": {
+            "section": 10,
+            "text": "The main problem (research question/goal) was stated explicitly.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 43,
+        "fields": {
+            "section": 10,
+            "text": "The main problem (research question/goal) was clearly explained, with the current audience in mind.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 44,
+        "fields": {
+            "section": 10,
+            "text": "I understood the SE problem.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 45,
+        "fields": {
+            "section": 10,
+            "text": "I understood the relevance of addressing the problem.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 46,
+        "fields": {
+            "section": 10,
+            "text": "I found the problem interesting.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 47,
+        "fields": {
+            "section": 11,
+            "text": "It was clearly stated.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 48,
+        "fields": {
+            "section": 11,
+            "text": "The presenter clearly related it to the SE problem (and research question/goal).",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 49,
+        "fields": {
+            "section": 11,
+            "text": "I understood the (expected) contributions of the study.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 50,
+        "fields": {
+            "section": 11,
+            "text": "The presenter convinced me of the significance of the contribution(s). ",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 51,
+        "fields": {
+            "section": 12,
+            "text": "The methodology was well structured.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 52,
+        "fields": {
+            "section": 12,
+            "text": "The presenter clearly related the methodology to the problem (research question/goal).",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 53,
+        "fields": {
+            "section": 12,
+            "text": "Results were clearly and adequately presented.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 54,
+        "fields": {
+            "section": 12,
+            "text": "Limitations/gaps of existing work (or traditional techinique) were clearly presented.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 55,
+        "fields": {
+            "section": 12,
+            "text": "Results and limitations were clearly related to the research question.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 56,
+        "fields": {
+            "section": 13,
+            "text": "The presenter seems to have rehearsed.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 57,
+        "fields": {
+            "section": 13,
+            "text": "The presentation was structured in a logical way.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 58,
+        "fields": {
+            "section": 13,
+            "text": "The presentation was well designed (sliders are clear, visually appealing, no typos etc.).",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 59,
+        "fields": {
+            "section": 13,
+            "text": "The presentation was well delivered.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 60,
+        "fields": {
+            "section": 13,
+            "text": "The presenter used clear and accessible language (i.e. avoided unnecessary jargon and provided the necessary definitions).",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 61,
+        "fields": {
+            "section": 13,
+            "text": "The presenter transitioned between the main parts of the presentation clearly and effectively.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 62,
+        "fields": {
+            "section": 13,
+            "text": "\"The presenter was credible. \r\n(I believe he/she knows what he/she is talking about.)\"",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 63,
+        "fields": {
+            "section": 13,
+            "text": "The presenter was confident.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 64,
+        "fields": {
+            "section": 13,
+            "text": "The presenter connected with the audience.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 65,
+        "fields": {
+            "section": 13,
+            "text": "The presenter used pacing, pausing, gestures and movement effectively and appropriately.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 66,
+        "fields": {
+            "section": 13,
+            "text": "The presenter answered the questions appropriately.",
+            "is_required": true,
+            "question_type": "SCALEMULTIPLECHOICE",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 67,
+        "fields": {
+            "section": 14,
+            "text": "test slide",
+            "is_required": false,
+            "question_type": "SLIDEREVIEW",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 68,
+        "fields": {
+            "section": 15,
+            "text": "Content",
+            "is_required": true,
+            "question_type": "NUMBER",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 69,
+        "fields": {
+            "section": 15,
+            "text": "Design",
+            "is_required": true,
+            "question_type": "NUMBER",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 70,
+        "fields": {
+            "section": 15,
+            "text": "Delivery",
+            "is_required": true,
+            "question_type": "NUMBER",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 71,
+        "fields": {
+            "section": 15,
+            "text": "Overall",
+            "is_required": true,
+            "question_type": "NUMBER",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 72,
+        "fields": {
+            "section": 15,
+            "text": "Your confidence",
+            "is_required": true,
+            "question_type": "NUMBER",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 73,
+        "fields": {
+            "section": 16,
+            "text": "Three best characteristics of the presentation",
+            "is_required": false,
+            "question_type": "MULTIPLETEXT",
+            "number_of_scale": 5,
+            "number_of_text": 3
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 74,
+        "fields": {
+            "section": 16,
+            "text": "Three main points that need improvement",
+            "is_required": false,
+            "question_type": "MULTIPLETEXT",
+            "number_of_scale": 5,
+            "number_of_text": 3
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 75,
+        "fields": {
+            "section": 16,
+            "text": "What questions would you like to see answered in the final presentatin and/or report?",
+            "is_required": false,
+            "question_type": "MULTIPLETEXT",
+            "number_of_scale": 5,
+            "number_of_text": 3
+        }
+    },
+    {
+        "model": "gamification.question",
+        "pk": 76,
+        "fields": {
+            "section": 16,
+            "text": "What can the presenter do to improve his/her presentation",
+            "is_required": false,
+            "question_type": "TEXTAREA",
+            "number_of_scale": 5,
+            "number_of_text": 1
+        }
+    },
+    {
+        "model": "gamification.userreward",
         "pk": 2,
         "fields": {
-            "question": 2,
-            "text": ""
+            "user": 3,
+            "reward": 3,
+            "fulfilled": false
         }
     },
     {
-        "model": "gamification.optionchoice",
+        "model": "gamification.userreward",
         "pk": 3,
         "fields": {
-            "question": 3,
-            "text": ""
+            "user": 3,
+            "reward": 4,
+            "fulfilled": false
         }
     },
     {
-        "model": "gamification.optionchoice",
+        "model": "gamification.reward",
+        "pk": 3,
+        "fields": {
+            "name": "5 bonus points",
+            "description": "",
+            "course": 1,
+            "points": 5,
+            "reward_type": "4",
+            "inventory": -1,
+            "is_active": true,
+            "picture": "",
+            "quantity": 5
+        }
+    },
+    {
+        "model": "gamification.reward",
         "pk": 4,
         "fields": {
-            "question": 4,
-            "text": ""
+            "name": "10 bonus points",
+            "description": "",
+            "course": 1,
+            "points": 5,
+            "reward_type": "4",
+            "inventory": 9,
+            "is_active": true,
+            "picture": "",
+            "quantity": 10
         }
     },
     {
-        "model": "gamification.optionchoice",
+        "model": "gamification.surveysection",
+        "pk": 1,
+        "fields": {
+            "template": 1,
+            "title": "Title",
+            "description": "",
+            "is_required": true,
+            "is_template": true
+        }
+    },
+    {
+        "model": "gamification.surveysection",
+        "pk": 2,
+        "fields": {
+            "template": 1,
+            "title": "Software engineering problem (Research question / goal)",
+            "description": "",
+            "is_required": true,
+            "is_template": true
+        }
+    },
+    {
+        "model": "gamification.surveysection",
+        "pk": 3,
+        "fields": {
+            "template": 1,
+            "title": "Proposal / Study / Solution",
+            "description": "",
+            "is_required": true,
+            "is_template": true
+        }
+    },
+    {
+        "model": "gamification.surveysection",
+        "pk": 4,
+        "fields": {
+            "template": 1,
+            "title": "Methodology",
+            "description": "",
+            "is_required": true,
+            "is_template": true
+        }
+    },
+    {
+        "model": "gamification.surveysection",
         "pk": 5,
         "fields": {
-            "question": 5,
-            "text": ""
+            "template": 1,
+            "title": "Presentation",
+            "description": "",
+            "is_required": true,
+            "is_template": true
         }
     },
     {
-        "model": "gamification.optionchoice",
+        "model": "gamification.surveysection",
         "pk": 6,
         "fields": {
-            "question": 6,
-            "text": ""
+            "template": 1,
+            "title": "Artifact",
+            "description": "",
+            "is_required": false,
+            "is_template": true
         }
     },
     {
-        "model": "gamification.optionchoice",
+        "model": "gamification.surveysection",
         "pk": 7,
         "fields": {
-            "question": 7,
-            "text": ""
+            "template": 1,
+            "title": "Aspect",
+            "description": "How do you grade the following aspects?",
+            "is_required": true,
+            "is_template": true
         }
     },
     {
-        "model": "gamification.optionchoice",
+        "model": "gamification.surveysection",
+        "pk": 8,
+        "fields": {
+            "template": 1,
+            "title": "Optional",
+            "description": "",
+            "is_required": false,
+            "is_template": true
+        }
+    },
+    {
+        "model": "gamification.surveysection",
+        "pk": 9,
+        "fields": {
+            "template": 3,
+            "title": "Title",
+            "description": "",
+            "is_required": true,
+            "is_template": false
+        }
+    },
+    {
+        "model": "gamification.surveysection",
         "pk": 10,
         "fields": {
-            "question": 10,
-            "text": ""
+            "template": 3,
+            "title": "Software engineering problem (Research question / goal)",
+            "description": "",
+            "is_required": true,
+            "is_template": false
         }
     },
     {
-        "model": "gamification.optionchoice",
+        "model": "gamification.surveysection",
         "pk": 11,
         "fields": {
-            "question": 11,
-            "text": ""
+            "template": 3,
+            "title": "Proposal / Study / Solution",
+            "description": "",
+            "is_required": true,
+            "is_template": false
         }
     },
     {
-        "model": "gamification.optionchoice",
+        "model": "gamification.surveysection",
         "pk": 12,
         "fields": {
-            "question": 12,
-            "text": ""
+            "template": 3,
+            "title": "Methodology",
+            "description": "",
+            "is_required": true,
+            "is_template": false
         }
     },
     {
-        "model": "gamification.optionchoice",
+        "model": "gamification.surveysection",
         "pk": 13,
         "fields": {
-            "question": 13,
-            "text": ""
+            "template": 3,
+            "title": "Presentation",
+            "description": "",
+            "is_required": true,
+            "is_template": false
         }
     },
     {
-        "model": "gamification.optionchoice",
+        "model": "gamification.surveysection",
         "pk": 14,
         "fields": {
-            "question": 14,
-            "text": ""
+            "template": 3,
+            "title": "Artifact",
+            "description": "",
+            "is_required": false,
+            "is_template": false
         }
     },
     {
-        "model": "gamification.optionchoice",
+        "model": "gamification.surveysection",
         "pk": 15,
         "fields": {
-            "question": 15,
-            "text": ""
+            "template": 3,
+            "title": "Aspect",
+            "description": "How do you grade the following aspects?",
+            "is_required": true,
+            "is_template": false
         }
     },
     {
-        "model": "gamification.optionchoice",
+        "model": "gamification.surveysection",
         "pk": 16,
         "fields": {
-            "question": 16,
-            "text": ""
+            "template": 3,
+            "title": "Optional",
+            "description": "",
+            "is_required": false,
+            "is_template": false
         }
     },
     {
-        "model": "gamification.optionchoice",
-        "pk": 17,
+        "model": "gamification.surveytemplate",
+        "pk": 1,
         "fields": {
-            "question": 17,
-            "text": ""
+            "name": "Survey Template",
+            "instructions": "",
+            "is_template": true,
+            "other_info": ""
         }
     },
     {
-        "model": "gamification.optionchoice",
-        "pk": 18,
+        "model": "gamification.surveytemplate",
+        "pk": 2,
         "fields": {
-            "question": 18,
-            "text": ""
+            "name": "Default Template",
+            "instructions": "",
+            "is_template": false,
+            "other_info": ""
         }
     },
     {
-        "model": "gamification.optionchoice",
-        "pk": 19,
+        "model": "gamification.surveytemplate",
+        "pk": 3,
         "fields": {
-            "question": 19,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 20,
-        "fields": {
-            "question": 20,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 21,
-        "fields": {
-            "question": 21,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 22,
-        "fields": {
-            "question": 22,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 23,
-        "fields": {
-            "question": 23,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 24,
-        "fields": {
-            "question": 24,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 25,
-        "fields": {
-            "question": 25,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 26,
-        "fields": {
-            "question": 26,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 27,
-        "fields": {
-            "question": 27,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 28,
-        "fields": {
-            "question": 28,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 29,
-        "fields": {
-            "question": 29,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 30,
-        "fields": {
-            "question": 30,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 31,
-        "fields": {
-            "question": 31,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 32,
-        "fields": {
-            "question": 32,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 33,
-        "fields": {
-            "question": 33,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 34,
-        "fields": {
-            "question": 34,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 35,
-        "fields": {
-            "question": 35,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 36,
-        "fields": {
-            "question": 36,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 37,
-        "fields": {
-            "question": 37,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 38,
-        "fields": {
-            "question": 38,
-            "text": ""
-        }
-    },
-    {
-        "model": "gamification.optionchoice",
-        "pk": 39,
-        "fields": {
-            "question": 39,
-            "text": ""
+            "name": "Default Template",
+            "instructions": "This is a test template",
+            "is_template": false,
+            "other_info": ""
         }
     }
 ]
