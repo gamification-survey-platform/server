@@ -53,8 +53,8 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                     curr_question["option_choices"] = []
                     for option_choice in question.options:
                         curr_option_choice = dict()
-                        curr_option_choice["pk"] = option_choice.option_choice.pk
-                        curr_option_choice["text"] = option_choice.option_choice.text
+                        curr_option_choice["pk"] = option_choice.pk
+                        curr_option_choice["text"] = option_choice.text
                         curr_question["option_choices"].append(curr_option_choice)
                 elif question.question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
                     curr_question["number_of_scale"] = question.number_of_scale
@@ -89,7 +89,6 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                     option_choice.delete()
                 question.delete()
             section.delete()
-
         for section in survey_info["sections"]:
             section_template = SurveySection()
             section_template.template = survey_template
@@ -117,6 +116,7 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                         option_choice_template = OptionChoice()
                         option_choice_template.question = question_template
                         option_choice_template.text = option_choice["text"]
+                        option_choice_template.save()
                 else:
                     option_choice = OptionChoice()
                     option_choice.question = question_template
