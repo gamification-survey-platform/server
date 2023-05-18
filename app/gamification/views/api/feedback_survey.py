@@ -109,16 +109,15 @@ class SurveyList(generics.ListCreateAPIView):
                         section=section,
                         text=default_question.text,
                         question_type=default_question.question_type,
-                        dependent_question=default_question.dependent_question,
+                        number_of_text=default_question.number_of_text,
+                        number_of_scale=default_question.number_of_scale,
                         is_required=default_question.is_required,
-                        is_multiple=default_question.is_multiple,
                     )
                     question.save()
                     for default_option in default_question.options:
                         option_choice = OptionChoice(
                             question=question,
                             option_choice=default_option.option_choice,
-                            number_of_text=default_option.number_of_text,
                         )
                         option_choice.save()
         # Automatically create a section and question for artifact
