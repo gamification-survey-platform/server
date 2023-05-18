@@ -2683,6 +2683,16 @@
         }
     },
     {
+        "model": "gamification.surveytemplate",
+        "pk": 2,
+        "fields": {
+            "name": "Default Template",
+            "instructions": "",
+            "is_template": false,
+            "other_info": ""
+        }
+    },
+    {
         "model": "gamification.surveysection",
         "pk": 1,
         "fields": {

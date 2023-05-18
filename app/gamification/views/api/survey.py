@@ -31,7 +31,6 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
         assignment = get_object_or_404(Assignment, id=assignment_id)
         survey_template = assignment.survey_template
         data = dict()
-        print("GET SURVEY INFO")
         data["pk"] = survey_template.pk
         data["name"] = survey_template.name
         data["instructions"] = survey_template.instructions
