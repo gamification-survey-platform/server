@@ -325,8 +325,8 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                     curr_question["option_choices"] = []
                     for option_choice in question.options:
                         curr_option_choice = dict()
-                        curr_option_choice["pk"] = option_choice.option_choice.pk
-                        curr_option_choice["text"] = option_choice.option_choice.text
+                        curr_option_choice["pk"] = option_choice.pk
+                        curr_option_choice["text"] = option_choice.text
                         curr_question["option_choices"].append(curr_option_choice)
 
                 elif question.question_type == Question.QuestionType.SCALEMULTIPLECHOICE:

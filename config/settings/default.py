@@ -33,7 +33,12 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", False) == "True"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost 127.0.0.1").split(" ")
+ALLOWED_HOSTS = [
+    "gamification-platform-server-dev.us-west-1.elasticbeanstalk.com",
+    "172.31.20.32",
+    "localhost",
+    "127.0.0.1",
+]
 
 
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "localhost:8000").split(" ")
@@ -214,9 +219,9 @@ if USE_S3:
     AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
     AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = os.getenv("AWS_REGION_NAME")
     AWS_DEFAULT_ACL = None
 
-    AWS_S3_REGION_NAME = "us-west-2"
     AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
     AWS_S3_FILE_OVERWRITE = False
 
@@ -235,7 +240,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
-
 
 # Media files (User uploaded files)
 # https://docs.djangoproject.com/en/3.2/topics/files/

@@ -17,11 +17,21 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
+from rest_framework import generics, permissions
+from rest_framework.response import Response
+
+
+class HealthcheckView(generics.RetrieveAPIView):
+    swagger_schema = None
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        return Response({"message": "Server status is healthy"}, status=200)
 
 
 urlpatterns = [
+    path("", HealthcheckView.as_view()),
     path("api/", include("app.gamification.views.api.urls")),
-    path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
 ]
 
 if settings.DEBUG:
