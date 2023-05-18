@@ -208,5 +208,5 @@ class Register(generics.ListCreateAPIView):
             user.save()
             return Response(status=status.HTTP_200_OK)
         return Response(
-            status=status.HTTP_400_BAD_REQUEST, data={"error": "Failed to register. Username already taken."}
+            status=status.HTTP_400_BAD_REQUEST, data={"message": "Failed to register. Username already taken."}
         )

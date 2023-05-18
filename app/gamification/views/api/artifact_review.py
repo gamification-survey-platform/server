@@ -397,7 +397,9 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             question_type = question.question_type
             is_required = question.is_required
             if is_required and answer_text == "":
-                return Response({"error": "Please answer all required questions."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"message": "Please answer all required questions."}, status=status.HTTP_400_BAD_REQUEST
+                )
             if answer_text == "":
                 continue
             option_choices = question.options.all()

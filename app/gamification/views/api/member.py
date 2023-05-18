@@ -169,11 +169,11 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         userRole = request.data.get("userRole")
         team = request.data.get("team")
         if andrew_id is None:
-            return Response({"error": "AndrewID is missing"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "AndrewID is missing"}, status=status.HTTP_400_BAD_REQUEST)
         try:
             if userRole == UserRole.Instructor and self.check_instructor_count(course_id) <= 1:
                 return Response(
-                    {"error": "You are the last instructor, you cannot switch to student or TA"},
+                    {"message": "You are the last instructor, you cannot switch to student or TA"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             new_user = CustomUser.objects.get(andrew_id=andrew_id)
@@ -189,7 +189,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
             if registration.userRole == UserRole.Student and team != "":
                 create_team_membership(team, registration)
         except CustomUser.DoesNotExist:
-            return Response({"error": "AndrewID does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "AndrewID does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
         response_data = {
             "andrew_id": new_user.andrew_id,
