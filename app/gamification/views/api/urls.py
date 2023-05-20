@@ -26,6 +26,7 @@ from .reward import (
     UserRewardPurchases,
 )
 from .survey import SurveyGetInfo
+from .theme import ThemeDetail
 from .user import Login, Register, UserDetail
 
 # Create a schema view for Swagger UI
@@ -59,6 +60,8 @@ urlpatterns = [
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
     # GET or PATCH user by id
     path("users/<str:user_id>/", UserDetail.as_view(), name="user-detail"),
+    # GET or PATCH user by theme
+    path("theme/", ThemeDetail.as_view(), name="theme-detail"),
     # POST Login and Registration
     path("login/", Login.as_view(), name="user-login"),
     path("register/", Register.as_view(), name="user-register"),

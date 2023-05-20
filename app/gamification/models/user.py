@@ -9,6 +9,8 @@ from django.utils import timezone
 from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext_lazy as _
 
+from .theme import Theme
+
 
 class CustomUserManager(BaseUserManager):
     use_in_migrations = True
@@ -133,6 +135,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     # exp is only used to level up
     exp = models.IntegerField(default=0, null=True, blank=True)
+
+    theme = models.ForeignKey(Theme, on_delete=models.CASCADE, null=True, blank=True)
 
     objects = CustomUserManager()
 

@@ -134,7 +134,6 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
     )
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         user_id = get_user_pk(request)
-        print(user_id, course_id, assignment_id)
         user = get_object_or_404(CustomUser, id=user_id)
         course = get_object_or_404(Course, id=course_id)
         assignment = get_object_or_404(Assignment, id=assignment_id)
