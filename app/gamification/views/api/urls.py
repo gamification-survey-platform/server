@@ -23,6 +23,7 @@ from .reward import (
     CourseRewardList,
     CourseRewardPurchases,
     CourseRewardPurchasesDetail,
+    RewardDetail,
     UserRewardPurchases,
 )
 from .survey import SurveyGetInfo
@@ -145,8 +146,8 @@ urlpatterns = [
     # Rewards
     # GET course rewards
     path("courses/<str:course_id>/rewards/", CourseRewardList.as_view(), name="reward-list"),
-    # superuser patch reward
-    # path('rewards/<str:reward_id>/', RewardDetail.as_view(), name='reward-detail'),
+    # PATCH reward to purchase
+    path("rewards/<str:reward_id>/", RewardDetail.as_view(), name="reward-detail"),
     # GET, PATCH, DELETE a reward by id
     path("courses/<str:course_id>/rewards/<str:reward_id>/", CourseRewardDetail.as_view(), name="reward-detail"),
     # GET course purchases
