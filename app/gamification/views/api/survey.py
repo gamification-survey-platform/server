@@ -48,7 +48,10 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                 curr_question["text"] = question.text
                 curr_question["is_required"] = question.is_required
                 curr_question["question_type"] = question.question_type
-                if question.question_type == Question.QuestionType.MULTIPLECHOICE:
+                if (
+                    question.question_type == Question.QuestionType.MULTIPLECHOICE
+                    or question.question_type == Question.QuestionType.MULTIPLESELECT
+                ):
                     curr_question["option_choices"] = []
                     for option_choice in question.options:
                         curr_option_choice = dict()
