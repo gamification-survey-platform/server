@@ -47,6 +47,8 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                 curr_question["pk"] = question.pk
                 curr_question["text"] = question.text
                 curr_question["is_required"] = question.is_required
+                curr_question["positively_phrased"] = question.positively_phrased
+                curr_question["gamified"] = question.gamified
                 curr_question["question_type"] = question.question_type
                 if (
                     question.question_type == Question.QuestionType.MULTIPLECHOICE
@@ -103,6 +105,8 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                 question_template.text = question["text"]
                 question_template.is_required = question["is_required"]
                 question_template.question_type = question["question_type"]
+                question_template["positively_phrased"] = question["positively_phrased"]
+                question_template["gamified"] = question["gamified"]
                 if question["question_type"] == Question.QuestionType.SCALEMULTIPLECHOICE:
                     question_template.number_of_scale = question["number_of_scale"]
                 elif question["question_type"] == Question.QuestionType.MULTIPLETEXT:

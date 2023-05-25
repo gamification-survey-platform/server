@@ -30,6 +30,10 @@ class Question(models.Model):
 
     number_of_text = models.PositiveIntegerField(default=1)
 
+    gamified = models.BooleanField(default=True)
+
+    phrased_positively = models.BooleanField(default=True)
+
     class Meta:
         db_table = "question"
         verbose_name = "question"
