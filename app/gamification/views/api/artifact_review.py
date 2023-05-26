@@ -1,4 +1,7 @@
+from datetime import datetime
+
 import pandas as pd
+import pytz
 from django.forms import model_to_dict
 from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
@@ -163,6 +166,8 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
         else:
             if len(feedbackSurvey) == 0:
                 return Response({"message": "No feedback survey found"}, status=status.HTTP_404_NOT_FOUND)
+            if feedbackSurvey[0].date_released > datetime.now().astimezone(pytz.timezone("America/Los_Angeles")):
+                return Response({"message": "Feedback survey not released yet"}, status=status.HTTP_404_NOT_FOUND)
             for artifact in artifacts:
                 # Prevent self review
                 artifact_members = artifact.entity.members
@@ -239,6 +244,9 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
 
                 artifact_review_data = model_to_dict(artifact_review)
                 assignment = get_object_or_404(Assignment, id=artifact.assignment_id)
+                feedbackSurvey = get_object_or_404(FeedbackSurvey, assignment=assignment)
+                if feedbackSurvey.date_released > datetime.now().astimezone(pytz.timezone("America/Los_Angeles")):
+                    continue
                 if assignment.assignment_type == Assignment.AssigmentType.Individual:
                     artifact_review_data["reviewing"] = Membership.objects.get(
                         entity=artifact.entity

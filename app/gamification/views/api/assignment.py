@@ -1,3 +1,6 @@
+from datetime import datetime
+
+import pytz
 from django.forms import model_to_dict
 from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
@@ -57,9 +60,12 @@ class AssignmentList(generics.ListCreateAPIView):
         course = get_object_or_404(Course, pk=course_id)
         assignments = Assignment.objects.filter(course=course)
         assignments = [model_to_dict(assignment) for assignment in assignments]
+        response_data = []
         for assignment in assignments:
-            assignment["user_role"] = user_role
-        return Response(assignments, status=status.HTTP_200_OK)
+            if datetime.now().astimezone(pytz.timezone("America/Los_Angeles")) > assignment["date_released"]:
+                assignment["user_role"] = user_role
+                response_data.append(assignment)
+        return Response(response_data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         operation_description="Create a new assignment",
