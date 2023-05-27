@@ -15,6 +15,8 @@ class Theme(models.Model):
 
     colorError = models.CharField(_("Error color"), max_length=7, blank=True)
 
+    cursor = models.CharField(_("Cursor"), max_length=15, blank=True)
+
     class Meta:
         db_table = "theme"
         verbose_name = "theme"

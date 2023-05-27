@@ -27,6 +27,7 @@ class ThemeDetail(generics.RetrieveUpdateAPIView):
                     "colorSuccess": openapi.Schema(type=openapi.TYPE_STRING),
                     "colorWarning": openapi.Schema(type=openapi.TYPE_STRING),
                     "colorError": openapi.Schema(type=openapi.TYPE_STRING),
+                    "cursor": openapi.Schema(type=openapi.TYPE_STRING),
                 },
             ),
         },
@@ -54,6 +55,7 @@ class ThemeDetail(generics.RetrieveUpdateAPIView):
                     "colorSuccess": openapi.Schema(type=openapi.TYPE_STRING),
                     "colorWarning": openapi.Schema(type=openapi.TYPE_STRING),
                     "colorError": openapi.Schema(type=openapi.TYPE_STRING),
+                    "cursor": openapi.Schema(type=openapi.TYPE_STRING),
                 },
             ),
         },
@@ -69,5 +71,6 @@ class ThemeDetail(generics.RetrieveUpdateAPIView):
             setattr(theme, key, request.data[key])
         theme.save()
         user.theme = theme
+        user.save()
         response_data = model_to_dict(theme)
         return Response(response_data)
