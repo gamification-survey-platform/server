@@ -62,7 +62,10 @@ class AssignmentList(generics.ListCreateAPIView):
         assignments = [model_to_dict(assignment) for assignment in assignments]
         response_data = []
         for assignment in assignments:
-            if datetime.now().astimezone(pytz.timezone("America/Los_Angeles")) > assignment["date_released"]:
+            if (
+                datetime.now().astimezone(pytz.timezone("America/Los_Angeles")) > assignment["date_released"]
+                or user_role != UserRole.Student
+            ):
                 assignment["user_role"] = user_role
                 response_data.append(assignment)
         return Response(response_data, status=status.HTTP_200_OK)

@@ -17,6 +17,8 @@ class Theme(models.Model):
 
     cursor = models.CharField(_("Cursor"), max_length=15, blank=True)
 
+    multiple_choice = models.CharField(_("Multiple Choice"), default="nature", max_length=15, blank=True)
+
     class Meta:
         db_table = "theme"
         verbose_name = "theme"
