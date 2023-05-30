@@ -133,8 +133,8 @@ class AssignmentArtifact(generics.ListCreateAPIView):
             upload_url = generate_presigned_post(key)
             download_url = generate_presigned_url(key, http_method="GET")
         else:
-            upload_url = f"http://{settings.ALLOWED_HOSTS[1]}:8000{artifact.file.url}"
-            download_url = f"http://{settings.ALLOWED_HOSTS[1]}:8000{artifact.file.url}"
+            upload_url = f"http://{settings.ALLOWED_HOSTS[2]}:8000{artifact.file.url}"
+            download_url = f"http://{settings.ALLOWED_HOSTS[2]}:8000{artifact.file.url}"
 
         self.create_artifact_review(artifact, registration, course, assignment_type, entity)
         level = inv_level_func(user.exp)
@@ -185,7 +185,7 @@ class AssignmentArtifact(generics.ListCreateAPIView):
         data = dict()
         data["create_date"] = artifact.upload_time
         key = artifact.file.name
-        path = f"http://{settings.ALLOWED_HOSTS[1]}:8000{artifact.file.url}"
+        path = f"http://{settings.ALLOWED_HOSTS[2]}:8000{artifact.file.url}"
 
         if settings.USE_S3:
             path = generate_presigned_url(key, http_method="GET")
@@ -224,7 +224,7 @@ class ArtifactDetail(generics.RetrieveAPIView):
         data["create_date"] = artifact.upload_time
 
         key = artifact.file.name
-        path = f"http://{settings.ALLOWED_HOSTS[1]}:8000{artifact.file.url}"
+        path = f"http://{settings.ALLOWED_HOSTS[2]}:8000{artifact.file.url}"
 
         if settings.USE_S3:
             path = generate_presigned_url(key, http_method="GET")

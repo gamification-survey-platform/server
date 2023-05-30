@@ -51,7 +51,7 @@ class UserDetail(generics.RetrieveUpdateAPIView):
             download_url = generate_presigned_url(user.image, http_method="GET")
             response_data["image"] = download_url
         elif user.image is not None:
-            download_url = f"http://{settings.ALLOWED_HOSTS[1]}:8000{user.image.url}"
+            download_url = f"http://{settings.ALLOWED_HOSTS[2]}:8000{user.image.url}"
             response_data["image"] = download_url
 
         return Response(response_data)
@@ -88,8 +88,8 @@ class UserDetail(generics.RetrieveUpdateAPIView):
             response_data["download_url"] = download_url
             response_data["delete_url"] = delete_url
         elif key is not None:
-            upload_url = f"http://{settings.ALLOWED_HOSTS[1]}:8000{user.image.url}"
-            download_url = f"http://{settings.ALLOWED_HOSTS[1]}:8000{user.image.url}"
+            upload_url = f"http://{settings.ALLOWED_HOSTS[2]}:8000{user.image.url}"
+            download_url = f"http://{settings.ALLOWED_HOSTS[2]}:8000{user.image.url}"
             response_data["image"] = download_url
 
         return Response(response_data)
@@ -160,7 +160,7 @@ class Login(generics.CreateAPIView):
             download_url = generate_presigned_url(user.image, http_method="GET")
             response_data["image"] = download_url
         elif user.image:
-            download_url = f"http://{settings.ALLOWED_HOSTS[1]}:8000{user.image.url}"
+            download_url = f"http://{settings.ALLOWED_HOSTS[2]}:8000{user.image.url}"
             response_data["image"] = download_url
 
         if user.check_password(password):

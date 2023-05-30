@@ -54,6 +54,6 @@ class RewardSerializer(serializers.ModelSerializer):
         if reward.reward_type == Reward.RewardType.BONUS or reward.reward_type == Reward.RewardType.LATE_SUBMISSION:
             data["quantity"] = reward.quantity
         elif reward.reward_type == Reward.RewardType.OTHER:
-            path = f"http://{settings.ALLOWED_HOSTS[1]}:8000{reward.picture.url}"
+            path = f"http://{settings.ALLOWED_HOSTS[2]}:8000{reward.picture.url}"
             data["picture"] = self.get_picture_url(reward) if settings.USE_S3 else path
         return data
