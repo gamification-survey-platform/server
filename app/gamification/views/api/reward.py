@@ -244,6 +244,7 @@ class CourseRewardPurchases(generics.RetrieveUpdateAPIView):
                 reward_data["pk"] = purchased_course_reward.pk
                 reward_data["buyer"] = buyer.andrew_id
                 reward_data["fulfilled"] = purchased_course_reward.fulfilled
+                reward_data["date_purchased"] = purchased_course_reward.date_purchased
                 response_data.append(reward_data)
 
         return Response(response_data, status=status.HTTP_200_OK)
@@ -293,6 +294,7 @@ class UserRewardPurchases(generics.RetrieveUpdateAPIView):
             reward = Reward.objects.get(id=user_reward.reward_id)
             reward_data = self.get_serializer(reward).data
             reward_data["fulfilled"] = user_reward.fulfilled
+            reward_data["date_purchased"] = user_reward.date_purchased
             response_data.append(reward_data)
 
         return Response(response_data, status=status.HTTP_200_OK)

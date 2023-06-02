@@ -63,5 +63,14 @@ class Assignment(models.Model):
         else:
             return None
 
+    @property
+    def feedback_survey(self):
+        feedback_survey = FeedbackSurvey.objects.filter(assignment=self)
+        if len(feedback_survey) > 0:
+            feedback_survey = feedback_survey[0]
+            return feedback_survey
+        else:
+            return None
+
     def __str__(self):
         return f"{self.assignment_name}"

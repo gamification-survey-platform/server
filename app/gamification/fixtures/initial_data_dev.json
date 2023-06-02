@@ -2493,6 +2493,14 @@
         }
     },
     {
+      "model": "gamification.behavior",
+      "pk": 3,
+      "fields": {
+          "operation": "trivia",
+          "points": 5
+      }
+    },
+    {
         "model": "gamification.optionchoice",
         "pk": 1,
         "fields": {

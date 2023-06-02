@@ -307,7 +307,8 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 curr_question["text"] = question.text
                 curr_question["is_required"] = question.is_required
                 curr_question["question_type"] = question.question_type
-
+                curr_question["phrased_positively"] = question.phrased_positively
+                curr_question["gamified"] = question.gamified
                 curr_question["answer"] = []
                 answer_filter = {"artifact_review_id": artifact_review_pk, "option_choice__question": question}
                 answers = (

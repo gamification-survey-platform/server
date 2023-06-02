@@ -10,6 +10,7 @@ from app.gamification.models.option_choice import OptionChoice
 from app.gamification.models.question import Question
 from app.gamification.models.survey_section import SurveySection
 from app.gamification.models.survey_template import SurveyTemplate
+from app.gamification.models.trivia import Trivia
 from app.gamification.serializers.survey import SurveySerializer
 
 
@@ -58,12 +59,14 @@ class SurveyList(generics.ListCreateAPIView):
         survey_template_other_info = request.data.get("other_info")
         feedback_survey_date_released = request.data.get("date_released")
         feedback_survey_date_due = request.data.get("date_due")
+        feedback_trivia = request.data.get("trivia")
         response_data = {
             "template_name": survey_template_name,
             "instructions": survey_template_instructions,
             "other_info": survey_template_other_info,
             "date_released": feedback_survey_date_released,
             "date_due": feedback_survey_date_due,
+            "trivia": feedback_trivia,
         }
 
         feedback_survey = FeedbackSurvey.objects.filter(assignment=assignment)
@@ -74,6 +77,13 @@ class SurveyList(generics.ListCreateAPIView):
             survey_template.instructions = survey_template_instructions
             survey_template.other_info = survey_template_other_info
             survey_template.save()
+            if feedback_survey[0].trivia:
+                trivia = feedback_survey[0].trivia
+                trivia.question = feedback_trivia["question"]
+                trivia.anser = feedback_trivia["answer"]
+                trivia.hints = feedback_trivia["hints"]
+                trivia.save()
+                feedback_survey[0].trivia = trivia
             # Create new survey
             feedback_survey[0].template = survey_template
             feedback_survey[0].date_released = feedback_survey_date_released
@@ -92,6 +102,14 @@ class SurveyList(generics.ListCreateAPIView):
             date_released=feedback_survey_date_released,
             date_due=feedback_survey_date_due,
         )
+
+        if feedback_trivia:
+            trivia = Trivia(
+                question=feedback_trivia["question"], answer=feedback_trivia["answer"], hints=feedback_trivia["hints"]
+            )
+            trivia.save()
+            feedback_survey.trivia = trivia
+
         feedback_survey.save()
 
         if survey_template_name == "Default Template":
@@ -168,9 +186,33 @@ class SurveyDetail(generics.RetrieveUpdateDestroyAPIView):
     def patch(self, request, feedback_survey_pk, *args, **kwargs):
         survey = get_object_or_404(SurveyTemplate, id=feedback_survey_pk)
         name = request.data.get("template_name").strip()
+        feedback_surveys = FeedbackSurvey.objects.filter(template=survey)
         if name == "":
             content = {"message": "Survey name cannot be empty"}
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
+        if request.data.get("trivia"):
+            feedback_trivia = request.data.get("trivia")
+            if "id" in feedback_trivia:
+                trivia = get_object_or_404(Trivia, id=feedback_trivia["id"])
+                trivia.question = feedback_trivia["question"]
+                trivia.answer = feedback_trivia["answer"]
+                trivia.hints = feedback_trivia["hints"]
+            else:
+                trivia = Trivia(
+                    question=feedback_trivia["question"],
+                    answer=feedback_trivia["answer"],
+                    hints=feedback_trivia["hints"],
+                )
+            trivia.save()
+            for feedback_survey in feedback_surveys:
+                feedback_survey.trivia = trivia
+                feedback_survey.save()
+        else:
+            for feedback_survey in feedback_surveys:
+                feedback_survey.trivia.delete()
+                feedback_survey.trivia = None
+                feedback_survey.save()
+
         instructions = request.data.get("instructions")
         other_info = request.data.get("other_info")
         survey.name = name

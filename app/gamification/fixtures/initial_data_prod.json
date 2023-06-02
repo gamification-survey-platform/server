@@ -1671,7 +1671,14 @@
             "points": 20
         }
     },
-
+    {
+        "model": "gamification.behavior",
+        "pk": 2,
+        "fields": {
+            "operation": "trivia",
+            "points": 5
+        }
+    },
     {
         "model": "gamification.surveytemplate",
         "pk": 1,

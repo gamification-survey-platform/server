@@ -1,3 +1,4 @@
+from django.forms import model_to_dict
 from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -36,6 +37,10 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
         data["instructions"] = survey_template.instructions
         data["other_info"] = survey_template.other_info
         data["sections"] = []
+        feedback_survey = assignment.feedback_survey
+        data["trivia"] = None
+        if feedback_survey.trivia:
+            data["trivia"] = model_to_dict(feedback_survey.trivia)
         for section in survey_template.sections:
             curr_section = dict()
             curr_section["pk"] = section.pk
