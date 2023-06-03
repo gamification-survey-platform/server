@@ -294,6 +294,8 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         data["artifact_pk"] = artifact.pk
         data["instructions"] = survey_template.instructions
         data["other_info"] = survey_template.other_info
+        if survey_template.trivia is not None:
+            data["trivia"] = model_to_dict(survey_template.trivia)
         data["sections"] = []
         for section in survey_template.sections:
             curr_section = dict()
@@ -462,6 +464,44 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             "points": registration.points,
         }
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+class ArtifactReviewTrivia(generics.GenericAPIView):
+    queryset = ArtifactReview.objects.all()
+    serializer_class = ArtifactReviewSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Submit artifact review trivia",
+        tags=["artifact_review"],
+    )
+    def post(self, request, course_id, assignment_id, artifact_review_pk, *args, **kwargs):
+        artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_pk)
+        if not artifact_review.trivia_completed:
+            assignment = get_object_or_404(Assignment, id=assignment_id)
+            feedback_survey = get_object_or_404(FeedbackSurvey, assignment=assignment)
+            survey_template = feedback_survey.template
+            trivia = survey_template.trivia
+            answer = request.data.get("answer").strip().lower()
+            artifact_review.trivia_completed = True
+            artifact_review.save()
+            if trivia.answer.strip().lower() == answer:
+                user_id = get_user_pk(request)
+                user = get_object_or_404(CustomUser, id=user_id)
+                course = get_object_or_404(Course, id=course_id)
+                registration = get_object_or_404(Registration, course=course, user=user)
+                behavior = Behavior.objects.get(operation="trivia")
+                user.exp += behavior.points
+                user.save()
+                registration.points += behavior.points
+                registration.save()
+                return Response(
+                    {"message": f"Congrats! You gained {behavior.points} points!"}, status=status.HTTP_201_CREATED
+                )
+            else:
+                return Response({"message": "Uh oh! Wrong answer."}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message": "Survey trivia already completed."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ArtifactReviewIpsatization(generics.RetrieveAPIView):

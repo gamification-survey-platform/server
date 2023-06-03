@@ -16,8 +16,6 @@ class FeedbackSurvey(models.Model):
 
     date_due = models.DateTimeField(null=True, blank=True)
 
-    trivia = models.ForeignKey("Trivia", null=True, blank=True, on_delete=models.CASCADE)
-
     class Meta:
         db_table = "feedback_survey"
         verbose_name = "feedback survey"

@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from app.gamification.views.api.artifact_review import (
     ArtifactReviewDetails,
     ArtifactReviewIpsatization,
+    ArtifactReviewTrivia,
     AssignmentArtifactReviewList,
     UserArtifactReviewList,
 )
@@ -123,6 +124,12 @@ urlpatterns = [
     path(
         "courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/<str:artifact_review_pk>/",
         ArtifactReviewDetails.as_view(),
+        name="survey-detail",
+    ),
+    # POST artifact review trivia
+    path(
+        "courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/<str:artifact_review_pk>/trivia",
+        ArtifactReviewTrivia.as_view(),
         name="survey-detail",
     ),
     # GET ipsatization results from artifact_reviews

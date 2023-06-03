@@ -16,6 +16,8 @@ class SurveyTemplate(models.Model):
 
     other_info = models.TextField(blank=True)
 
+    trivia = models.ForeignKey("Trivia", null=True, blank=True, on_delete=models.CASCADE)
+
     class Meta:
         db_table = "survey_template"
         verbose_name = "survey template"

@@ -37,10 +37,9 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
         data["instructions"] = survey_template.instructions
         data["other_info"] = survey_template.other_info
         data["sections"] = []
-        feedback_survey = assignment.feedback_survey
         data["trivia"] = None
-        if feedback_survey.trivia:
-            data["trivia"] = model_to_dict(feedback_survey.trivia)
+        if survey_template.trivia is not None:
+            data["trivia"] = model_to_dict(survey_template.trivia)
         for section in survey_template.sections:
             curr_section = dict()
             curr_section["pk"] = section.pk
