@@ -8,8 +8,7 @@ from rest_framework.response import Response
 from app.gamification.models import CustomUser, Theme
 from app.gamification.utils.auth import get_user_pk
 
-
-class ThemeDetail(generics.RetrieveUpdateAPIView):
+class ThemeDetail(generics.GenericAPIView):
     queryset = CustomUser.objects.all()
     permission_classes = [permissions.AllowAny]
 
@@ -18,7 +17,7 @@ class ThemeDetail(generics.RetrieveUpdateAPIView):
         tags=["theme"],
         responses={
             200: openapi.Schema(
-                description="Get color theme for user",
+                description="Get theme for user",
                 type=openapi.TYPE_OBJECT,
                 properties={
                     "colorBgBase": openapi.Schema(type=openapi.TYPE_STRING),
@@ -28,7 +27,9 @@ class ThemeDetail(generics.RetrieveUpdateAPIView):
                     "colorWarning": openapi.Schema(type=openapi.TYPE_STRING),
                     "colorError": openapi.Schema(type=openapi.TYPE_STRING),
                     "cursor": openapi.Schema(type=openapi.TYPE_STRING),
-                    "multiple_choice": openapi.Schema(type=openapi.TYPE_STRING),
+                    "multiple_choice_icon": openapi.Schema(type=openapi.TYPE_STRING),
+                    "multiple_select_icon": openapi.Schema(type=openapi.TYPE_STRING),
+                    "scale_multiple_choice_icon": openapi.Schema(type=openapi.TYPE_STRING),
                 },
             ),
         },
@@ -41,6 +42,34 @@ class ThemeDetail(generics.RetrieveUpdateAPIView):
         else:
             response_data = {}
         return Response(response_data)
+
+    @swagger_auto_schema(
+        operation_description="Create user theme",
+        tags=["theme"],
+        responses={
+            200: openapi.Schema(
+                description="Create theme",
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "colorBgBase": openapi.Schema(type=openapi.TYPE_STRING),
+                    "colorTextBase": openapi.Schema(type=openapi.TYPE_STRING),
+                    "colorPrimary": openapi.Schema(type=openapi.TYPE_STRING),
+                    "colorSuccess": openapi.Schema(type=openapi.TYPE_STRING),
+                    "colorWarning": openapi.Schema(type=openapi.TYPE_STRING),
+                    "colorError": openapi.Schema(type=openapi.TYPE_STRING),
+                    "cursor": openapi.Schema(type=openapi.TYPE_STRING),
+                    "multiple_choice_icon": openapi.Schema(type=openapi.TYPE_STRING),
+                    "multiple_select_icon": openapi.Schema(type=openapi.TYPE_STRING),
+                    "scale_multiple_choice_icon": openapi.Schema(type=openapi.TYPE_STRING),
+                },
+            ),
+        },
+    )
+    def post(self, request, *args, **kwargs):
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
+
+        return Response()
 
     @swagger_auto_schema(
         operation_description="Edit user theme",
@@ -57,7 +86,9 @@ class ThemeDetail(generics.RetrieveUpdateAPIView):
                     "colorWarning": openapi.Schema(type=openapi.TYPE_STRING),
                     "colorError": openapi.Schema(type=openapi.TYPE_STRING),
                     "cursor": openapi.Schema(type=openapi.TYPE_STRING),
-                    "multiple_choice": openapi.Schema(type=openapi.TYPE_STRING),
+                    "multiple_choice_icon": openapi.Schema(type=openapi.TYPE_STRING),
+                    "multiple_select_icon": openapi.Schema(type=openapi.TYPE_STRING),
+                    "scale_multiple_choice_icon": openapi.Schema(type=openapi.TYPE_STRING),
                 },
             ),
         },

@@ -3,6 +3,12 @@ from django.utils.translation import gettext_lazy as _
 
 
 class Theme(models.Model):
+    # is_published (boolean)
+    """
+    Level 5 it can be published
+    Expose to level 2 if published
+    """
+
     colorBgBase = models.CharField(_("Background color"), max_length=7, blank=True)
 
     colorTextBase = models.CharField(_("Text color"), max_length=7, blank=True)
