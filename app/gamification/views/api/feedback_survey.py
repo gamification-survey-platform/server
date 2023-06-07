@@ -31,7 +31,6 @@ class SurveyList(generics.ListCreateAPIView):
             "assignment_id": assignment_id,
             "survey_template_name": survey_template.name,
             "survey_template_instruction": survey_template.instructions,
-            "survey_template_other_info": survey_template.other_info,
             "feedback_survey_date_released": feedback_survey.date_released,
             "feedback_survey_date_due": feedback_survey.date_due,
         }
@@ -46,7 +45,6 @@ class SurveyList(generics.ListCreateAPIView):
             properties={
                 "template_name": openapi.Schema(type=openapi.TYPE_STRING),
                 "instructions": openapi.Schema(type=openapi.TYPE_STRING),
-                "other_info": openapi.Schema(type=openapi.TYPE_STRING),
                 "date_released": openapi.Schema(type=openapi.TYPE_STRING),
                 "date_due": openapi.Schema(type=openapi.TYPE_STRING),
             },
@@ -56,14 +54,12 @@ class SurveyList(generics.ListCreateAPIView):
         assignment = get_object_or_404(Assignment, pk=assignment_id)
         survey_template_name = request.data.get("template_name").strip()
         survey_template_instructions = request.data.get("instructions")
-        survey_template_other_info = request.data.get("other_info")
         feedback_survey_date_released = request.data.get("date_released")
         feedback_survey_date_due = request.data.get("date_due")
         trivia_data = request.data.get("trivia")
         response_data = {
             "template_name": survey_template_name,
             "instructions": survey_template_instructions,
-            "other_info": survey_template_other_info,
             "date_released": feedback_survey_date_released,
             "date_due": feedback_survey_date_due,
             "trivia": trivia_data,
@@ -83,7 +79,6 @@ class SurveyList(generics.ListCreateAPIView):
             survey_template = feedback_survey[0].template
             survey_template.name = survey_template_name
             survey_template.instructions = survey_template_instructions
-            survey_template.other_info = survey_template_other_info
             survey_template.trivia = trivia
 
             survey_template.save()
@@ -98,7 +93,6 @@ class SurveyList(generics.ListCreateAPIView):
         survey_template = SurveyTemplate(
             name=survey_template_name,
             instructions=survey_template_instructions,
-            other_info=survey_template_other_info,
             trivia=trivia,
         )
         survey_template.save()
@@ -112,7 +106,7 @@ class SurveyList(generics.ListCreateAPIView):
         feedback_survey.save()
 
         if survey_template_name == "Default Template":
-            default_survey_template = get_object_or_404(SurveyTemplate, is_template=True, name="Survey Template")
+            default_survey_template = get_object_or_404(SurveyTemplate, name="Survey Template")
             for default_section in default_survey_template.sections:
                 section = SurveySection(
                     template=survey_template,
@@ -178,7 +172,6 @@ class SurveyDetail(generics.RetrieveUpdateDestroyAPIView):
             properties={
                 "template_name": openapi.Schema(type=openapi.TYPE_STRING),
                 "instructions": openapi.Schema(type=openapi.TYPE_STRING),
-                "other_info": openapi.Schema(type=openapi.TYPE_STRING),
             },
         ),
     )
@@ -207,10 +200,8 @@ class SurveyDetail(generics.RetrieveUpdateDestroyAPIView):
             survey.trivia.delete()
 
         instructions = request.data.get("instructions")
-        other_info = request.data.get("other_info")
         survey.name = name
         survey.instructions = instructions
-        survey.other_info = other_info
         survey.save()
         serializer = self.get_serializer(survey)
         return Response(serializer.data)

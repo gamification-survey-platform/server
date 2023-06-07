@@ -10,8 +10,6 @@ class FeedbackSurvey(models.Model):
 
     assignment = models.ForeignKey("Assignment", on_delete=models.CASCADE)
 
-    date_created = models.DateTimeField(auto_now_add=True)
-
     date_released = models.DateTimeField(null=True, blank=True)
 
     date_due = models.DateTimeField(null=True, blank=True)

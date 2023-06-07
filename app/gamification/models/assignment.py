@@ -1,5 +1,4 @@
 from django.db import models
-from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 
 from app.gamification.models.course import Course
@@ -34,8 +33,6 @@ class Assignment(models.Model):
     total_score = models.FloatField(null=True, blank=True)
 
     weight = models.FloatField(null=True, blank=True)
-
-    date_created = models.DateTimeField(_("date created"), null=True, default=now, blank=True)
 
     date_released = models.DateTimeField(_("date released"), null=True, blank=True)
 

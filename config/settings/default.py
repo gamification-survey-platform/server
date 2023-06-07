@@ -34,8 +34,8 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", False) == "True"
 
 ALLOWED_HOSTS = [
-    "gamification-platform-server-dev.us-west-1.elasticbeanstalk.com",
-    "172.31.20.32",
+    "ec2-13-57-207-133.us-west-1.compute.amazonaws.com",
+    "13.57.207.133",
     "localhost",
     "127.0.0.1",
 ]

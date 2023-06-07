@@ -274,7 +274,6 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 properties={
                     "pk": openapi.Schema(type=openapi.TYPE_INTEGER),
                     "instructions": openapi.Schema(type=openapi.TYPE_STRING),
-                    "other_info": openapi.Schema(type=openapi.TYPE_STRING),
                     "artifact_pk": openapi.Schema(type=openapi.TYPE_INTEGER),
                     **base_artifact_review_schema,
                 },
@@ -293,7 +292,6 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         data["name"] = survey_template.name
         data["artifact_pk"] = artifact.pk
         data["instructions"] = survey_template.instructions
-        data["other_info"] = survey_template.other_info
         if survey_template.trivia is not None:
             data["trivia"] = model_to_dict(survey_template.trivia)
         data["sections"] = []
@@ -495,9 +493,16 @@ class ArtifactReviewTrivia(generics.GenericAPIView):
                 user.save()
                 registration.points += behavior.points
                 registration.save()
-                return Response(
-                    {"message": f"Congrats! You gained {behavior.points} points!"}, status=status.HTTP_201_CREATED
-                )
+                level = inv_level_func(user.exp)
+                next_level_exp = level_func(level + 1)
+                response_data = {
+                    "message": f"Congrats! You gained {behavior.points} points!",
+                    "exp": user.exp,
+                    "level": level,
+                    "next_level_exp": next_level_exp,
+                    "points": registration.points,
+                }
+                return Response(response_data, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message": "Uh oh! Wrong answer."}, status=status.HTTP_400_BAD_REQUEST)
         else:

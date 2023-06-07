@@ -8,7 +8,7 @@ from app.gamification.models.question import Question
 class SurveySerializer(serializers.ModelSerializer):
     class Meta:
         model = SurveyTemplate
-        fields = ["pk", "name", "instructions", "other_info"]
+        fields = ["pk", "name", "instructions"]
 
 
 class SectionSerializer(serializers.ModelSerializer):
@@ -20,7 +20,7 @@ class SectionSerializer(serializers.ModelSerializer):
 class TemplateSectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = SurveySection
-        fields = ["pk", "template", "title", "description", "is_required", "is_template"]
+        fields = ["pk", "template", "title", "description", "is_required"]
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -58,7 +58,7 @@ class SurveySectionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SurveyTemplate
-        fields = ["pk", "name", "instructions", "other_info", "sections"]
+        fields = ["pk", "name", "instructions", "sections"]
 
 
 class SectionQuestionsSerializer(serializers.ModelSerializer):

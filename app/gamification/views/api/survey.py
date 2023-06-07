@@ -35,7 +35,6 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
         data["pk"] = survey_template.pk
         data["name"] = survey_template.name
         data["instructions"] = survey_template.instructions
-        data["other_info"] = survey_template.other_info
         data["sections"] = []
         data["trivia"] = None
         if survey_template.trivia is not None:

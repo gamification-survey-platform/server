@@ -15,7 +15,6 @@ class AssignmentSerializer(serializers.ModelSerializer):
             "submission_type",
             "total_score",
             "weight",
-            "date_created",
             "date_released",
             "date_due",
             "review_assign_policy",

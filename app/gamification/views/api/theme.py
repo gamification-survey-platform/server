@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from app.gamification.models import CustomUser, Theme
 from app.gamification.utils.auth import get_user_pk
 
+
 class ThemeDetail(generics.GenericAPIView):
     queryset = CustomUser.objects.all()
     permission_classes = [permissions.AllowAny]
@@ -66,8 +67,8 @@ class ThemeDetail(generics.GenericAPIView):
         },
     )
     def post(self, request, *args, **kwargs):
-        user_id = get_user_pk(request)
-        user = get_object_or_404(CustomUser, id=user_id)
+        # user_id = get_user_pk(request)
+        # user = get_object_or_404(CustomUser, id=user_id)
 
         return Response()
 

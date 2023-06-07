@@ -12,10 +12,6 @@ class SurveyTemplate(models.Model):
 
     instructions = models.TextField(blank=True)
 
-    is_template = models.BooleanField(default=False)
-
-    other_info = models.TextField(blank=True)
-
     trivia = models.ForeignKey("Trivia", null=True, blank=True, on_delete=models.CASCADE)
 
     class Meta:
