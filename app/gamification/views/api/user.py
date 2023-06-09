@@ -48,7 +48,7 @@ class UserDetail(generics.RetrieveUpdateAPIView):
 
         # Generate the presigned URL to share with the user.
         if settings.USE_S3 and user.image is not None:
-            download_url = generate_presigned_url(user.image, http_method="GET")
+            download_url = generate_presigned_url(str(user.image), http_method="GET")
             response_data["image"] = download_url
         elif user.image is not None:
             download_url = f"http://{settings.ALLOWED_HOSTS[2]}:8000{user.image.url}"
@@ -157,7 +157,7 @@ class Login(generics.CreateAPIView):
         response_data["next_level_exp"] = level_func(level + 1)
         # Generate the presigned URL to share with the user.
         if settings.USE_S3 and user.image:
-            download_url = generate_presigned_url(user.image, http_method="GET")
+            download_url = generate_presigned_url(str(user.image), http_method="GET")
             response_data["image"] = download_url
         elif user.image:
             download_url = f"http://{settings.ALLOWED_HOSTS[2]}:8000{user.image.url}"

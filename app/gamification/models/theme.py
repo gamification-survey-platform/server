@@ -1,13 +1,16 @@
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+image_extension_validator = FileExtensionValidator(allowed_extensions=["png", "jpg", "jpeg"])
+
 
 class Theme(models.Model):
-    # is_published (boolean)
-    """
-    Level 5 it can be published
-    Expose to level 2 if published
-    """
+    name = models.TextField(blank=True)
+
+    is_published = models.BooleanField(default=False)
+
+    creator = models.ForeignKey("CustomUser", related_name="+", blank=True, null=True, on_delete=models.DO_NOTHING)
 
     colorBgBase = models.CharField(_("Background color"), max_length=7, blank=True)
 
@@ -21,9 +24,54 @@ class Theme(models.Model):
 
     colorError = models.CharField(_("Error color"), max_length=7, blank=True)
 
-    cursor = models.CharField(_("Cursor"), max_length=15, blank=True)
+    cursor = models.ImageField(
+        _("cursor icon"),
+        upload_to="theme/cursor",
+        blank=True,
+        validators=[image_extension_validator],
+    )
 
-    multiple_choice = models.CharField(_("Multiple Choice"), default="nature", max_length=15, blank=True)
+    multiple_choice_item = models.ImageField(
+        _("multiple choice item"),
+        upload_to="theme/multiple_choice_item",
+        blank=True,
+        validators=[image_extension_validator],
+    )
+
+    multiple_choice_target = models.ImageField(
+        _("multiple choice target"),
+        upload_to="theme/multiple_choice_target",
+        blank=True,
+        validators=[image_extension_validator],
+    )
+
+    multiple_select_item = models.ImageField(
+        _("multiple select item"),
+        upload_to="theme/multiple_select_item",
+        blank=True,
+        validators=[image_extension_validator],
+    )
+
+    multiple_select_target = models.ImageField(
+        _("multiple select target"),
+        upload_to="theme/multiple_select_target",
+        blank=True,
+        validators=[image_extension_validator],
+    )
+
+    scale_multiple_choice_item = models.ImageField(
+        _("scale multiple choice item"),
+        upload_to="theme/scale_multiple_choice_item",
+        blank=True,
+        validators=[image_extension_validator],
+    )
+
+    scale_multiple_choice_target = models.ImageField(
+        _("scale multiple choice target"),
+        upload_to="theme/scale_multiple_choice_target",
+        blank=True,
+        validators=[image_extension_validator],
+    )
 
     class Meta:
         db_table = "theme"
