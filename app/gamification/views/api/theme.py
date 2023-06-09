@@ -21,6 +21,20 @@ image_fields = [
 ]
 
 
+base_schema = {
+    "colorBgBase": openapi.Schema(type=openapi.TYPE_STRING),
+    "colorTextBase": openapi.Schema(type=openapi.TYPE_STRING),
+    "colorPrimary": openapi.Schema(type=openapi.TYPE_STRING),
+    "colorSuccess": openapi.Schema(type=openapi.TYPE_STRING),
+    "colorWarning": openapi.Schema(type=openapi.TYPE_STRING),
+    "colorError": openapi.Schema(type=openapi.TYPE_STRING),
+    "cursor": openapi.Schema(type=openapi.TYPE_STRING),
+    "multiple_choice_icon": openapi.Schema(type=openapi.TYPE_STRING),
+    "multiple_select_icon": openapi.Schema(type=openapi.TYPE_STRING),
+    "scale_multiple_choice_icon": openapi.Schema(type=openapi.TYPE_STRING),
+}
+
+
 class ThemeDetail(generics.GenericAPIView):
     queryset = CustomUser.objects.all()
     permission_classes = [permissions.AllowAny]
@@ -54,18 +68,7 @@ class ThemeDetail(generics.GenericAPIView):
             200: openapi.Schema(
                 description="Get theme for user",
                 type=openapi.TYPE_OBJECT,
-                properties={
-                    "colorBgBase": openapi.Schema(type=openapi.TYPE_STRING),
-                    "colorTextBase": openapi.Schema(type=openapi.TYPE_STRING),
-                    "colorPrimary": openapi.Schema(type=openapi.TYPE_STRING),
-                    "colorSuccess": openapi.Schema(type=openapi.TYPE_STRING),
-                    "colorWarning": openapi.Schema(type=openapi.TYPE_STRING),
-                    "colorError": openapi.Schema(type=openapi.TYPE_STRING),
-                    "cursor": openapi.Schema(type=openapi.TYPE_STRING),
-                    "multiple_choice_icon": openapi.Schema(type=openapi.TYPE_STRING),
-                    "multiple_select_icon": openapi.Schema(type=openapi.TYPE_STRING),
-                    "scale_multiple_choice_icon": openapi.Schema(type=openapi.TYPE_STRING),
-                },
+                properties=base_schema,
             ),
         },
     )
@@ -84,52 +87,12 @@ class ThemeDetail(generics.GenericAPIView):
         return Response(response_data)
 
     @swagger_auto_schema(
-        operation_description="Create user theme",
-        tags=["theme"],
-        responses={
-            200: openapi.Schema(
-                description="Create theme",
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    "colorBgBase": openapi.Schema(type=openapi.TYPE_STRING),
-                    "colorTextBase": openapi.Schema(type=openapi.TYPE_STRING),
-                    "colorPrimary": openapi.Schema(type=openapi.TYPE_STRING),
-                    "colorSuccess": openapi.Schema(type=openapi.TYPE_STRING),
-                    "colorWarning": openapi.Schema(type=openapi.TYPE_STRING),
-                    "colorError": openapi.Schema(type=openapi.TYPE_STRING),
-                    "cursor": openapi.Schema(type=openapi.TYPE_STRING),
-                    "multiple_choice_icon": openapi.Schema(type=openapi.TYPE_STRING),
-                    "multiple_select_icon": openapi.Schema(type=openapi.TYPE_STRING),
-                    "scale_multiple_choice_icon": openapi.Schema(type=openapi.TYPE_STRING),
-                },
-            ),
-        },
-    )
-    def post(self, request, *args, **kwargs):
-        # user_id = get_user_pk(request)
-        # user = get_object_or_404(CustomUser, id=user_id)
-
-        return Response()
-
-    @swagger_auto_schema(
         operation_description="Edit user theme",
         tags=["theme"],
         responses={
             200: openapi.Schema(
-                description="Edit color theme for user, returns new theme",
+                description="Edit color theme for user, returns modified components of new theme or S3 presigned urls",
                 type=openapi.TYPE_OBJECT,
-                properties={
-                    "colorBgBase": openapi.Schema(type=openapi.TYPE_STRING),
-                    "colorTextBase": openapi.Schema(type=openapi.TYPE_STRING),
-                    "colorPrimary": openapi.Schema(type=openapi.TYPE_STRING),
-                    "colorSuccess": openapi.Schema(type=openapi.TYPE_STRING),
-                    "colorWarning": openapi.Schema(type=openapi.TYPE_STRING),
-                    "colorError": openapi.Schema(type=openapi.TYPE_STRING),
-                    "cursor": openapi.Schema(type=openapi.TYPE_STRING),
-                    "multiple_choice_icon": openapi.Schema(type=openapi.TYPE_STRING),
-                    "multiple_select_icon": openapi.Schema(type=openapi.TYPE_STRING),
-                    "scale_multiple_choice_icon": openapi.Schema(type=openapi.TYPE_STRING),
-                },
             ),
         },
     )
@@ -166,4 +129,42 @@ class ThemeDetail(generics.GenericAPIView):
         user.theme = theme
         user.save()
 
+        return Response(response_data)
+
+
+class PublishedThemes(generics.RetrieveAPIView):
+    queryset = CustomUser.objects.all()
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Get published themes",
+        tags=["theme"],
+        responses={
+            200: openapi.Schema(
+                description="Get all published themes",
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties=base_schema,
+                ),
+            ),
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
+        themes = Theme.objects.filter(is_published=True)
+        response_data = []
+        for theme in themes:
+            if theme.creator == user:
+                continue
+            theme_data = model_to_dict(theme, exclude=image_fields)
+            for image in image_fields:
+                key = getattr(theme, image)
+                if key:
+                    download_url = generate_presigned_url(str(key), http_method="GET")
+                    theme_data[image] = download_url
+            creator = get_object_or_404(CustomUser, id=theme.creator.id)
+            theme_data["creator"] = creator.andrew_id
+            response_data.append(theme_data)
         return Response(response_data)

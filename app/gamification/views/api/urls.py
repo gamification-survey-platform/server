@@ -28,7 +28,7 @@ from .reward import (
     UserRewardPurchases,
 )
 from .survey import SurveyGetInfo
-from .theme import ThemeDetail
+from .theme import PublishedThemes, ThemeDetail
 from .user import Login, Register, UserDetail
 
 # Create a schema view for Swagger UI
@@ -63,7 +63,9 @@ urlpatterns = [
     # GET or PATCH user by id
     path("users/<str:user_id>/", UserDetail.as_view(), name="user-detail"),
     # GET or PATCH user by theme
-    path("theme/", ThemeDetail.as_view(), name="theme-detail"),
+    path("themes/", ThemeDetail.as_view(), name="theme-detail"),
+    # GET published themes
+    path("published_themes/", PublishedThemes.as_view(), name="published-theme"),
     # POST Login and Registration
     path("login/", Login.as_view(), name="user-login"),
     path("register/", Register.as_view(), name="user-register"),
