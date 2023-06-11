@@ -58,7 +58,6 @@ class ThemeDetail(generics.GenericAPIView):
             key = f"{icon_type}/{icon_type}_{user.id}.{file_ext}"
         setattr(theme, icon_type, key)
         theme.save()
-
         return key
 
     @swagger_auto_schema(
@@ -110,16 +109,23 @@ class ThemeDetail(generics.GenericAPIView):
             upload_url = None
             download_url = None
             delete_url = None
-            if str(getattr(theme, field)):
-                delete_url = generate_presigned_url(str(getattr(theme, field)), http_method="DELETE")
-
-            key = self.update_theme_icon(request, user, theme, field)
-            if key:
-                upload_url = generate_presigned_post(key)
+            # If image field is a string and not a file,
+            # image already exists in S3 and just generate download url
+            print(request.data.get(field), type(request.data.get(field)))
+            if isinstance(request.data.get(field), str) and len(request.data.get(field)) > 0:
+                key = request.data.get(field)
                 download_url = generate_presigned_url(key, http_method="GET")
+                response_data["download_url"] = download_url
+            else:
+                if str(getattr(theme, field)):
+                    delete_url = generate_presigned_url(str(getattr(theme, field)), http_method="DELETE")
+                key = self.update_theme_icon(request, user, theme, field)
+                if key:
+                    upload_url = generate_presigned_post(key)
+                    download_url = generate_presigned_url(key, http_method="GET")
             response_data["upload_url"] = upload_url
-            response_data["download_url"] = download_url
             response_data["delete_url"] = delete_url
+            response_data["download_url"] = download_url
         else:
             for key in request.data:
                 setattr(theme, key, request.data[key])

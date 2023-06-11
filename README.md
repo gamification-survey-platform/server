@@ -109,8 +109,7 @@ You can access the application here https://gamification-client.onrender.com/.
    > - `DEBUG` should be set to `False`.
    > - `ALLOWED_HOSTS` should be added with the IP address or the domain name
    >   of the production server.
-   > - `DATABASE_URL` should be the external IP address from the Hosting server. Now, the server is hosting on [Render](https://dashboard.render.com/)
-
+   > - `DATABASE_URL` should be the external IP address from the Hosting server.
    You can also customize your environment by setting different database related
    variables like:
 
@@ -122,58 +121,38 @@ You can access the application here https://gamification-client.onrender.com/.
    - `DB_PORT`: default to `5432`, the port where MySQL server is on
    - `USE_S3`: default to 'False', whether upload files to AWS
 
-5. Test if everything is working
+
+These are already set in the default application.
+
+1. Test if everything is working
 
    Run command `python manage.py runserver`
 
-6. Install fixtures
+2. Install fixtures
 
    - load data for dev env: `python manage.py loaddata app/gamification/fixtures/initial_data_dev.json --app app.model_name`
    - load data for prd env: `python manage.py loaddata app/gamification/fixtures/initial_data_prod.json --app app.model_name`
 
-7. Django Migration
+3. Django Migration
 
    After each time you make changes on the models, migrate the database run : `python manage.py makemigrations` (make migration) `python manage.py migrate` (migrate the database to the new changes)
 
 # How to Run
 
-After setting up the environment, export following environment variables:
+After setting up the environment, export following environment variables by creating a `.env` file in the root directory of the project.
 
 ```python
 '''You should be given access-key and secret-key from whoever is managing the aws account for the gamification. If you want to create a new developer role to access it, follow those steps:`
 - Login the AWS account -> IAM -> User -> Add users -> Attach policies directly/Copy permissions -> click your username -> Security credentials -> Create access key
 '''
-export AWS_ACCESS_KEY_ID="<Access Key Id>"
-export AWS_SECRET_ACCESS_KEY="<Secret Key Id>"
-export AWS_REGION="us-west-2"
-export AWS_STORAGE_BUCKET_NAME="gamification-bucket2023"
+AWS_ACCESS_KEY_ID="<Access Key Id>"
+AWS_SECRET_ACCESS_KEY="<Secret Key Id>"
+AWS_REGION_NAME="us-west-1"
+AWS_STORAGE_BUCKET_NAME_PROD="aws-gamification-platform"
+AWS_STORAGE_BUCKET_NAME_DEV="aws-gamification-platform-dev"
 ```
 
-run `python manage.py runserver` to start the server. Here are a few pages implemented at the moment:
-
-- Sign in page `127.0.0.1:8000/signin/`
-
-  The sign in page is where you input your andrew ID and password to login into
-  the system. If the andrew ID doesn't exist or the password is incorrect, an
-  error message will be displayed to ask you to enter again. \
-  After successful sign in, you will be redirected to your profile page.
-
-- Sign up page `127.0.0.1:8000/signup/`
-
-  The sign up page is where you register an account. You will be asked to enter
-  your andrew ID (required), email (required), password (required), and enter
-  the password one more time for confirmation. The password should be at least
-  8 characters, irrelavant to your personal information (andrew ID or email),
-  not too common or entirely numeric. If any of the field above doesn't meet the
-  requirement, you will be asked to input the information again. \
-  After successful sign up, you will be redirected to your profile page.
-
-- Profile page `127.0.0.1:8000/profile/`
-
-  The profile page is where you can view your personal information. You can edit
-  your account information (andrew ID, email address, first name, last name and
-  profile image) by filling in the form on this page. Currently, only the 'edit'
-  tab is clickable and all other tabs are not implemented yet.
+run `python manage.py runserver` to start the server.
 
 # Contributing
 
@@ -198,8 +177,7 @@ and code reviews.
 
 ## Python formatter
 
-We use `autopep8` to format our code. Properly set your IDE to automatically
-format the python file before saving.
+We use `flake8` in conjuction with `black` and `isort` to format our code.
 
 ## Commit message convention
 

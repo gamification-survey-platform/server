@@ -21,6 +21,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 load_dotenv(BASE_DIR / ".env")
 
+# Whether in prod or dev
+ENV = os.getenv("ENV", None)
+
 # Whether to use AWS S3 for storage.
 USE_S3 = os.getenv("USE_S3", False) == "True"
 
@@ -43,14 +46,10 @@ ALLOWED_HOSTS = [
 
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "localhost:8000").split(" ")
 
-SITE_ID = 1
-SYSTEM_PK = 20230512
-
 # Application definition
 
 INSTALLED_APPS = [
     "corsheaders",
-    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -87,24 +86,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = "config.urls"
 
-TEMPLATES_DIR = BASE_DIR / "templates"
-
-TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [TEMPLATES_DIR],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
-    },
-]
-
 WSGI_APPLICATION = "config.wsgi.application"
 
 LOGIN_URL = "/signin/"
@@ -113,13 +94,11 @@ LOGIN_URL = "/signin/"
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-ENV = os.getenv("ENV", None)
-
 if ENV == "prod":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("DB_NAME", None),  # Database name
+            "NAME": os.getenv("DB_NAME", None),
             "USER": os.getenv("DB_USER", None),
             "PASSWORD": os.getenv("DB_PASSWORD", None),
             "HOST": os.getenv("DB_HOST", None),
@@ -130,32 +109,13 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": "dev",  # Database name
+            "NAME": "dev",
             "USER": "dbuser",
             "PASSWORD": "dbuser",
             "HOST": "localhost",
             "PORT": "5432",
         },
     }
-
-
-# Password validation
-# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
-]
 
 AUTH_USER_MODEL = "gamification.CustomUser"
 
@@ -218,10 +178,12 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")
 if USE_S3:
     AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+    if ENV == "dev":
+        AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME_DEV")
+    else:
+        AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME_PROD")
     AWS_S3_REGION_NAME = os.getenv("AWS_REGION_NAME")
     AWS_DEFAULT_ACL = None
-
     AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
     AWS_S3_FILE_OVERWRITE = False
 

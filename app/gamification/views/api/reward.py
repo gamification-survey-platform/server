@@ -132,17 +132,9 @@ class CourseRewardList(generics.ListCreateAPIView):
         },
     )
     def get(self, request, course_id, *args, **kwargs):
-        # Course ID = -1 indicates System Level rewards
-        if course_id == -1:
-            sys_pk = settings.SYSTEM_PK
-            rewards = []
-            rewards.extend(Reward.objects.filter(course=sys_pk, is_active=True))
-            serializer = self.get_serializer(rewards, many=True)
-            return Response(serializer.data)
-        else:
-            rewards = Reward.objects.filter(course_id=course_id)
-            serializer = self.get_serializer(rewards, many=True)
-            return Response(serializer.data)
+        rewards = Reward.objects.filter(course_id=course_id)
+        serializer = self.get_serializer(rewards, many=True)
+        return Response(serializer.data)
 
     @swagger_auto_schema(
         operation_description="Create a reward under a course",
