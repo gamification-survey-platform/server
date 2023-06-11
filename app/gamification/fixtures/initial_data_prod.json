@@ -1684,9 +1684,7 @@
         "pk": 1,
         "fields": {
             "name": "Survey Template",
-            "instructions": "",
-            "is_template": true,
-            "other_info": ""
+            "instructions": ""
         }
     },
     {
@@ -1696,8 +1694,7 @@
             "template": 1,
             "title": "Title",
             "description": "",
-            "is_required": true,
-            "is_template": true
+            "is_required": true
         }
     },
     {
@@ -1707,8 +1704,7 @@
             "template": 1,
             "title": "Software engineering problem (Research question / goal)",
             "description": "",
-            "is_required": true,
-            "is_template": true
+            "is_required": true
         }
     },
     {
@@ -1718,8 +1714,7 @@
             "template": 1,
             "title": "Proposal / Study / Solution",
             "description": "",
-            "is_required": true,
-            "is_template": true
+            "is_required": true
         }
     },
     {
@@ -1729,8 +1724,7 @@
             "template": 1,
             "title": "Methodology",
             "description": "",
-            "is_required": true,
-            "is_template": true
+            "is_required": true
         }
     },
     {
@@ -1740,8 +1734,7 @@
             "template": 1,
             "title": "Presentation",
             "description": "",
-            "is_required": true,
-            "is_template": true
+            "is_required": true
         }
     },
     {
@@ -1751,8 +1744,7 @@
             "template": 1,
             "title": "Artifact",
             "description": "",
-            "is_required": false,
-            "is_template": true
+            "is_required": false
         }
     },
     {
@@ -1762,8 +1754,7 @@
             "template": 1,
             "title": "Aspect",
             "description": "How do you grade the following aspects?",
-            "is_required": true,
-            "is_template": true
+            "is_required": true
         }
     },
     {
@@ -1773,8 +1764,7 @@
             "template": 1,
             "title": "Optional",
             "description": "",
-            "is_required": false,
-            "is_template": true
+            "is_required": false
         }
     },
     {
