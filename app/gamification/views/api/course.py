@@ -76,8 +76,8 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
             syllabus=syllabus,
             semester=semester,
             visible=visible,
-            picture=picture,
         )
+        course.picture = picture
         course.save()
         registration = Registration(user=user, course=course, userRole=UserRole.Instructor)
         registration.save()

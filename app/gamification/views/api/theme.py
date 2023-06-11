@@ -7,6 +7,7 @@ from rest_framework import generics, permissions
 from rest_framework.response import Response
 
 from app.gamification.models import CustomUser, Theme
+from app.gamification.serializers import ThemeSerializer
 from app.gamification.utils.auth import get_user_pk
 from app.gamification.utils.s3 import generate_presigned_post, generate_presigned_url
 
@@ -38,6 +39,7 @@ base_schema = {
 class ThemeDetail(generics.GenericAPIView):
     queryset = CustomUser.objects.all()
     permission_classes = [permissions.AllowAny]
+    serializer_class = ThemeSerializer
 
     def update_theme_icon(self, request, user, theme, icon_type):
         icon = request.FILES.get(icon_type)
@@ -141,6 +143,7 @@ class ThemeDetail(generics.GenericAPIView):
 class PublishedThemes(generics.RetrieveAPIView):
     queryset = CustomUser.objects.all()
     permission_classes = [permissions.AllowAny]
+    serializer_class = ThemeSerializer
 
     @swagger_auto_schema(
         operation_description="Get published themes",

@@ -66,9 +66,14 @@ class Course(models.Model):
     image_extension_validator = FileExtensionValidator(allowed_extensions=["png", "jpg", "jpeg"])
     file_size_validator = FileSizeValidator(max_size=1024 * 1024 * 5)
 
+    def photo_path(instance, filename):
+        extension = filename.split(".")[-1]
+        filename = f"course_{instance.pk}.{extension}"
+        return f"courses/{filename}"
+
     picture = models.ImageField(
         _("course picture"),
-        upload_to="profile_pics",
+        upload_to=photo_path,
         blank=True,
         validators=[image_extension_validator, file_size_validator],
     )
