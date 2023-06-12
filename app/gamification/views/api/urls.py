@@ -53,7 +53,7 @@ class APIRootView(generics.RetrieveAPIView):
         responses={200: openapi.Response(description="Successfully reached API")},
     )
     def get(self, request):
-        return Response({"message": "Welcome to the Gamification Platform API. The test worked"}, status=200)
+        return Response({"message": "Welcome to the Gamification Platform API."}, status=200)
 
 
 urlpatterns = [
