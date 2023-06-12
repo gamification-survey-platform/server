@@ -1565,7 +1565,7 @@
             "groups": [],
             "user_permissions": []
         }
-    }
+    },
     {
         "model": "gamification.behavior",
         "pk": 1,
