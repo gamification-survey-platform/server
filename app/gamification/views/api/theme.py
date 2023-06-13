@@ -105,6 +105,17 @@ class ThemeDetail(generics.GenericAPIView):
         else:
             theme = Theme()
             theme.creator = user
+        if "theme_id" in request.data:
+            theme_id = request.data.get("theme_id")
+            other_theme = get_object_or_404(Theme, id=theme_id)
+            other_theme.pk = theme.pk
+            other_theme.name = theme.name
+            other_theme.creator = theme.creator
+            other_theme.is_published = False
+            other_theme.save()
+            user.theme = other_theme
+            user.save()
+            return Response({"message": "Successfully subscribed to theme."})
         response_data = {}
         field = list(request.data.keys())[0]
         if field in image_fields:
@@ -113,7 +124,6 @@ class ThemeDetail(generics.GenericAPIView):
             delete_url = None
             # If image field is a string and not a file,
             # image already exists in S3 and just generate download url
-            print(request.data.get(field), type(request.data.get(field)))
             if isinstance(request.data.get(field), str) and len(request.data.get(field)) > 0:
                 key = request.data.get(field)
                 download_url = generate_presigned_url(key, http_method="GET")
