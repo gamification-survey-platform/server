@@ -1536,7 +1536,7 @@
             "first_name": "",
             "last_name": "",
             "email": "ldasilva@andrew.cmu.edu",
-            "is_staff": true,
+            "is_staff": false,
             "is_active": true,
             "date_joined": "2023-06-12T17:07:19.719Z",
             "exp": 0,
@@ -1557,7 +1557,7 @@
             "first_name": "",
             "last_name": "",
             "email": "rwlodars@andrew.cmu.edu",
-            "is_staff": true,
+            "is_staff": false,
             "is_active": true,
             "date_joined": "2023-06-12T17:08:01.149Z",
             "exp": 0,
@@ -1584,7 +1584,7 @@
     },
     {
         "model": "gamification.behavior",
-        "pk": 2,
+        "pk": 3,
         "fields": {
             "operation": "trivia",
             "points": 5
