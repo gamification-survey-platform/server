@@ -14,7 +14,11 @@ from app.gamification.views.api.artifact_review import (
 )
 from app.gamification.views.api.artifacts import ArtifactDetail, AssignmentArtifact
 
-from .answer import ArtifactAnswerKeywordList, ArtifactAnswerMultipleChoiceList
+from .answer import (
+    ArtifactAnswerDetail,
+    ArtifactAnswerKeywordList,
+    ArtifactAnswerMultipleChoiceList,
+)
 from .assignment import AssignmentDetail, AssignmentList
 from .course import CourseDetail, CourseList
 from .feedback_survey import SurveyDetail, SurveyList
@@ -151,6 +155,12 @@ urlpatterns = [
         "courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/<int:artifact_pk>/statistics",
         ArtifactAnswerMultipleChoiceList.as_view(),
         name="artifact-answer-statistics",
+    ),
+    # GET all answers for a artifact
+    path(
+        "courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/<int:artifact_pk>/answers",
+        ArtifactAnswerDetail.as_view(),
+        name="artifact-answer-detail",
     ),
     # Rewards
     # GET course rewards
