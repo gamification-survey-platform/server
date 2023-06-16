@@ -5,6 +5,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 
+from app.gamification.models.artifact import Artifact
+from app.gamification.models.artifact_review import ArtifactReview
 from app.gamification.models.assignment import Assignment
 from app.gamification.models.option_choice import OptionChoice
 from app.gamification.models.question import Question
@@ -86,6 +88,15 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
         survey_template = get_object_or_404(SurveyTemplate, id=survey_info["pk"])
         sections = SurveySection.objects.filter(template=survey_template)
 
+        # Update all artifact reviews with the survey template to be INCOMPLETE
+        assignment = get_object_or_404(Assignment, id=assignment_id)
+        artifacts = Artifact.objects.filter(assignment=assignment)
+        for artifact in artifacts:
+            artifact_reviews = ArtifactReview.objects.filter(artifact=artifact)
+            for artifact_review in artifact_reviews:
+                artifact_review.status = ArtifactReview.ArtifactReviewType.INCOMPLETE
+                artifact_review.save()
+
         # Delete all previous survey contents
         for section in sections:
             questions = Question.objects.filter(section=section)
@@ -131,4 +142,5 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                     option_choice.question = question_template
                     # No text field for other Question types
                     option_choice.save()
+
         return Response(status=200)
