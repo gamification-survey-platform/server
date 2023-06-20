@@ -1579,7 +1579,7 @@
             "is_staff": false,
             "is_active": true,
             "date_joined": "2023-06-12T17:07:19.719Z",
-            "exp": 0,
+            "exp": 1000,
             "theme": null,
             "groups": [],
             "user_permissions": []
@@ -1600,6 +1600,69 @@
             "is_staff": false,
             "is_active": true,
             "date_joined": "2023-06-12T17:08:01.149Z",
+            "exp": 1000,
+            "theme": null,
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "gamification.customuser",
+        "pk": 4,
+        "fields": {
+            "password": "pbkdf2_sha256$260000$d6IOeFvhSeYJsNsRNRUjEA$zXMO9JKZuW+j7g24tjWwJWmS9z5nZXiI2YQ2d/23a4U=",
+            "last_login": null,
+            "is_superuser": false,
+            "andrew_id": "rwlodars1",
+            "image": "",
+            "first_name": "",
+            "last_name": "",
+            "email": "rwlodars1@andrew.cmu.edu",
+            "is_staff": true,
+            "is_active": true,
+            "date_joined": "2023-06-12T17:08:01.149Z",
+            "exp": 0,
+            "theme": null,
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "gamification.customuser",
+        "pk": 5,
+        "fields": {
+            "password": "pbkdf2_sha256$260000$KYVxiKBp6W3YUPEyP7lfWI$ycGGluPZSp6nVzt6QkEPGkgUYRuKTEVr8lChdf/t4ZY=",
+            "last_login": null,
+            "is_superuser": false,
+            "andrew_id": "ldasilva1",
+            "image": "",
+            "first_name": "",
+            "last_name": "",
+            "email": "ldasilva1@andrew.cmu.edu",
+            "is_staff": true,
+            "is_active": true,
+            "date_joined": "2023-06-12T17:07:19.719Z",
+            "exp": 0,
+            "theme": null,
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "gamification.customuser",
+        "pk": 6,
+        "fields": {
+            "password": "pbkdf2_sha256$260000$eiusJsvZT4Ij3nnaTcr8ZC$pfyHBkgah3TbuZ6knjo6xzCPoB8HCsxYJiLlvUwsUTg=",
+            "last_login": null,
+            "is_superuser": true,
+            "andrew_id": "vagartha1",
+            "image": "",
+            "first_name": "",
+            "last_name": "",
+            "email": "vagartha1@andrew.cmu.edu",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2023-06-12T17:07:02.544Z",
             "exp": 0,
             "theme": null,
             "groups": [],
