@@ -309,6 +309,8 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 curr_question["question_type"] = question.question_type
                 curr_question["phrased_positively"] = question.phrased_positively
                 curr_question["gamified"] = question.gamified
+                curr_question["min"] = question.min
+                curr_question["max"] = question.max
                 curr_question["answer"] = []
                 answer_filter = {"artifact_review_id": artifact_review_pk, "option_choice__question": question}
                 answers = (
@@ -438,6 +440,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 answer.save()
             else:
                 # question type: slide
+                print(answer)
                 option_choice = option_choices[0]
                 artifact_feedback = ArtifactFeedback()
                 artifact_feedback.artifact_review = artifact_review

@@ -34,6 +34,10 @@ class Question(models.Model):
 
     phrased_positively = models.BooleanField(default=True)
 
+    min = models.IntegerField(default=0, blank=True, null=True)
+
+    max = models.IntegerField(default=100, blank=True, null=True)
+
     class Meta:
         db_table = "question"
         verbose_name = "question"

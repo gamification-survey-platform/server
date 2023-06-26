@@ -2,7 +2,7 @@ from django.forms import model_to_dict
 from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
 from app.gamification.models.artifact import Artifact
@@ -87,15 +87,20 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
         survey_info = request.data.get("survey_info")
         survey_template = get_object_or_404(SurveyTemplate, id=survey_info["pk"])
         sections = SurveySection.objects.filter(template=survey_template)
-
         # Update all artifact reviews with the survey template to be INCOMPLETE
         assignment = get_object_or_404(Assignment, id=assignment_id)
         artifacts = Artifact.objects.filter(assignment=assignment)
         for artifact in artifacts:
             artifact_reviews = ArtifactReview.objects.filter(artifact=artifact)
             for artifact_review in artifact_reviews:
-                artifact_review.status = ArtifactReview.ArtifactReviewType.INCOMPLETE
-                artifact_review.save()
+                if (
+                    artifact_review.status == ArtifactReview.ArtifactReviewType.COMPLETED
+                    or artifact_review.status == ArtifactReview.ArtifactReviewType.LATE
+                ):
+                    return Response(
+                        {"message": "Cannot modify survey that has already been completed."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
         # Delete all previous survey contents
         for section in sections:
@@ -125,6 +130,10 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                     question_template.number_of_scale = question["number_of_scale"]
                 elif question["question_type"] == Question.QuestionType.MULTIPLETEXT:
                     question_template.number_of_text = question["number_of_text"]
+                if question["question_type"] == Question.QuestionType.NUMBER:
+                    question_template.min = question["min"]
+                    question_template.max = question["max"]
+
                 question_template.save()
                 if (
                     question["question_type"] == Question.QuestionType.MULTIPLECHOICE
