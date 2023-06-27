@@ -97,7 +97,7 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
             try:
                 entity = Individual.objects.get(registration=reviewee_registration, course=course)
             except Individual.DoesNotExist:
-                return Response({"message": "No team found"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": "No individual found"}, status=status.HTTP_404_NOT_FOUND)
         elif assignment.assignment_type == "Team":
             try:
                 entity = Team.objects.get(registration=reviewee_registration, course=course)
@@ -157,9 +157,13 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                         artifact_review_dict["reviewing"] = Membership.objects.get(
                             entity=artifact.entity
                         ).student.user.name_or_andrew_id()
+                        artifact_review_dict["assignment_type"] = artifact.entity.team.name
+
                     else:
                         artifact_review_dict["reviewing"] = artifact.entity.team.name
+                        artifact_review_dict["assignment_type"] = artifact.entity.team.name
                     artifact_review_dict["course_id"] = registration.course_id
+                    artifact_review_dict["course_number"] = course.course_number
                     artifact_review_dict["assignment_id"] = assignment.id
                     response_data.append(artifact_review_dict)
         # Students get all artifacts he/she should review
@@ -183,8 +187,10 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                     artifact_review_dict["reviewing"] = Membership.objects.get(
                         entity=artifact.entity
                     ).student.user.name_or_andrew_id()
+                    artifact_review_dict["assignment_type"] = "Individual"
                 else:
                     artifact_review_dict["reviewing"] = artifact.entity.team.name
+                    artifact_review_dict["assignment_type"] = "Team"
                 artifact_review_dict["course_id"] = registration.course_id
                 artifact_review_dict["assignment_id"] = assignment.id
                 response_data.append(artifact_review_dict)
@@ -251,9 +257,13 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                     artifact_review_data["reviewing"] = Membership.objects.get(
                         entity=artifact.entity
                     ).student.user.name_or_andrew_id()
+                    artifact_review_data["assignment_type"] = "Individual"
                 else:
                     artifact_review_data["reviewing"] = artifact.entity.team.name
+                    artifact_review_data["assignment_type"] = "Team"
+                course = get_object_or_404(Course, id=registration.course_id)
                 artifact_review_data["course_id"] = registration.course_id
+                artifact_review_data["course_number"] = course.course_number
                 artifact_review_data["assignment_id"] = assignment.id
                 response_data.append(artifact_review_data)
         return Response(response_data, status=status.HTTP_200_OK)
@@ -440,7 +450,6 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 answer.save()
             else:
                 # question type: slide
-                print(answer)
                 option_choice = option_choices[0]
                 artifact_feedback = ArtifactFeedback()
                 artifact_feedback.artifact_review = artifact_review
