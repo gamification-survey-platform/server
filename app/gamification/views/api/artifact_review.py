@@ -306,6 +306,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         data["instructions"] = survey_template.instructions
         if survey_template.trivia is not None:
             data["trivia"] = model_to_dict(survey_template.trivia)
+            data["trivia"]["completed"] = artifact_review.trivia_completed
         data["sections"] = []
         for section in survey_template.sections:
             curr_section = dict()
@@ -489,19 +490,24 @@ class ArtifactReviewTrivia(generics.GenericAPIView):
     )
     def post(self, request, course_id, assignment_id, artifact_review_pk, *args, **kwargs):
         artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_pk)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
+        course = get_object_or_404(Course, id=course_id)
+        registration = get_object_or_404(Registration, course=course, user=user)
         if not artifact_review.trivia_completed:
             assignment = get_object_or_404(Assignment, id=assignment_id)
             feedback_survey = get_object_or_404(FeedbackSurvey, assignment=assignment)
             survey_template = feedback_survey.template
             trivia = survey_template.trivia
             answer = request.data.get("answer").strip().lower()
-            artifact_review.trivia_completed = True
-            artifact_review.save()
+            # Get all artifact reviews associated with this assignment
+            all_artifacts = Artifact.objects.filter(assignment=assignment)
+            user_artifact_reviews = ArtifactReview.objects.filter(user=registration, artifact__in=all_artifacts)
+            # Mark all trivias as completed
+            for user_review in user_artifact_reviews:
+                user_review.trivia_completed = True
+                user_review.save()
             if trivia.answer.strip().lower() == answer:
-                user_id = get_user_pk(request)
-                user = get_object_or_404(CustomUser, id=user_id)
-                course = get_object_or_404(Course, id=course_id)
-                registration = get_object_or_404(Registration, course=course, user=user)
                 behavior = Behavior.objects.get(operation="trivia")
                 user.exp += behavior.points
                 user.save()
