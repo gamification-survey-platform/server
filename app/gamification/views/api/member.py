@@ -236,9 +236,9 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
 
         # Delete all the user's artifacts
         entity = Entity.objects.filter(registration=registration)
-        if entity.exists() and entity.number_members == 1:
-            Artifact.objects.filter(entity=entity).delete()
-            entity.delete()
+        if entity.exists() and entity[0].number_members == 1:
+            Artifact.objects.filter(entity=entity[0]).delete()
+            entity[0].delete()
 
         membership = Membership.objects.filter(student=registration)
         membership.delete()

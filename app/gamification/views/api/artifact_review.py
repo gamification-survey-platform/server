@@ -192,6 +192,7 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                     artifact_review_dict["reviewing"] = artifact.entity.team.name
                     artifact_review_dict["assignment_type"] = "Team"
                 artifact_review_dict["course_id"] = registration.course_id
+                artifact_review_dict["course_number"] = course.course_number
                 artifact_review_dict["assignment_id"] = assignment.id
                 response_data.append(artifact_review_dict)
 
@@ -232,6 +233,7 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                         "artifact_review_score": openapi.Schema(type=openapi.TYPE_INTEGER),
                         "reviewing": openapi.Schema(type=openapi.TYPE_STRING),
                         "course_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "course_number": openapi.Schema(type=openapi.TYPE_INTEGER),
                         "assignment_id": openapi.Schema(type=openapi.TYPE_INTEGER),
                     },
                 ),
