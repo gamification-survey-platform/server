@@ -120,6 +120,7 @@ class CourseDetail(generics.ListCreateAPIView):
         serializer = CourseSerializer(course)
         response_data = serializer.data
         response_data["points"] = registration.points
+        response_data["course_experience"] = registration.course_experience
         response_data["userRole"] = UserRole
 
         return Response(response_data)

@@ -20,6 +20,8 @@ class Registration(models.Model):
 
     points = models.IntegerField(_("points"), default=0, null=True, blank=False)
 
+    course_experience = models.IntegerField(_("points"), default=0, null=True, blank=False)
+
     class Meta:
         db_table = "registration"
         verbose_name = _("registration")

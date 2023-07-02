@@ -121,6 +121,7 @@ class AssignmentArtifact(generics.ListCreateAPIView):
         if not artifact.exists():
             behavior = Behavior.objects.get(operation="assignment")
             registration.points += behavior.points
+            registration.course_experience += behavior.points
             registration.save()
             user.exp += behavior.points
             user.save()
@@ -148,6 +149,7 @@ class AssignmentArtifact(generics.ListCreateAPIView):
                 "level": level,
                 "next_level_exp": next_level_exp,
                 "points": registration.points,
+                "course_experience": registration.course_experience,
             },
             status=status.HTTP_201_CREATED,
         )

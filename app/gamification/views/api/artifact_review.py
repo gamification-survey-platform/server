@@ -407,6 +407,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             user.exp += behavior.points
             user.save()
             registration.points += behavior.points
+            registration.course_experience += behavior.points
             registration.save()
 
         # Delete old answers
@@ -475,6 +476,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             "level": level,
             "next_level_exp": next_level_exp,
             "points": registration.points,
+            "course_experience": registration.course_experience,
         }
         return Response(response_data, status=status.HTTP_200_OK)
 
@@ -512,6 +514,7 @@ class ArtifactReviewTrivia(generics.GenericAPIView):
                 user.exp += behavior.points
                 user.save()
                 registration.points += behavior.points
+                registration.course_experience += behavior.points
                 registration.save()
                 level = inv_level_func(user.exp)
                 next_level_exp = level_func(level + 1)
@@ -521,6 +524,7 @@ class ArtifactReviewTrivia(generics.GenericAPIView):
                     "level": level,
                     "next_level_exp": next_level_exp,
                     "points": registration.points,
+                    "course_experience": registration.course_experience,
                 }
                 return Response(response_data, status=status.HTTP_201_CREATED)
             else:

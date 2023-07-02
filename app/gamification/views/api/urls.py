@@ -22,6 +22,7 @@ from .answer import (
 from .assignment import AssignmentDetail, AssignmentList
 from .course import CourseDetail, CourseList
 from .feedback_survey import SurveyDetail, SurveyList
+from .leaderboard import CourseLeaderboard, PlatformLeaderboard
 from .member import MemberList
 from .reward import (
     CourseRewardDetail,
@@ -179,4 +180,8 @@ urlpatterns = [
     ),
     # GET user purchases
     path("purchases/", UserRewardPurchases.as_view(), name="reward-list"),
+    # GET platform experience
+    path("experience/", PlatformLeaderboard.as_view(), name="experience-list"),
+    # GET course experience
+    path("experience/<str:course_id>/", CourseLeaderboard.as_view(), name="experience-list"),
 ]
