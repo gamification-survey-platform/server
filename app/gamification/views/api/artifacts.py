@@ -15,7 +15,7 @@ from app.gamification.models.behavior import Behavior
 from app.gamification.models.course import Course
 from app.gamification.models.entity import Individual, Team
 from app.gamification.models.membership import Membership
-from app.gamification.models.registration import Registration, UserRole
+from app.gamification.models.registration import Registration
 from app.gamification.models.user import CustomUser
 from app.gamification.serializers.answer import ArtifactReviewSerializer
 from app.gamification.utils.auth import get_user_pk
@@ -45,24 +45,26 @@ class AssignmentArtifact(generics.ListCreateAPIView):
 
         return artifact
 
-    def create_artifact_review(self, artifact, registration, course, assignment_type, entity):
+    def create_artifact_review(self, artifact, user, course, assignment_type, entity):
         if assignment_type == Assignment.AssigmentType.Team:
             team_members = [i.pk for i in entity.members]
             registrations = [i for i in Registration.objects.filter(course=course) if i.user.pk not in team_members]
             for registration in registrations:
-                if registration.userRole == UserRole.Student:
+                user = registration.user
+                if not user.is_staff:
                     # create artifact review if it doesn't exist
                     if not ArtifactReview.objects.filter(artifact=artifact, user=registration).exists():
                         artifact_review = ArtifactReview(artifact=artifact, user=registration)
                         artifact_review.save()
         else:
             registrations = [i for i in Registration.objects.filter(course=course) if i.id != registration.id]
-            if registration.userRole == UserRole.Student:
+            if not user.is_staff:
                 for single_registration in registrations:
+                    single_user = single_registration.user
                     # create artifact review if it doesn't exist
                     if (
                         not ArtifactReview.objects.filter(artifact=artifact, user=single_registration).exists()
-                        and single_registration.userRole == UserRole.Student
+                        and not single_user.is_staff
                     ):
                         artifact_review = ArtifactReview(artifact=artifact, user=single_registration)
                         artifact_review.save()
@@ -137,7 +139,7 @@ class AssignmentArtifact(generics.ListCreateAPIView):
             upload_url = f"http://{settings.ALLOWED_HOSTS[2]}:8000{artifact.file.url}"
             download_url = f"http://{settings.ALLOWED_HOSTS[2]}:8000{artifact.file.url}"
 
-        self.create_artifact_review(artifact, registration, course, assignment_type, entity)
+        self.create_artifact_review(artifact, user, course, assignment_type, entity)
         level = inv_level_func(user.exp)
         next_level_exp = level_func(level + 1)
 

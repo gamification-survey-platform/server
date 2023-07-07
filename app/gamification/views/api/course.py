@@ -4,7 +4,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
-from app.gamification.models import Course, CustomUser, Registration, UserRole
+from app.gamification.models import Course, CustomUser, Registration
 from app.gamification.serializers import CourseSerializer
 from app.gamification.utils.auth import get_user_pk
 
@@ -50,7 +50,7 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         serializer = CourseSerializer(courses, many=True)
         response_data = []
         for i, course in enumerate(serializer.data):
-            course["user_role"] = registrations[i].userRole
+            course["is_staff"] = registrations[i].user.is_staff
             course["points"] = registrations[i].points
             response_data.append(course)
         return Response(response_data)
@@ -79,7 +79,7 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         )
         course.picture = picture
         course.save()
-        registration = Registration(user=user, course=course, userRole=UserRole.Instructor)
+        registration = Registration(user=user, course=course)
         registration.save()
         serializer = CourseSerializer(course)
         return Response(serializer.data)
@@ -115,13 +115,13 @@ class CourseDetail(generics.ListCreateAPIView):
         user = CustomUser.objects.get(andrew_id=andrew_id)
         course = get_object_or_404(Course, pk=course_id)
         registration = get_object_or_404(Registration, user=user, course=course)
-        if course.visible is False and UserRole == UserRole.Student:
+        if course.visible is False and not user.is_staff:
             return Response({"message": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
         serializer = CourseSerializer(course)
         response_data = serializer.data
         response_data["points"] = registration.points
         response_data["course_experience"] = registration.course_experience
-        response_data["userRole"] = UserRole
+        response_data["is_staff"] = user.is_staff
 
         return Response(response_data)
 
@@ -158,7 +158,9 @@ class CourseDetail(generics.ListCreateAPIView):
     )
     def put(self, request, course_id, *args, **kwargs):
         course = get_object_or_404(Course, pk=course_id)
-        if UserRole == UserRole.Student:
+        user_pk = get_user_pk(request)
+        user = CustomUser.objects.get(pk=user_pk)
+        if not user.is_staff:
             return Response({"message": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
         course_number = request.data.get("course_number").strip()
         course_name = request.data.get("course_name").strip()
@@ -190,8 +192,10 @@ class CourseDetail(generics.ListCreateAPIView):
         },
     )
     def delete(self, request, course_id, *args, **kwargs):
-        course = get_object_or_404(Course, pk=int(course_id))
-        if UserRole == UserRole.Student:
+        course = get_object_or_404(Course, pk=course_id)
+        user_pk = get_user_pk(request)
+        user = CustomUser.objects.get(pk=user_pk)
+        if not user.is_staff:
             return Response({"message": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
         try:
             course.delete()

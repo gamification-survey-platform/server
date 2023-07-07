@@ -8,13 +8,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
-from app.gamification.models import (
-    Assignment,
-    Course,
-    CustomUser,
-    Registration,
-    UserRole,
-)
+from app.gamification.models import Assignment, Course, CustomUser
 from app.gamification.serializers import AssignmentSerializer
 from app.gamification.utils.auth import get_user_pk
 
@@ -55,7 +49,6 @@ class AssignmentList(generics.ListCreateAPIView):
     def get(self, request, course_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
-        user_role = Registration.objects.get(user=user, course=course_id).userRole
         course = get_object_or_404(Course, pk=course_id)
         assignments = Assignment.objects.filter(course=course)
         assignments = [model_to_dict(assignment) for assignment in assignments]
@@ -63,9 +56,9 @@ class AssignmentList(generics.ListCreateAPIView):
         for assignment in assignments:
             if (
                 datetime.now().astimezone(pytz.timezone("America/Los_Angeles")) > assignment["date_released"]
-                or user_role != UserRole.Student
+                or not user.is_staff
             ):
-                assignment["user_role"] = user_role
+                assignment["is_staff"] = user.is_staff
                 response_data.append(assignment)
         return Response(response_data, status=status.HTTP_200_OK)
 
@@ -77,7 +70,6 @@ class AssignmentList(generics.ListCreateAPIView):
         course = get_object_or_404(Course, pk=course_id)
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
-        userRole = Registration.objects.get(user=user, course=course).userRole
         assignment_name = request.data.get("assignment_name")
         assignment_type = request.data.get("assignment_type")
         date_released = request.data.get("date_released")
@@ -87,7 +79,7 @@ class AssignmentList(generics.ListCreateAPIView):
         total_score = request.data.get("total_score")
         weight = request.data.get("weight")
         review_assign_policy = request.data.get("review_assign_policy")
-        if userRole == UserRole.Instructor:
+        if user.is_staff:
             assignment = Assignment.objects.create(
                 course=course,
                 assignment_name=assignment_name,
@@ -136,13 +128,11 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
         },
     )
     def get(self, request, course_id, assignment_id, *args, **kwargs):
-        course = get_object_or_404(Course, pk=course_id)
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
-        userRole = Registration.objects.get(user=user, course=course).userRole
         assignment = get_object_or_404(Assignment, pk=assignment_id)
         data = model_to_dict(assignment)
-        data["user_role"] = userRole
+        data["is_staff"] = user.is_staff
         return Response(data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
@@ -153,7 +143,6 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
         course = get_object_or_404(Course, pk=course_id)
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
-        userRole = Registration.objects.get(user=user, course=course).userRole
         assignment_name = request.data.get("assignment_name")
         assignment_type = request.data.get("assignment_type")
         date_due = request.data.get("date_due")
@@ -163,7 +152,7 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
         total_score = request.data.get("total_score")
         weight = request.data.get("weight")
         review_assign_policy = request.data.get("review_assign_policy")
-        if userRole == UserRole.Instructor:
+        if user.is_staff:
             try:
                 assignment = Assignment.objects.get(pk=assignment_id)
             except Assignment.DoesNotExist:
@@ -189,10 +178,9 @@ class AssignmentDetail(generics.RetrieveUpdateDestroyAPIView):
         tags=["assignments"],
     )
     def delete(self, request, course_id, assignment_id, *args, **kwargs):
-        course = get_object_or_404(Course, pk=course_id)
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
-        if user.is_staff or Registration.objects.get(user=user, course=course).userRole == UserRole.Instructor:
+        if user.is_staff:
             assignment = get_object_or_404(Assignment, pk=assignment_id)
             assignment.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)

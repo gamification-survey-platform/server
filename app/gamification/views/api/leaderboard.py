@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 
-from app.gamification.models import Course, CustomUser, Registration, UserRole
+from app.gamification.models import Course, CustomUser, Registration
 from app.gamification.serializers import UserSerializer
 from app.gamification.utils.s3 import generate_presigned_url
 
@@ -37,11 +37,13 @@ class CourseLeaderboard(generics.RetrieveAPIView):
 
     def get(self, request, course_id, *args, **kwargs):
         course = get_object_or_404(Course, id=course_id)
-        registrations = Registration.objects.filter(course=course, userRole=UserRole.Student)
+        registrations = Registration.objects.filter(course=course)
         response_data = []
         for registration in registrations:
             image = None
             user = registration.user
+            if user.is_staff:
+                continue
             if settings.USE_S3 and user.image:
                 download_url = generate_presigned_url(str(user.image), http_method="GET")
                 image = download_url

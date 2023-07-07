@@ -19,7 +19,7 @@ from app.gamification.models.entity import Individual, Team
 from app.gamification.models.feedback_survey import FeedbackSurvey
 from app.gamification.models.membership import Membership
 from app.gamification.models.question import Question
-from app.gamification.models.registration import Registration, UserRole
+from app.gamification.models.registration import Registration
 from app.gamification.models.user import CustomUser
 from app.gamification.serializers.answer import ArtifactReviewSerializer
 from app.gamification.utils.auth import get_user_pk
@@ -145,7 +145,7 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
         artifacts = Artifact.objects.filter(assignment_id=assignment_id)
         response_data = []
         # Instructors get all artifacts for assignment
-        if registration.userRole == UserRole.Instructor:
+        if user.is_staff:
             for artifact in artifacts:
                 artifact_reviews = ArtifactReview.objects.filter(artifact=artifact)
                 for artifact_review in artifact_reviews:

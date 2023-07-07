@@ -6,7 +6,6 @@ from django.utils.translation import gettext_lazy as _
 
 from app.gamification.models.entity import Team
 
-from .registration import Registration, UserRole
 from .user import CustomUser
 
 
@@ -82,24 +81,6 @@ class Course(models.Model):
         db_table = "courses"
         verbose_name = _("course")
         verbose_name_plural = _("courses")
-
-    def get_query(self, role):
-        return Registration.objects.filter(course=self.pk, userRole=role).values_list("user", flat=True)
-
-    @property
-    def instructors(self):
-        query = self.get_query(UserRole.Instructor)
-        return self.users.filter(pk__in=query)
-
-    @property
-    def students(self):
-        query = self.get_query(UserRole.Student)
-        return self.users.filter(pk__in=query)
-
-    @property
-    def TAs(self):
-        query = self.get_query(UserRole.TA)
-        return self.users.filter(pk__in=query)
 
     @property
     def teams(self):

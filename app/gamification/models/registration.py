@@ -5,18 +5,10 @@ from .entity import Individual, Team
 from .user import CustomUser
 
 
-class UserRole(models.TextChoices):
-    Student = "Student"
-    Instructor = "Instructor"
-    TA = "TA"
-
-
 class Registration(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
     course = models.ForeignKey("Course", on_delete=models.CASCADE)
-
-    userRole = models.TextField(choices=UserRole.choices, default=UserRole.Student)
 
     points = models.IntegerField(_("points"), default=0, null=True, blank=False)
 

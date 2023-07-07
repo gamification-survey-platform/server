@@ -14,7 +14,6 @@ from app.gamification.models import (
     Membership,
     Registration,
     Team,
-    UserRole,
 )
 from app.gamification.serializers import EntitySerializer
 from app.gamification.utils.auth import get_user_pk
@@ -24,10 +23,6 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
     queryset = Entity.objects.all()
     serializer_class = EntitySerializer
     permission_classes = [permissions.AllowAny]
-
-    def check_instructor_count(self, course_id):
-        instructor_count = Registration.objects.filter(course=course_id, userRole="Instructor").count()
-        return instructor_count
 
     @swagger_auto_schema(
         operation_description="Get a list of members in a course",
@@ -41,7 +36,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
                         type=openapi.TYPE_OBJECT,
                         properties={
                             "andrew_id": openapi.Schema(type=openapi.TYPE_STRING),
-                            "userRole": openapi.Schema(type=openapi.TYPE_STRING),
+                            "is_staff": openapi.Schema(type=openapi.TYPE_BOOLEAN),
                             "team": openapi.Schema(type=openapi.TYPE_STRING),
                             "is_activated": openapi.Schema(type=openapi.TYPE_BOOLEAN),
                         },
@@ -65,7 +60,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
             members.append(
                 {
                     "andrew_id": registration.user.andrew_id,
-                    "userRole": registration.userRole,
+                    "is_staff": registration.user.is_staff,
                     "team": team,
                     "is_activated": registration.user.is_activated,
                 }
@@ -79,7 +74,6 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
             type=openapi.TYPE_OBJECT,
             properties={
                 "andrew_id": openapi.Schema(type=openapi.TYPE_STRING),
-                "userRole": openapi.Schema(type=openapi.TYPE_STRING),
                 "team": openapi.Schema(type=openapi.TYPE_STRING),
             },
         ),
@@ -90,7 +84,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
                     type=openapi.TYPE_OBJECT,
                     properties={
                         "andrew_id": openapi.Schema(type=openapi.TYPE_STRING),
-                        "userRole": openapi.Schema(type=openapi.TYPE_STRING),
+                        "is_staff": openapi.Schema(type=openapi.TYPE_BOOLEAN),
                         "team": openapi.Schema(type=openapi.TYPE_STRING),
                         "is_activated": openapi.Schema(type=openapi.TYPE_BOOLEAN),
                     },
@@ -99,9 +93,9 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         },
     )
     def post(self, request, course_id, *args, **kwargs):
-        def create_member(user, users, andrew_id, userRole):
+        def create_member(user, users, andrew_id):
             if user not in users:
-                registration = Registration(user=user, course=course, userRole=userRole)
+                registration = Registration(user=user, course=course)
                 registration.save()
                 individual = Individual(course=course)
                 individual.save()
@@ -109,7 +103,6 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
                 membership.save()
             else:
                 registration = get_object_or_404(Registration, user=user, course=course)
-                registration.userRole = userRole
                 registration.save()
             return registration
 
@@ -140,53 +133,32 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
             for artifact in artifacts:
                 ArtifactReview.objects.filter(artifact=artifact, user=registration).delete()
 
-        # Delete student data if switching to TA/Instructor
-        def delete_membership(registration):
-            # Delete team consisting of only 1 individual
-            membership = Membership.objects.filter(student=registration)
-            if membership.exists():
-                team = Team.objects.filter(registration=registration, course=course)
-                if team.exists():
-                    team = team[0]
-                if len(team.members) == 1:
-                    team.delete()
-            membership.delete()
-            # Delete all artifact_reviews of TA or instructor
-            artifact_reviews = ArtifactReview.objects.filter(user=registration)
-            for artifact_review in artifact_reviews:
-                artifact_review.delete()
-
         course = get_object_or_404(Course, pk=course_id)
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, pk=user_id)
         registration = get_object_or_404(Registration, user=user, course=course)
-        creator_role = registration.userRole
 
-        if creator_role != UserRole.Instructor:
+        if not user.is_staff:
             return Response({"message": "Only instructors can add users."}, status=status.HTTP_400_BAD_REQUEST)
 
         andrew_id = request.data.get("andrew_id")
-        userRole = request.data.get("userRole")
         team = request.data.get("team")
         if andrew_id is None:
             return Response({"message": "AndrewID is missing"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            if userRole == UserRole.Instructor and self.check_instructor_count(course_id) <= 1:
+            if user.andrew_id == andrew_id:
                 return Response(
-                    {"message": "You are the last instructor, you cannot switch to student or TA"},
+                    {"message": "Cannot modify your own role."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             new_user = CustomUser.objects.get(andrew_id=andrew_id)
             current_members = []
-            current_members.extend(course.students)
-            current_members.extend(course.TAs)
-            current_members.extend(course.instructors)
-            registration = create_member(new_user, current_members, andrew_id=andrew_id, userRole=userRole)
+            course_registrations = Registration.objects.get(course=course)
+            for registration in course_registrations:
+                current_members.append(registration.user)
+            registration = create_member(new_user, current_members, andrew_id=andrew_id)
 
-            if registration.userRole == UserRole.TA or registration.userRole == UserRole.Instructor:
-                delete_membership(registration)
-
-            if registration.userRole == UserRole.Student and team != "":
+            if not new_user.is_staff and team != "":
                 create_team_membership(team, registration)
         except CustomUser.DoesNotExist:
             return Response({"message": "AndrewID does not exist"}, status=status.HTTP_400_BAD_REQUEST)
@@ -195,7 +167,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
             "andrew_id": new_user.andrew_id,
             "team": team,
             "is_activated": new_user.is_activated,
-            "userRole": registration.userRole,
+            "is_staff": new_user.is_staff,
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
 
@@ -223,12 +195,17 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         user_to_delete = get_object_or_404(CustomUser, andrew_id=andrew_id)
         registration = get_object_or_404(Registration, user=user_to_delete, course=course_id)
         user_id = get_user_pk(request)
+        course = get_object_or_404(Course, id=course_id)
         user = get_object_or_404(CustomUser, pk=user_id)
-        deletorRegistration = get_object_or_404(Registration, user=user)
-        if deletorRegistration.userRole != UserRole.Instructor:
+        if not user.is_staff:
             return Response({"message": "Only instructor can delete members."}, status=status.HTTP_401_UNAUTHORIZED)
 
-        if registration.userRole == UserRole.Instructor and self.check_instructor_count(course_id) <= 1:
+        instructor_count = 0
+        course_registrations = Registration.objects.get(course=course)
+        for registration in course_registrations:
+            if registration.user.is_staff:
+                instructor_count += 1
+        if user_to_delete.is_staff and instructor_count <= 1:
             return Response({"message": "Cannot delete the last instructor"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Delete all the user's artifact reviews
