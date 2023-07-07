@@ -1224,6 +1224,78 @@
         }
     },
     {
+        "model": "auth.permission",
+        "pk": 137,
+        "fields": {
+            "name": "Can add theme",
+            "content_type": 35,
+            "codename": "add_theme"
+        }
+    },
+    {
+        "model": "auth.permission",
+        "pk": 138,
+        "fields": {
+            "name": "Can change theme",
+            "content_type": 35,
+            "codename": "change_theme"
+        }
+    },
+    {
+        "model": "auth.permission",
+        "pk": 139,
+        "fields": {
+            "name": "Can delete theme",
+            "content_type": 35,
+            "codename": "delete_theme"
+        }
+    },
+    {
+        "model": "auth.permission",
+        "pk": 140,
+        "fields": {
+            "name": "Can view theme",
+            "content_type": 35,
+            "codename": "view_theme"
+        }
+    },
+    {
+        "model": "auth.permission",
+        "pk": 141,
+        "fields": {
+            "name": "Can add trivia",
+            "content_type": 36,
+            "codename": "add_trivia"
+        }
+    },
+    {
+        "model": "auth.permission",
+        "pk": 142,
+        "fields": {
+            "name": "Can change trivia",
+            "content_type": 36,
+            "codename": "change_trivia"
+        }
+    },
+    {
+        "model": "auth.permission",
+        "pk": 143,
+        "fields": {
+            "name": "Can delete trivia",
+            "content_type": 36,
+            "codename": "delete_trivia"
+        }
+    },
+    {
+        "model": "auth.permission",
+        "pk": 144,
+        "fields": {
+            "name": "Can view trivia",
+            "content_type": 36,
+            "codename": "view_trivia"
+        }
+    },
+    {
         "model": "contenttypes.contenttype",
         "pk": 1,
         "fields": {
@@ -1496,6 +1568,22 @@
         }
     },
     {
+        "model": "contenttypes.contenttype",
+        "pk": 35,
+        "fields": {
+            "app_label": "gamification",
+            "model": "theme"
+        }
+    },
+    {
+        "model": "contenttypes.contenttype",
+        "pk": 36,
+        "fields": {
+            "app_label": "gamification",
+            "model": "trivia"
+        }
+    },
+    {
         "model": "sites.site",
         "pk": 1,
         "fields": {
@@ -1550,6 +1638,7 @@
             "artifact": 1,
             "user": 9,
             "status": "LATE",
+            "trivia_completed": false,
             "artifact_review_score": 100,
             "max_artifact_review_score": 100
         }
@@ -1561,6 +1650,7 @@
             "artifact": 1,
             "user": 8,
             "status": "LATE",
+            "trivia_completed": false,
             "artifact_review_score": 88,
             "max_artifact_review_score": 100
         }
@@ -1572,6 +1662,7 @@
             "artifact": 1,
             "user": 7,
             "status": "INCOMPLETE",
+            "trivia_completed": false,
             "artifact_review_score": 86,
             "max_artifact_review_score": 100
         }
@@ -1583,6 +1674,7 @@
             "artifact": 1,
             "user": 10,
             "status": "LATE",
+            "trivia_completed": false,
             "artifact_review_score": 88,
             "max_artifact_review_score": 100
         }
@@ -1594,6 +1686,7 @@
             "artifact": 1,
             "user": 17,
             "status": "LATE",
+            "trivia_completed": false,
             "artifact_review_score": 80,
             "max_artifact_review_score": 100
         }
@@ -1605,6 +1698,7 @@
             "artifact": 1,
             "user": 18,
             "status": "LATE",
+            "trivia_completed": false,
             "artifact_review_score": 85,
             "max_artifact_review_score": 100
         }
@@ -1616,6 +1710,7 @@
             "artifact": 1,
             "user": 19,
             "status": "LATE",
+            "trivia_completed": false,
             "artifact_review_score": 98,
             "max_artifact_review_score": 100
         }
@@ -1627,6 +1722,7 @@
             "artifact": 1,
             "user": 20,
             "status": "LATE",
+            "trivia_completed": false,
             "artifact_review_score": 88,
             "max_artifact_review_score": 100
         }
@@ -1638,6 +1734,7 @@
             "artifact": 1,
             "user": 21,
             "status": "LATE",
+            "trivia_completed": false,
             "artifact_review_score": 92,
             "max_artifact_review_score": 100
         }
@@ -1649,6 +1746,7 @@
             "artifact": 1,
             "user": 22,
             "status": "LATE",
+            "trivia_completed": false,
             "artifact_review_score": 80,
             "max_artifact_review_score": 100
         }
@@ -1660,6 +1758,7 @@
             "artifact": 1,
             "user": 23,
             "status": "LATE",
+            "trivia_completed": false,
             "artifact_review_score": 90,
             "max_artifact_review_score": 100
         }
@@ -1922,6 +2021,7 @@
             "is_active": true,
             "date_joined": "2022-07-08T05:08:05Z",
             "exp": 0,
+            "theme": null,
             "groups": [],
             "user_permissions": []
         }
@@ -1942,6 +2042,7 @@
             "is_active": true,
             "date_joined": "2022-07-08T05:09:07Z",
             "exp": 0,
+            "theme": null,
             "groups": [],
             "user_permissions": []
         }
@@ -1962,6 +2063,7 @@
             "is_active": true,
             "date_joined": "2022-07-08T05:09:38Z",
             "exp": 0,
+            "theme": null,
             "groups": [],
             "user_permissions": []
         }
@@ -1982,6 +2084,7 @@
             "is_active": true,
             "date_joined": "2022-07-08T05:09:53Z",
             "exp": 0,
+            "theme": null,
             "groups": [],
             "user_permissions": []
         }
@@ -2002,6 +2105,7 @@
             "is_active": true,
             "date_joined": "2022-07-08T05:10:10Z",
             "exp": 0,
+            "theme": null,
             "groups": [],
             "user_permissions": []
         }
@@ -2022,6 +2126,7 @@
             "is_active": true,
             "date_joined": "2022-07-08T05:10:25Z",
             "exp": 0,
+            "theme": null,
             "groups": [],
             "user_permissions": []
         }
@@ -2042,6 +2147,7 @@
             "is_active": true,
             "date_joined": "2023-03-07T22:14:15.398Z",
             "exp": 0,
+            "theme": null,
             "groups": [],
             "user_permissions": []
         }
@@ -2062,6 +2168,7 @@
             "is_active": true,
             "date_joined": "2023-03-07T22:14:34.976Z",
             "exp": 0,
+            "theme": null,
             "groups": [],
             "user_permissions": []
         }
@@ -2082,6 +2189,7 @@
             "is_active": true,
             "date_joined": "2023-03-07T22:14:50.246Z",
             "exp": 0,
+            "theme": null,
             "groups": [],
             "user_permissions": []
         }
@@ -2102,6 +2210,7 @@
             "is_active": true,
             "date_joined": "2023-03-07T22:14:58.370Z",
             "exp": 0,
+            "theme": null,
             "groups": [],
             "user_permissions": []
         }
@@ -2122,6 +2231,7 @@
             "is_active": true,
             "date_joined": "2023-03-07T22:15:05.799Z",
             "exp": 0,
+            "theme": null,
             "groups": [],
             "user_permissions": []
         }
@@ -2142,6 +2252,7 @@
             "is_active": true,
             "date_joined": "2023-03-07T22:15:14.005Z",
             "exp": 0,
+            "theme": null,
             "groups": [],
             "user_permissions": []
         }
@@ -2162,178 +2273,9 @@
             "is_active": true,
             "date_joined": "2023-03-13T02:55:47.541Z",
             "exp": 0,
+            "theme": null,
             "groups": [],
             "user_permissions": []
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 1,
-        "fields": {
-            "user": 1,
-            "course": 1,
-            "userRole": "Instructor",
-            "points": 0
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 2,
-        "fields": {
-            "user": 2,
-            "course": 2,
-            "userRole": "Instructor",
-            "points": 0
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 3,
-        "fields": {
-            "user": 2,
-            "course": 3,
-            "userRole": "Instructor",
-            "points": 0
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 4,
-        "fields": {
-            "user": 1,
-            "course": 4,
-            "userRole": "Instructor",
-            "points": 0
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 5,
-        "fields": {
-            "user": 1,
-            "course": 5,
-            "userRole": "Instructor",
-            "points": 0
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 6,
-        "fields": {
-            "user": 2,
-            "course": 5,
-            "userRole": "Instructor",
-            "points": 0
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 7,
-        "fields": {
-            "user": 3,
-            "course": 1,
-            "userRole": "Student",
-            "points": 0
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 8,
-        "fields": {
-            "user": 4,
-            "course": 1,
-            "userRole": "Student",
-            "points": 0
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 9,
-        "fields": {
-            "user": 5,
-            "course": 1,
-            "userRole": "Student",
-            "points": 0
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 10,
-        "fields": {
-            "user": 6,
-            "course": 1,
-            "userRole": "Student",
-            "points": 0
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 17,
-        "fields": {
-            "user": 13,
-            "course": 1,
-            "userRole": "Student",
-            "points": 0
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 18,
-        "fields": {
-            "user": 14,
-            "course": 1,
-            "userRole": "Student",
-            "points": 0
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 19,
-        "fields": {
-            "user": 15,
-            "course": 1,
-            "userRole": "Student",
-            "points": 0
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 20,
-        "fields": {
-            "user": 16,
-            "course": 1,
-            "userRole": "Student",
-            "points": 0
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 21,
-        "fields": {
-            "user": 17,
-            "course": 1,
-            "userRole": "Student",
-            "points": 0
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 22,
-        "fields": {
-            "user": 18,
-            "course": 1,
-            "userRole": "Student",
-            "points": 0
-        }
-    },
-    {
-        "model": "gamification.registration",
-        "pk": 23,
-        "fields": {
-            "user": 19,
-            "course": 1,
-            "userRole": "Student",
-            "points": 0
         }
     },
     {
@@ -2427,7 +2369,7 @@
             "description": "Implement a simple FSE Chat Room application. The system should allow a user to perform the following functions:\r\n1. Register for the chat room with a new username (one that does not already exist) and password\r\n2. Enter the chat room (Login) with his/her username and password\r\n3. See other usersΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòùΓö£ΓöñΓò¼├┤Γö£ΓòóΓö¼Γò¥Γò¼├┤Γö£ΓûôΓö¼├æ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬ú╬ô├╗├åΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼Γò¥╬ô├╢┬ú╬ô├▓├ªΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓòúΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓûÆΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼Γò¥Γò¼├┤Γö£ΓûôΓö¼├æΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòùΓö£ΓöñΓò¼├┤Γö£ΓòóΓö¼Γò¥╬ô├╢┬úΓö£┬¬╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓûÆ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬ú╬ô├╢├⌐╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£┬¬╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓûÆ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬ú╬ô├╢├⌐╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├╣╬ô├╢┬úΓö£├æΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòùΓö£ΓöñΓò¼├┤Γö£ΓòóΓö¼Γò¥Γò¼├┤Γö£ΓûôΓö¼├æ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬ú╬ô├╗├åΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼Γò¥╬ô├╢┬ú╬ô├▓├ªΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòùΓö£ΓöñΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓîÉΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼Γò¥Γò¼├┤Γö£ΓûôΓö¼├æ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬úΓö¼┬¼Γò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòùΓö£ΓöñΓò¼├┤Γö£ΓòóΓö¼Γò¥Γò¼├┤Γö£ΓûôΓö¼├æ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬ú╬ô├╗├åΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼Γò¥╬ô├╢┬ú╬ô├▓├ªΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòùΓö£ΓöñΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓòæΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼Γò¥╬ô├╢┬ú╬ô├▓├ªΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòùΓö£├Ñ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓûÆ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├╣╬ô├╢┬ú╬ô├╢├▒╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝╬ô├▓┬Ñ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝Γö£├ªΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼Γò¥╬ô├╢┬ú╬ô├▓├ªΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòùΓö£├Ñ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓûÆ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬ú╬ô├╢├⌐╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£┬¬╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓûÆ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£ΓòæΓò¼├┤Γö£ΓòóΓö¼Γò¥╬ô├╢┬╝╬ô├▓┬ú╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£ΓòæΓò¼├┤Γö£ΓòóΓö¼├║╬ô├╢┬╝╬ô├▓┬ú╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓûÆ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬ú╬ô├╢├⌐╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝╬ô├▓┬Ñ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝Γö£├ª╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓûÆ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├╣╬ô├╢┬ú╬ô├╢├▒╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£ΓòæΓò¼├┤Γö£ΓòóΓö¼Γò¥╬ô├╢┬╝Γö¼Γò¥ chat messages\r\n4. Post a chat message \r\n5. Leave the chat room gracefully (Logout) without simply closing the browser tab",
             "assignment_type": "Team",
             "submission_type": "URL",
-            "total_score": 100,
+            "total_score": 100.0,
             "weight": 0.25,
             "date_released": "2022-07-10T00:00:00Z",
             "date_due": "2022-07-23T23:59:59Z",
@@ -2445,7 +2387,7 @@
             "description": "Implement a simple FSE Chat Room application. The system should allow a user to perform the following functions:\r\n1. Register for the chat room with a new username (one that does not already exist) and password\r\n2. Enter the chat room (Login) with his/her username and password\r\n3. See other usersΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòùΓö£ΓöñΓò¼├┤Γö£ΓòóΓö¼Γò¥Γò¼├┤Γö£ΓûôΓö¼├æ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬ú╬ô├╗├åΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼Γò¥╬ô├╢┬ú╬ô├▓├ªΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓòúΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓûÆΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼Γò¥Γò¼├┤Γö£ΓûôΓö¼├æΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòùΓö£ΓöñΓò¼├┤Γö£ΓòóΓö¼Γò¥╬ô├╢┬úΓö£┬¬╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓûÆ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬ú╬ô├╢├⌐╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£┬¬╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓûÆ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬ú╬ô├╢├⌐╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├╣╬ô├╢┬úΓö£├æΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòùΓö£ΓöñΓò¼├┤Γö£ΓòóΓö¼Γò¥Γò¼├┤Γö£ΓûôΓö¼├æ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬ú╬ô├╗├åΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼Γò¥╬ô├╢┬ú╬ô├▓├ªΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòùΓö£ΓöñΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓîÉΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼Γò¥Γò¼├┤Γö£ΓûôΓö¼├æ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬úΓö¼┬¼Γò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòùΓö£ΓöñΓò¼├┤Γö£ΓòóΓö¼Γò¥Γò¼├┤Γö£ΓûôΓö¼├æ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬ú╬ô├╗├åΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼Γò¥╬ô├╢┬ú╬ô├▓├ªΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòùΓö£ΓöñΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓòæΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼Γò¥╬ô├╢┬ú╬ô├▓├ªΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòùΓö£├Ñ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓûÆ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├╣╬ô├╢┬ú╬ô├╢├▒╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝╬ô├▓┬Ñ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝Γö£├ªΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼Γò¥╬ô├╢┬ú╬ô├▓├ªΓò¼├┤Γö£ΓûôΓö¼Γò¥╬ô├╢┬ú╬ô├╢├▒Γò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£ΓöéΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòùΓö£├Ñ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓûÆ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬ú╬ô├╢├⌐╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓûôΓö£┬¬╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓûÆ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£ΓòæΓò¼├┤Γö£ΓòóΓö¼Γò¥╬ô├╢┬╝╬ô├▓┬ú╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£ΓòæΓò¼├┤Γö£ΓòóΓö¼├║╬ô├╢┬╝╬ô├▓┬ú╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓûÆ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬ú╬ô├╢├⌐╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝╬ô├▓┬Ñ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝Γö£├ª╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├╗├┤╬ô├╢┬╝╬ô├▓┬ÑΓò¼├┤Γö£ΓòóΓö¼├║Γò¼├┤Γö£ΓòóΓö£ΓûÆ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£Γòæ╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├╣╬ô├╢┬ú╬ô├╢├▒╬ô├▓┬╝Γö£Γöñ╬ô├╢┬ú╬ô├▓├│╬ô├╢┬╝Γö£ΓòæΓò¼├┤Γö£ΓòóΓö¼Γò¥╬ô├╢┬╝Γö¼Γò¥ chat messages\r\n4. Post a chat message \r\n5. Leave the chat room gracefully (Logout) without simply closing the browser tab",
             "assignment_type": "Team",
             "submission_type": "URL",
-            "total_score": 100,
+            "total_score": 100.0,
             "weight": 0.4,
             "date_released": "2022-07-24T00:00:00Z",
             "date_due": "2022-08-07T23:59:59Z",
@@ -2463,7 +2405,7 @@
             "description": "The total point of the final exam is 70, which takes 35% in the final grade. There are a total of 13 Problems and 10 pages in this exam.",
             "assignment_type": "Individual",
             "submission_type": "Text",
-            "total_score": 70,
+            "total_score": 70.0,
             "weight": 0.35,
             "date_released": "2022-08-09T00:00:00Z",
             "date_due": "2022-08-11T23:59:59Z",
@@ -2489,12 +2431,12 @@
         }
     },
     {
-      "model": "gamification.behavior",
-      "pk": 3,
-      "fields": {
-          "operation": "trivia",
-          "points": 5
-      }
+        "model": "gamification.behavior",
+        "pk": 3,
+        "fields": {
+            "operation": "trivia",
+            "points": 5
+        }
     },
     {
         "model": "gamification.optionchoice",
@@ -3097,7 +3039,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3109,7 +3055,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3121,7 +3071,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3133,7 +3087,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3145,7 +3103,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3157,7 +3119,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3169,7 +3135,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3181,7 +3151,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3193,7 +3167,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3205,7 +3183,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3217,7 +3199,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3229,7 +3215,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3241,7 +3231,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3253,7 +3247,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3265,7 +3263,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3277,7 +3279,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3289,7 +3295,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3301,7 +3311,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3313,7 +3327,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3325,7 +3343,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3337,7 +3359,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3349,7 +3375,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3361,7 +3391,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3373,7 +3407,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3385,7 +3423,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3397,7 +3439,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3409,7 +3455,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3421,7 +3471,11 @@
             "is_required": false,
             "question_type": "SLIDEREVIEW",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3433,7 +3487,11 @@
             "is_required": false,
             "question_type": "MULTIPLETEXT",
             "number_of_scale": 5,
-            "number_of_text": 3
+            "number_of_text": 3,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3445,7 +3503,11 @@
             "is_required": false,
             "question_type": "MULTIPLETEXT",
             "number_of_scale": 5,
-            "number_of_text": 3
+            "number_of_text": 3,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3457,7 +3519,11 @@
             "is_required": false,
             "question_type": "MULTIPLETEXT",
             "number_of_scale": 5,
-            "number_of_text": 3
+            "number_of_text": 3,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3469,7 +3535,11 @@
             "is_required": false,
             "question_type": "TEXTAREA",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3481,7 +3551,11 @@
             "is_required": true,
             "question_type": "NUMBER",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3493,7 +3567,11 @@
             "is_required": true,
             "question_type": "NUMBER",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3505,7 +3583,11 @@
             "is_required": true,
             "question_type": "NUMBER",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3517,7 +3599,11 @@
             "is_required": true,
             "question_type": "NUMBER",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3529,7 +3615,11 @@
             "is_required": true,
             "question_type": "NUMBER",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3541,7 +3631,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3553,7 +3647,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3565,7 +3663,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3577,7 +3679,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3589,7 +3695,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3601,7 +3711,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3613,7 +3727,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3625,7 +3743,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3637,7 +3759,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3649,7 +3775,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3661,7 +3791,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3673,7 +3807,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3685,7 +3823,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3697,7 +3839,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3709,7 +3855,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3721,7 +3871,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3733,7 +3887,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3745,7 +3903,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3757,7 +3919,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3769,7 +3935,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3781,7 +3951,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3793,7 +3967,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3805,7 +3983,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3817,7 +3999,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3829,7 +4015,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3841,7 +4031,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3853,7 +4047,11 @@
             "is_required": true,
             "question_type": "SCALEMULTIPLECHOICE",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3865,7 +4063,11 @@
             "is_required": false,
             "question_type": "SLIDEREVIEW",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3877,7 +4079,11 @@
             "is_required": true,
             "question_type": "NUMBER",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3889,7 +4095,11 @@
             "is_required": true,
             "question_type": "NUMBER",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3901,7 +4111,11 @@
             "is_required": true,
             "question_type": "NUMBER",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3913,7 +4127,11 @@
             "is_required": true,
             "question_type": "NUMBER",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3925,7 +4143,11 @@
             "is_required": true,
             "question_type": "NUMBER",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3937,7 +4159,11 @@
             "is_required": false,
             "question_type": "MULTIPLETEXT",
             "number_of_scale": 5,
-            "number_of_text": 3
+            "number_of_text": 3,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3949,7 +4175,11 @@
             "is_required": false,
             "question_type": "MULTIPLETEXT",
             "number_of_scale": 5,
-            "number_of_text": 3
+            "number_of_text": 3,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3961,7 +4191,11 @@
             "is_required": false,
             "question_type": "MULTIPLETEXT",
             "number_of_scale": 5,
-            "number_of_text": 3
+            "number_of_text": 3,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
         }
     },
     {
@@ -3973,7 +4207,181 @@
             "is_required": false,
             "question_type": "TEXTAREA",
             "number_of_scale": 5,
-            "number_of_text": 1
+            "number_of_text": 1,
+            "gamified": true,
+            "phrased_positively": true,
+            "min": 0,
+            "max": 100
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 1,
+        "fields": {
+            "user": 1,
+            "course": 1,
+            "points": 0,
+            "course_experience": 0
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 2,
+        "fields": {
+            "user": 2,
+            "course": 2,
+            "points": 0,
+            "course_experience": 0
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 3,
+        "fields": {
+            "user": 2,
+            "course": 3,
+            "points": 0,
+            "course_experience": 0
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 4,
+        "fields": {
+            "user": 1,
+            "course": 4,
+            "points": 0,
+            "course_experience": 0
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 5,
+        "fields": {
+            "user": 1,
+            "course": 5,
+            "points": 0,
+            "course_experience": 0
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 6,
+        "fields": {
+            "user": 2,
+            "course": 5,
+            "points": 0,
+            "course_experience": 0
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 7,
+        "fields": {
+            "user": 3,
+            "course": 1,
+            "points": 0,
+            "course_experience": 0
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 8,
+        "fields": {
+            "user": 4,
+            "course": 1,
+            "points": 0,
+            "course_experience": 0
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 9,
+        "fields": {
+            "user": 5,
+            "course": 1,
+            "points": 0,
+            "course_experience": 0
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 10,
+        "fields": {
+            "user": 6,
+            "course": 1,
+            "points": 0,
+            "course_experience": 0
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 17,
+        "fields": {
+            "user": 13,
+            "course": 1,
+            "points": 0,
+            "course_experience": 0
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 18,
+        "fields": {
+            "user": 14,
+            "course": 1,
+            "points": 0,
+            "course_experience": 0
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 19,
+        "fields": {
+            "user": 15,
+            "course": 1,
+            "points": 0,
+            "course_experience": 0
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 20,
+        "fields": {
+            "user": 16,
+            "course": 1,
+            "points": 0,
+            "course_experience": 0
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 21,
+        "fields": {
+            "user": 17,
+            "course": 1,
+            "points": 0,
+            "course_experience": 0
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 22,
+        "fields": {
+            "user": 18,
+            "course": 1,
+            "points": 0,
+            "course_experience": 0
+        }
+    },
+    {
+        "model": "gamification.registration",
+        "pk": 23,
+        "fields": {
+            "user": 19,
+            "course": 1,
+            "points": 0,
+            "course_experience": 0
         }
     },
     {
@@ -3982,7 +4390,8 @@
         "fields": {
             "user": 3,
             "reward": 3,
-            "fulfilled": false
+            "fulfilled": false,
+            "date_purchased": "2023-07-07T04:03:55.551Z"
         }
     },
     {
@@ -3991,7 +4400,8 @@
         "fields": {
             "user": 3,
             "reward": 4,
-            "fulfilled": false
+            "fulfilled": false,
+            "date_purchased": "2023-07-07T04:03:55.552Z"
         }
     },
     {
@@ -4189,7 +4599,8 @@
         "pk": 1,
         "fields": {
             "name": "Survey Template",
-            "instructions": ""
+            "instructions": "",
+            "trivia": null
         }
     },
     {
@@ -4197,7 +4608,8 @@
         "pk": 2,
         "fields": {
             "name": "Default Template",
-            "instructions": ""
+            "instructions": "",
+            "trivia": null
         }
     },
     {
@@ -4205,7 +4617,8 @@
         "pk": 3,
         "fields": {
             "name": "Default Template",
-            "instructions": "This is a test template"
+            "instructions": "This is a test template",
+            "trivia": null
         }
     }
 ]
