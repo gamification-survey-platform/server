@@ -129,7 +129,7 @@ class ThemeDetail(generics.GenericAPIView):
                 download_url = generate_presigned_url(key, http_method="GET")
                 response_data["download_url"] = download_url
             else:
-                if str(getattr(theme, field)):
+                if str(getattr(theme, field)) and theme.creator == user_id:
                     delete_url = generate_presigned_url(str(getattr(theme, field)), http_method="DELETE")
                 key = self.update_theme_icon(request, user, theme, field)
                 if key:
