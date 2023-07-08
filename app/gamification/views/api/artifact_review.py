@@ -152,15 +152,16 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                     reviewer_registration = artifact_review.user
                     reviewer = get_object_or_404(CustomUser, id=reviewer_registration.user_id)
                     artifact_review_dict["reviewer"] = reviewer.andrew_id
+                    print(assignment.assignment_type)
                     if assignment.assignment_type == "Individual":
                         artifact_review_dict["reviewing"] = Membership.objects.get(
                             entity=artifact.entity
                         ).student.user.name_or_andrew_id()
-                        artifact_review_dict["assignment_type"] = artifact.entity.team.name
+                        artifact_review_dict["assignment_type"] = "Team"
 
                     else:
                         artifact_review_dict["reviewing"] = artifact.entity.team.name
-                        artifact_review_dict["assignment_type"] = artifact.entity.team.name
+                        artifact_review_dict["assignment_type"] = "Individual"
                     artifact_review_dict["course_id"] = registration.course_id
                     artifact_review_dict["course_number"] = course.course_number
                     artifact_review_dict["assignment_id"] = assignment.id
@@ -651,3 +652,27 @@ class ArtifactReviewIpsatization(generics.RetrieveAPIView):
             "entities": entities,
         }
         return Response(content, status=status.HTTP_200_OK)
+
+
+class ArtifactReviewStatus(generics.UpdateAPIView):
+    queryset = ArtifactReview.objects.all()
+    serializer_class = ArtifactReviewSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Patch artifact review status",
+        tags=["artifact_reviews"],
+    )
+    def patch(self, request, course_id, assignment_id, artifact_review_pk, *args, **kwargs):
+        artifact_review = ArtifactReview.objects.get(id=artifact_review_pk)
+        artifact_status = request.data.get("status")
+        available_statuses = [
+            ArtifactReview.ArtifactReviewType.COMPLETED,
+            ArtifactReview.ArtifactReviewType.INCOMPLETE,
+            ArtifactReview.ArtifactReviewType.REOPEN,
+        ]
+        if artifact_status not in available_statuses:
+            return Response({"message": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST)
+        artifact_review.status = artifact_status
+        artifact_review.save()
+        return Response({"message": "Status updated"}, status=status.HTTP_200_OK)
