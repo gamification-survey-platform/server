@@ -6,7 +6,7 @@ class ArtifactReview(models.Model):
     class ArtifactReviewType(models.TextChoices):
         COMPLETED = "COMPLETED"
         INCOMPLETE = "INCOMPLETE"
-        LATE = "LATE"
+        REOPEN = "REOPEN"
 
     artifact = models.ForeignKey("Artifact", on_delete=models.CASCADE)
 

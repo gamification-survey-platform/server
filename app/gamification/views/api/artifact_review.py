@@ -24,7 +24,6 @@ from app.gamification.models.user import CustomUser
 from app.gamification.serializers.answer import ArtifactReviewSerializer
 from app.gamification.utils.auth import get_user_pk
 from app.gamification.utils.levels import inv_level_func, level_func
-from app.gamification.utils.survey import check_survey_status
 
 base_artifact_review_schema = {
     "sections": openapi.Schema(
@@ -182,6 +181,8 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                 except ArtifactReview.DoesNotExist:
                     artifact_review = ArtifactReview(artifact=artifact, user=registration)
                     artifact_review.save()
+                if artifact_review.status == ArtifactReview.ArtifactReviewType.COMPLETED:
+                    continue
                 artifact_review_dict = model_to_dict(artifact_review)
                 if assignment.assignment_type == "Individual":
                     artifact_review_dict["reviewing"] = Membership.objects.get(
@@ -191,6 +192,7 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                 else:
                     artifact_review_dict["reviewing"] = artifact.entity.team.name
                     artifact_review_dict["assignment_type"] = "Team"
+                artifact_review_dict["status"] = artifact_review.status
                 artifact_review_dict["course_id"] = registration.course_id
                 artifact_review_dict["course_number"] = course.course_number
                 artifact_review_dict["assignment_id"] = assignment.id
@@ -253,7 +255,10 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                 artifact_review_data = model_to_dict(artifact_review)
                 assignment = get_object_or_404(Assignment, id=artifact.assignment_id)
                 feedbackSurvey = get_object_or_404(FeedbackSurvey, assignment=assignment)
-                if feedbackSurvey.date_released > datetime.now().astimezone(pytz.timezone("America/Los_Angeles")):
+                if (
+                    feedbackSurvey.date_released > datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
+                    or artifact_review.status == ArtifactReview.ArtifactReviewType.COMPLETED
+                ):
                     continue
                 if assignment.assignment_type == Assignment.AssigmentType.Individual:
                     artifact_review_data["reviewing"] = Membership.objects.get(
@@ -264,6 +269,8 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                     artifact_review_data["reviewing"] = artifact.entity.team.name
                     artifact_review_data["assignment_type"] = "Team"
                 course = get_object_or_404(Course, id=registration.course_id)
+                artifact_review_data["date_due"] = feedbackSurvey.date_due
+                artifact_review_data["status"] = artifact_review.status
                 artifact_review_data["course_id"] = registration.course_id
                 artifact_review_data["course_number"] = course.course_number
                 artifact_review_data["assignment_id"] = assignment.id
@@ -396,8 +403,6 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         user = get_object_or_404(CustomUser, id=user_id)
         course = get_object_or_404(Course, id=course_id)
         registration = get_object_or_404(Registration, course=course, user=user)
-        assignment = get_object_or_404(Assignment, id=assignment_id)
-        artifact_status = check_survey_status(assignment)
         artifact_review_detail = request.data.get("artifact_review_detail")
         artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_pk)
 
@@ -465,7 +470,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 artifact_feedback.page = page
                 artifact_feedback.save()
 
-        artifact_review.status = artifact_status
+        artifact_review.status = ArtifactReview.ArtifactReviewType.COMPLETED
         artifact_review.artifact_review_score = grade
         artifact_review.max_artifact_review_score = max_grade
         artifact_review.save()

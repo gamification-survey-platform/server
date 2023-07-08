@@ -2,6 +2,7 @@ import re
 
 import spacy
 import yake
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -9,11 +10,13 @@ from rest_framework import generics, permissions
 from rest_framework.response import Response
 
 from app.gamification.models.answer import Answer, ArtifactFeedback
+from app.gamification.models.artifact import Artifact
 from app.gamification.models.artifact_review import ArtifactReview
 from app.gamification.models.assignment import Assignment
 from app.gamification.models.option_choice import OptionChoice
 from app.gamification.models.question import Question
 from app.gamification.serializers.answer import AnswerSerializer
+from app.gamification.utils.s3 import generate_presigned_url
 
 
 class ArtifactAnswerKeywordList(generics.ListCreateAPIView):
@@ -161,13 +164,15 @@ class ArtifactAnswerDetail(generics.GenericAPIView):
     def get(self, request, course_id, assignment_id, artifact_pk, *args, **kwargs):
         artifacts_reviews = ArtifactReview.objects.filter(
             artifact_id=artifact_pk, status=ArtifactReview.ArtifactReviewType.COMPLETED
-        ) | ArtifactReview.objects.filter(artifact_id=artifact_pk, status=ArtifactReview.ArtifactReviewType.LATE)
+        )
         assignment = get_object_or_404(Assignment, id=assignment_id)
         survey_template = assignment.survey_template
+        print("ANSWER DETAIL", artifacts_reviews)
         data = dict()
         data["pk"] = survey_template.pk
         data["name"] = survey_template.name
         data["artifact_pk"] = artifact_pk
+        artifact = Artifact.objects.get(id=artifact_pk)
         data["instructions"] = survey_template.instructions
         data["sections"] = []
         for section in survey_template.sections:
@@ -203,6 +208,13 @@ class ArtifactAnswerDetail(generics.GenericAPIView):
                         )
                         answer_data["text"] = answer.answer_text
                         curr_question["artifact_reviews"][-1].append(answer_data)
+                if question.question_type == Question.QuestionType.SLIDEREVIEW:
+                    key = artifact.file.name
+                    path = f"http://{settings.ALLOWED_HOSTS[2]}:8000{artifact.file.url}"
+
+                    if settings.USE_S3:
+                        path = generate_presigned_url(key, http_method="GET")
+                    curr_question["file_path"] = path
                 if (
                     question.question_type == Question.QuestionType.MULTIPLECHOICE
                     or question.question_type == Question.QuestionType.MULTIPLESELECT

@@ -57,7 +57,7 @@ class AssignmentArtifact(generics.ListCreateAPIView):
                         artifact_review = ArtifactReview(artifact=artifact, user=registration)
                         artifact_review.save()
         else:
-            registrations = [i for i in Registration.objects.filter(course=course) if i.id != registration.id]
+            registrations = [i for i in Registration.objects.filter(course=course) if i.user != user]
             if not user.is_staff:
                 for single_registration in registrations:
                     single_user = single_registration.user
