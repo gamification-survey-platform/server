@@ -152,7 +152,6 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                     reviewer_registration = artifact_review.user
                     reviewer = get_object_or_404(CustomUser, id=reviewer_registration.user_id)
                     artifact_review_dict["reviewer"] = reviewer.andrew_id
-                    print(assignment.assignment_type)
                     if assignment.assignment_type == "Individual":
                         artifact_review_dict["reviewing"] = Membership.objects.get(
                             entity=artifact.entity
@@ -193,7 +192,7 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                 else:
                     artifact_review_dict["reviewing"] = artifact.entity.team.name
                     artifact_review_dict["assignment_type"] = "Team"
-                if artifact_review.status == "REOPEN":
+                if artifact_review.status == ArtifactReview.ArtifactReviewType.REOPEN:
                     artifact_review_dict["status"] = "REOPEN"
                 else:
                     artifact_review_dict["status"] = (
