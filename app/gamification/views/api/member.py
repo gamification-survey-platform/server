@@ -153,7 +153,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
                 )
             new_user = CustomUser.objects.get(andrew_id=andrew_id)
             current_members = []
-            course_registrations = Registration.objects.get(course=course)
+            course_registrations = Registration.objects.filter(course=course)
             for registration in course_registrations:
                 current_members.append(registration.user)
             registration = create_member(new_user, current_members, andrew_id=andrew_id)
