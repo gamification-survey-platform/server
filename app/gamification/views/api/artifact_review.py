@@ -277,11 +277,14 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                     artifact_review_data["assignment_type"] = "Team"
                 course = get_object_or_404(Course, id=registration.course_id)
                 artifact_review_data["date_due"] = feedbackSurvey.date_due
-                artifact_review_data["status"] = (
-                    "LATE"
-                    if feedbackSurvey.date_due < datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
-                    else artifact_review.status
-                )
+                if artifact_review.status == ArtifactReview.ArtifactReviewType.REOPEN:
+                    artifact_review_data["status"] = "REOPEN"
+                else:
+                    artifact_review_data["status"] = (
+                        "LATE"
+                        if feedbackSurvey.date_due < datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
+                        else artifact_review.status
+                    )
                 artifact_review_data["course_id"] = registration.course_id
                 artifact_review_data["course_number"] = course.course_number
                 artifact_review_data["assignment_id"] = assignment.id
