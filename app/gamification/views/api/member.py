@@ -201,7 +201,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
             return Response({"message": "Only instructor can delete members."}, status=status.HTTP_401_UNAUTHORIZED)
 
         instructor_count = 0
-        course_registrations = Registration.objects.get(course=course)
+        course_registrations = Registration.objects.filter(course=course)
         for registration in course_registrations:
             if registration.user.is_staff:
                 instructor_count += 1
