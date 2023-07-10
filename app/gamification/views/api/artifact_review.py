@@ -193,11 +193,14 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                 else:
                     artifact_review_dict["reviewing"] = artifact.entity.team.name
                     artifact_review_dict["assignment_type"] = "Team"
-                artifact_review_dict["status"] = (
-                    "LATE"
-                    if feedbackSurvey.date_due < datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
-                    else artifact_review.status
-                )
+                if artifact_review.status == "REOPEN":
+                    artifact_review_dict["status"] = "REOPEN"
+                else:
+                    artifact_review_dict["status"] = (
+                        "LATE"
+                        if feedbackSurvey.date_due < datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
+                        else artifact_review.status
+                    )
                 artifact_review_dict["course_id"] = registration.course_id
                 artifact_review_dict["course_number"] = course.course_number
                 artifact_review_dict["assignment_id"] = assignment.id
