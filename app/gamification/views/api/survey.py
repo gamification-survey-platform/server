@@ -93,10 +93,7 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
         for artifact in artifacts:
             artifact_reviews = ArtifactReview.objects.filter(artifact=artifact)
             for artifact_review in artifact_reviews:
-                if (
-                    artifact_review.status == ArtifactReview.ArtifactReviewType.COMPLETED
-                    or artifact_review.status == ArtifactReview.ArtifactReviewType.LATE
-                ):
+                if artifact_review.status == ArtifactReview.ArtifactReviewType.COMPLETED:
                     return Response(
                         {"message": "Cannot modify survey that has already been completed."},
                         status=status.HTTP_400_BAD_REQUEST,
