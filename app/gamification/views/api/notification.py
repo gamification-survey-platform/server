@@ -35,16 +35,19 @@ class NotificationDetail(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         user_pk = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_pk)
-        receiver_pk = request.data.get("receiver")
+        receiver_id = request.data.get("receiver")
         type = request.data.get("type")
         text = request.data.get("text")
         available_types = [type.name for type in Notification.NotificationType]
-        if receiver_pk is None:
+        if receiver_id is None:
             return Response({"message": "Notification has no receiver."}, status=status.HTTP_400_BAD_REQUEST)
         if type not in available_types:
             return Response({"message": "Invalid notification type."}, status=status.HTTP_400_BAD_REQUEST)
-        receiver_registration = Registration.objects.get(pk=receiver_pk)
-        receiver = receiver_registration.user
+        if receiver_id.isnumeric():
+            receiver_registration = Registration.objects.get(pk=receiver_id)
+            receiver = receiver_registration.user
+        else:
+            receiver = CustomUser.objects.get(andrew_id=receiver_id)
         notification = Notification.objects.create(sender=user, receiver=receiver, type=type, text=text)
         serializer = NotificationSerializer(notification)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
