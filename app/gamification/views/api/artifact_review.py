@@ -197,7 +197,7 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                 else:
                     artifact_review_dict["status"] = (
                         "LATE"
-                        if feedbackSurvey.date_due < datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
+                        if feedbackSurvey[0].date_due < datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
                         else artifact_review.status
                     )
                 artifact_review_dict["course_id"] = registration.course_id

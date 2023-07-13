@@ -4,7 +4,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
-from app.gamification.models import CustomUser, Notification
+from app.gamification.models import CustomUser, Notification, Registration
 from app.gamification.serializers import NotificationSerializer
 from app.gamification.utils.auth import get_user_pk
 
@@ -43,7 +43,8 @@ class NotificationDetail(generics.GenericAPIView):
             return Response({"message": "Notification has no receiver."}, status=status.HTTP_400_BAD_REQUEST)
         if type not in available_types:
             return Response({"message": "Invalid notification type."}, status=status.HTTP_400_BAD_REQUEST)
-        receiver = CustomUser.objects.get(pk=receiver_pk)
+        receiver_registration = Registration.objects.get(pk=receiver_pk)
+        receiver = receiver_registration.user
         notification = Notification.objects.create(sender=user, receiver=receiver, type=type, text=text)
         serializer = NotificationSerializer(notification)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -75,9 +76,9 @@ class NotificationDetail(generics.GenericAPIView):
         notifications = sorted(
             Notification.objects.filter(receiver=user), key=lambda notification: notification.timestamp
         )
+        print(notifications)
         response_data = []
         for i, notification in enumerate(notifications):
-            print(notification.timestamp)
             # Only maintain 10 latest notifications
             if i >= 10:
                 notification.delete()
