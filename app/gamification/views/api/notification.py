@@ -43,7 +43,7 @@ class NotificationDetail(generics.GenericAPIView):
             return Response({"message": "Notification has no receiver."}, status=status.HTTP_400_BAD_REQUEST)
         if type not in available_types:
             return Response({"message": "Invalid notification type."}, status=status.HTTP_400_BAD_REQUEST)
-        if receiver_id.isnumeric():
+        if isinstance(receiver_id, int):
             receiver_registration = Registration.objects.get(pk=receiver_id)
             receiver = receiver_registration.user
         else:
@@ -79,7 +79,6 @@ class NotificationDetail(generics.GenericAPIView):
         notifications = sorted(
             Notification.objects.filter(receiver=user), key=lambda notification: notification.timestamp
         )
-        print(notifications)
         response_data = []
         for i, notification in enumerate(notifications):
             # Only maintain 10 latest notifications
