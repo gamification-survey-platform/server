@@ -219,6 +219,28 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class ArtifactReviewersList(generics.GenericAPIView):
+    queryset = ArtifactReview.objects.all()
+    serializer_class = ArtifactReviewSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Get all artifact reviews for an artifact",
+        tags=["artifact_reviews"],
+    )
+    def get(self, request, course_id, assignment_id, artifact_id, *args, **kwargs):
+        artifact = Artifact.objects.get(id=artifact_id)
+        artifact_reviews = ArtifactReview.objects.filter(artifact=artifact)
+        response_data = []
+        for artifact_review in artifact_reviews:
+            artifact_review_data = model_to_dict(artifact_review)
+            registration = artifact_review.user
+            user = registration.user
+            artifact_review_data["reviewer"] = user.andrew_id
+            response_data.append(artifact_review_data)
+        return Response(response_data)
+
+
 class UserArtifactReviewList(generics.RetrieveAPIView):
     queryset = ArtifactReview.objects.all()
     serializer_class = ArtifactReviewSerializer

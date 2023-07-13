@@ -7,6 +7,7 @@ from rest_framework.response import Response
 
 from app.gamification.views.api.artifact_review import (
     ArtifactReviewDetails,
+    ArtifactReviewersList,
     ArtifactReviewIpsatization,
     ArtifactReviewStatus,
     ArtifactReviewTrivia,
@@ -25,6 +26,7 @@ from .course import CourseDetail, CourseList
 from .feedback_survey import SurveyDetail, SurveyList
 from .leaderboard import CourseLeaderboard, PlatformLeaderboard
 from .member import MemberList
+from .notification import NotificationDetail
 from .reward import (
     CourseRewardDetail,
     CourseRewardList,
@@ -128,6 +130,12 @@ urlpatterns = [
         AssignmentArtifactReviewList.as_view(),
         name="artifact-review-list",
     ),
+    # GET all artifact reviewers for an assignment
+    path(
+        "courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/<str:artifact_id>/artifact_reviews/",
+        ArtifactReviewersList.as_view(),
+        name="artifact-review-list",
+    ),
     # GET, PATCH artifact review
     path(
         "courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/<str:artifact_review_pk>/",
@@ -185,6 +193,8 @@ urlpatterns = [
         CourseRewardPurchasesDetail.as_view(),
         name="reward-list",
     ),
+    # POST notification
+    path("notifications/", NotificationDetail.as_view(), name="notification-detail"),
     # GET user purchases
     path("purchases/", UserRewardPurchases.as_view(), name="reward-list"),
     # GET platform experience

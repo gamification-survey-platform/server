@@ -7,6 +7,7 @@ from .course import *
 from .entity import *
 from .feedback_survey import *
 from .membership import *
+from .notification import *
 from .option_choice import *
 from .question import *
 from .registration import *

@@ -2,6 +2,7 @@ from .answer import *
 from .assignment import *
 from .course import *
 from .entity import *
+from .notification import *
 from .registration import *
 from .survey import *
 from .theme import *
