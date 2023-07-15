@@ -17,4 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
             "is_active",
             "is_superuser",
             "date_joined",
+            "exp",
+            "last_login",
+            "daily_streak",
         ]

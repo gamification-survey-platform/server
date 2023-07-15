@@ -94,5 +94,4 @@ class NotificationDetail(generics.GenericAPIView):
             if not notification.is_read:
                 notification.is_read = True
                 notification.save()
-        print(response_data)
         return Response(response_data)

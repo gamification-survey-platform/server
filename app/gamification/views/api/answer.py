@@ -167,7 +167,6 @@ class ArtifactAnswerDetail(generics.GenericAPIView):
         )
         assignment = get_object_or_404(Assignment, id=assignment_id)
         survey_template = assignment.survey_template
-        print("ANSWER DETAIL", artifacts_reviews)
         data = dict()
         data["pk"] = survey_template.pk
         data["name"] = survey_template.name

@@ -131,12 +131,17 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
         ),
     )
+
     date_joined = models.DateTimeField(_("data joined"), default=timezone.now)
 
     # exp is only used to level up
     exp = models.IntegerField(default=0, null=True, blank=True)
 
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, null=True, blank=True)
+
+    daily_streak = models.IntegerField(_("daily streak"), default=0, null=True, blank=True)
+
+    last_login = models.DateTimeField(_("last login"), default=timezone.now, null=True, blank=True)
 
     objects = CustomUserManager()
 
