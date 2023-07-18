@@ -1,9 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pandas as pd
 import pytz
 from django.forms import model_to_dict
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions, status
@@ -18,6 +19,7 @@ from app.gamification.models.course import Course
 from app.gamification.models.entity import Individual, Team
 from app.gamification.models.feedback_survey import FeedbackSurvey
 from app.gamification.models.membership import Membership
+from app.gamification.models.notification import Notification
 from app.gamification.models.question import Question
 from app.gamification.models.registration import Registration
 from app.gamification.models.user import CustomUser
@@ -229,14 +231,26 @@ class ArtifactReviewersList(generics.GenericAPIView):
         tags=["artifact_reviews"],
     )
     def get(self, request, course_id, assignment_id, artifact_id, *args, **kwargs):
+        user_id = get_user_pk(request)
         artifact = Artifact.objects.get(id=artifact_id)
         artifact_reviews = ArtifactReview.objects.filter(artifact=artifact)
         response_data = []
         for artifact_review in artifact_reviews:
             artifact_review_data = model_to_dict(artifact_review)
             registration = artifact_review.user
-            user = registration.user
-            artifact_review_data["reviewer"] = user.andrew_id
+            reviewer = registration.user
+            artifact_review_data["reviewer"] = reviewer.andrew_id
+            artifact_review_data["pokable"] = True
+            pokes = Notification.objects.filter(
+                receiver=reviewer.id, sender=user_id, type=Notification.NotificationType.POKE
+            )
+            if len(pokes) > 0:
+                latest_poke = max([poke.timestamp for poke in pokes])
+                now = timezone.now()
+                one_day = timedelta(days=1)
+                time_diff = now - latest_poke
+                if len(pokes) >= 3 or time_diff < one_day:
+                    artifact_review_data["pokable"] = False
             response_data.append(artifact_review_data)
         return Response(response_data)
 
