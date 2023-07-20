@@ -128,8 +128,8 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
                 elif question["question_type"] == Question.QuestionType.MULTIPLETEXT:
                     question_template.number_of_text = question["number_of_text"]
                 if question["question_type"] == Question.QuestionType.NUMBER:
-                    question_template.min = question["min"]
-                    question_template.max = question["max"]
+                    question_template.min = question["min"] if "min" in question else 0
+                    question_template.max = question["max"] if "max" in question else 100
 
                 question_template.save()
                 if (

@@ -206,6 +206,9 @@ class ArtifactAnswerDetail(generics.GenericAPIView):
                             answer.page if question.question_type == Question.QuestionType.SLIDEREVIEW else None
                         )
                         answer_data["text"] = answer.answer_text
+                        answer_data["artifact_review_id"] = completed_artifact_review.pk
+                        reviewer_registration = completed_artifact_review.user
+                        answer_data["artifact_reviewer_id"] = reviewer_registration.user.pk
                         curr_question["artifact_reviews"][-1].append(answer_data)
                 if question.question_type == Question.QuestionType.SLIDEREVIEW:
                     key = artifact.file.name

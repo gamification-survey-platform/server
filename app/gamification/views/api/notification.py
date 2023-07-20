@@ -1,10 +1,12 @@
+import json
+
 from django.forms import model_to_dict
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
-from app.gamification.models import CustomUser, Notification, Registration
+from app.gamification.models import ArtifactReview, CustomUser, Notification
 from app.gamification.serializers import NotificationSerializer
 from app.gamification.utils.auth import get_user_pk
 
@@ -44,10 +46,22 @@ class NotificationDetail(generics.GenericAPIView):
         if type not in available_types:
             return Response({"message": "Invalid notification type."}, status=status.HTTP_400_BAD_REQUEST)
         if isinstance(receiver_id, int):
-            receiver_registration = Registration.objects.get(pk=receiver_id)
-            receiver = receiver_registration.user
+            receiver = CustomUser.objects.get(pk=receiver_id)
         else:
             receiver = CustomUser.objects.get(andrew_id=receiver_id)
+        # If FEEDBACK_RESPONSE, delete the FEEDBACK_REQUEST
+        if type == Notification.NotificationType.FEEDBACK_RESPONSE:
+            data = json.loads(request.data.get("text"))
+            feedback_request_id = data["feedback_request_id"]
+            feedback_request = Notification.objects.get(id=feedback_request_id)
+            feedback_request.delete()
+            del data["feedback_request_id"]
+            artifact_review_id = data["artifact_review"]
+            del data["artifact_review"]
+            artifact_review = ArtifactReview.objects.get(id=artifact_review_id)
+            artifact_id = artifact_review.artifact.id
+            data["artifact"] = artifact_id
+            text = json.dumps(data)
         notification = Notification.objects.create(sender=user, receiver=receiver, type=type, text=text)
         serializer = NotificationSerializer(notification)
         return Response(serializer.data, status=status.HTTP_201_CREATED)

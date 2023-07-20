@@ -4,7 +4,8 @@ from django.utils.translation import gettext_lazy as _
 
 class Notification(models.Model):
     class NotificationType(models.TextChoices):
-        MESSAGE = "MESSAGE"
+        FEEDBACK_REQUEST = "FEEDBACK_REQUEST"
+        FEEDBACK_RESPONSE = "FEEDBACK_RESPONSE"
         POKE = "POKE"
 
     sender = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
