@@ -61,6 +61,8 @@ class NotificationDetail(generics.GenericAPIView):
             artifact_review = ArtifactReview.objects.get(id=artifact_review_id)
             artifact_id = artifact_review.artifact.id
             data["artifact"] = artifact_id
+            if "answer_text" in data:
+                del data["answer_text"]
             text = json.dumps(data)
         notification = Notification.objects.create(sender=user, receiver=receiver, type=type, text=text)
         serializer = NotificationSerializer(notification)
