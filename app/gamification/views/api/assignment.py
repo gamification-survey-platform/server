@@ -55,8 +55,8 @@ class AssignmentList(generics.ListCreateAPIView):
         response_data = []
         for assignment in assignments:
             if (
-                datetime.now().astimezone(pytz.timezone("America/Los_Angeles")) > assignment["date_released"]
-                or not user.is_staff
+                datetime.now().astimezone(pytz.timezone("America/Los_Angeles")) < assignment["date_released"]
+                or user.is_staff
             ):
                 assignment["is_staff"] = user.is_staff
                 response_data.append(assignment)
