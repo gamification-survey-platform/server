@@ -6,7 +6,12 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
-from app.gamification.models import ArtifactReview, CustomUser, Notification
+from app.gamification.models import (
+    ArtifactReview,
+    CustomUser,
+    Notification,
+    Registration,
+)
 from app.gamification.serializers import NotificationSerializer
 from app.gamification.utils.auth import get_user_pk
 
@@ -46,7 +51,11 @@ class NotificationDetail(generics.GenericAPIView):
         if type not in available_types:
             return Response({"message": "Invalid notification type."}, status=status.HTTP_400_BAD_REQUEST)
         if isinstance(receiver_id, int):
-            receiver = CustomUser.objects.get(pk=receiver_id)
+            if type == Notification.NotificationType.POKE:
+                receiver_registration = Registration.objects.get(pk=receiver_id)
+                receiver = receiver_registration.user
+            else:
+                receiver = CustomUser.objects.get(pk=receiver_id)
         else:
             receiver = CustomUser.objects.get(andrew_id=receiver_id)
         # If FEEDBACK_RESPONSE, delete the FEEDBACK_REQUEST
@@ -93,7 +102,7 @@ class NotificationDetail(generics.GenericAPIView):
         user_pk = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_pk)
         notifications = sorted(
-            Notification.objects.filter(receiver=user), key=lambda notification: notification.timestamp
+            Notification.objects.filter(receiver=user), key=lambda notification: notification.timestamp, reverse=True
         )
         response_data = []
         for i, notification in enumerate(notifications):
