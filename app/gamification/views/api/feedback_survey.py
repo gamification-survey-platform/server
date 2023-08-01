@@ -65,7 +65,7 @@ class SurveyList(generics.ListCreateAPIView):
             "trivia": trivia_data,
         }
         trivia = None
-        if trivia_data is not None:
+        if trivia_data is not None and "question" in trivia_data and "answer" in trivia_data:
             trivia = Trivia(
                 question=trivia_data["question"],
                 answer=trivia_data["answer"],
