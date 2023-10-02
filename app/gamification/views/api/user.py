@@ -184,6 +184,11 @@ class Login(generics.CreateAPIView):
                 elif time_diff > two_days:
                     user.daily_streak = 0
             user.last_login = timezone.now()
+            if user.is_first_login:
+                user.is_first_login = False
+                response_data['is_first_login'] = True
+            else:
+                response_data['is_first_login'] = False
             user.save()
             response_data["token"] = jwt_token["token"]
             response_data["daily_streak_increment"] = daily_streak_increment
