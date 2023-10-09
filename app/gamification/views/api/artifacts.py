@@ -121,12 +121,15 @@ class AssignmentArtifact(generics.ListCreateAPIView):
         # Add user experience and registration points if artifact is new
         artifact = Artifact.objects.filter(assignment=assignment, entity=entity)
         if not artifact.exists():
-            behavior = Behavior.objects.get(operation="assignment")
-            registration.points += behavior.points
-            registration.course_experience += behavior.points
-            registration.save()
-            user.exp += behavior.points
-            user.save()
+            try:
+                behavior = Behavior.objects.get(operation="assignment")
+                registration.points += behavior.points
+                registration.course_experience += behavior.points
+                registration.save()
+                user.exp += behavior.points
+                user.save()
+            except Behavior.DoesNotExist:
+                user.save()
 
         artifact = self.create_artifact(request, assignment, registration, entity)
 
