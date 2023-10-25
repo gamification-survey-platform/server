@@ -54,12 +54,16 @@ class AssignmentList(generics.ListCreateAPIView):
         assignments = [model_to_dict(assignment) for assignment in assignments]
         response_data = []
         for assignment in assignments:
-            if (
-                datetime.now().astimezone(pytz.timezone("America/Los_Angeles")) >= assignment["date_released"]
-                or user.is_staff
-            ):
-                assignment["is_staff"] = user.is_staff
-                response_data.append(assignment)
+            ##DEBUG
+            # if (
+            #     datetime.now().astimezone(pytz.timezone("America/Los_Angeles")) >= assignment["date_released"]
+            #     or user.is_staff
+            # ):
+            #     assignment["is_staff"] = user.is_staff
+            #     response_data.append(assignment)
+            assignment["is_staff"] = user.is_staff
+            response_data.append(assignment)
+            ##
         return Response(response_data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(

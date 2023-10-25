@@ -29,6 +29,7 @@ class AssignmentArtifact(generics.ListCreateAPIView):
     permission_classes = [permissions.AllowAny]
 
     def create_artifact(self, request, assignment, registration, entity):
+        print("create artifact", registration)
         try:
             artifact = Artifact.objects.get(assignment=assignment, entity=entity)
         except Artifact.DoesNotExist:
@@ -41,9 +42,20 @@ class AssignmentArtifact(generics.ListCreateAPIView):
             key = f"assignment_files/artifact_{assignment.id}_{entity.id}.pdf"
         artifact.file = key
         artifact.entity = entity
+        artifact.uploader = registration
         artifact.save()
 
         return artifact
+    
+    def next_classmate(self, user_index, classmates):
+        if user_index == len(classmates) - 1:
+            if classmates[0].user.is_staff:
+                return self.next_classmate(0, classmates)
+            return classmates[0]
+        else:
+            if classmates[user_index + 1].user.is_staff:
+                return self.next_classmate(user_index + 1, classmates)
+            return classmates[user_index + 1]
 
     def create_artifact_review(self, artifact, user, course, assignment_type, entity):
         if assignment_type == Assignment.AssigmentType.Team:
@@ -57,17 +69,29 @@ class AssignmentArtifact(generics.ListCreateAPIView):
                         artifact_review = ArtifactReview(artifact=artifact, user=registration)
                         artifact_review.save()
         else:
-            registrations = [i for i in Registration.objects.filter(course=course) if i.user != user]
+            classmates = Registration.objects.filter(course=course)
             if not user.is_staff:
-                for single_registration in registrations:
-                    single_user = single_registration.user
-                    # create artifact review if it doesn't exist
-                    if (
-                        not ArtifactReview.objects.filter(artifact=artifact, user=single_registration).exists()
-                        and not single_user.is_staff
-                    ):
-                        artifact_review = ArtifactReview(artifact=artifact, user=single_registration)
-                        artifact_review.save()
+                for i in range(len(classmates)):
+                    if classmates[i].user == user:
+                        next_one = self.next_classmate(i, classmates)
+                        if not ArtifactReview.objects.filter(artifact=artifact, user=next_one).exists():
+                            print("create artifact review ", next_one)
+                            artifact_review = ArtifactReview(artifact=artifact, user=next_one)
+                            artifact_review.save()
+                        
+            
+            # registrations = [i for i in Registration.objects.filter(course=course) if i.user != user]
+            # if not user.is_staff:
+            #     for single_registration in registrations:
+            #         print("create artifact review ", single_registration)
+            #         single_user = single_registration.user
+            #         # create artifact review if it doesn't exist
+            #         if (
+            #             not ArtifactReview.objects.filter(artifact=artifact, user=single_registration).exists()
+            #             and not single_user.is_staff
+            #         ):
+            #             artifact_review = ArtifactReview(artifact=artifact, user=single_registration)
+            #             artifact_review.save()
 
     @swagger_auto_schema(
         operation_description="Upload an artifact for an assignment",
@@ -121,12 +145,15 @@ class AssignmentArtifact(generics.ListCreateAPIView):
         # Add user experience and registration points if artifact is new
         artifact = Artifact.objects.filter(assignment=assignment, entity=entity)
         if not artifact.exists():
-            behavior = Behavior.objects.get(operation="assignment")
-            registration.points += behavior.points
-            registration.course_experience += behavior.points
-            registration.save()
-            user.exp += behavior.points
-            user.save()
+            try:
+                behavior = Behavior.objects.get(operation="assignment")
+                registration.points += behavior.points
+                registration.course_experience += behavior.points
+                registration.save()
+                user.exp += behavior.points
+                user.save()
+            except Behavior.DoesNotExist:
+                user.save()
 
         artifact = self.create_artifact(request, assignment, registration, entity)
 

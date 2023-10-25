@@ -89,6 +89,7 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
         course = get_object_or_404(Course, pk=course_id)
         assignment = get_object_or_404(Assignment, pk=assignment_id)
         reviewer_andrew_id = request.data.get("reviewer")
+        print("create new reviews now: ", reviewer_andrew_id)
         reviewee_andrew_id = request.data.get("reviewee")
         reviewer = get_object_or_404(CustomUser, andrew_id=reviewer_andrew_id)
         reviewee = get_object_or_404(CustomUser, andrew_id=reviewee_andrew_id)
@@ -176,15 +177,21 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
             for artifact in artifacts:
                 # Prevent self review
                 artifact_members = artifact.entity.members
+                print("uploader", artifact.uploader, " and user, ", user)
+                # print("178", feedbackSurvey[0].date_released, " ", datetime.now().astimezone(pytz.timezone("America/Los_Angeles")))
+                # print("artifact_members", artifact_members)
                 if user in artifact_members:
                     continue
                 try:
                     artifact_review = ArtifactReview.objects.get(artifact=artifact, user=registration)
                 except ArtifactReview.DoesNotExist:
-                    artifact_review = ArtifactReview(artifact=artifact, user=registration)
-                    artifact_review.save()
+                    continue
+                    # artifact_review = ArtifactReview(artifact=artifact, user=registration)
+                    # if save() here, it will create a new artifact review for each artifact
+                    # artifact_review.save()
                 if artifact_review.status == ArtifactReview.ArtifactReviewType.COMPLETED:
                     continue
+                
                 artifact_review_dict = model_to_dict(artifact_review)
                 if assignment.assignment_type == "Individual":
                     artifact_review_dict["reviewing"] = Membership.objects.get(
@@ -232,6 +239,7 @@ class ArtifactReviewersList(generics.GenericAPIView):
     )
     def get(self, request, course_id, assignment_id, artifact_id, *args, **kwargs):
         user_id = get_user_pk(request)
+        # print('art', artifact_id)
         artifact = Artifact.objects.get(id=artifact_id)
         artifact_reviews = ArtifactReview.objects.filter(artifact=artifact)
         response_data = []
@@ -252,6 +260,7 @@ class ArtifactReviewersList(generics.GenericAPIView):
                 if len(pokes) >= 3 or time_diff < one_day:
                     artifact_review_data["pokable"] = False
             response_data.append(artifact_review_data)
+            # print('response', response_data)
         return Response(response_data)
 
 
@@ -294,7 +303,6 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
             artifact_reviews = ArtifactReview.objects.filter(user=registration)
             for artifact_review in artifact_reviews:
                 artifact = get_object_or_404(Artifact, id=artifact_review.artifact_id)
-
                 artifact_review_data = model_to_dict(artifact_review)
                 assignment = get_object_or_404(Assignment, id=artifact.assignment_id)
                 feedbackSurvey = get_object_or_404(FeedbackSurvey, assignment=assignment)
@@ -324,6 +332,7 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                 artifact_review_data["course_id"] = registration.course_id
                 artifact_review_data["course_number"] = course.course_number
                 artifact_review_data["assignment_id"] = assignment.id
+                print("artifact_review", artifact_review_data)
                 response_data.append(artifact_review_data)
         return Response(response_data, status=status.HTTP_200_OK)
 

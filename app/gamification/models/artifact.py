@@ -7,6 +7,8 @@ from django.utils.translation import gettext_lazy as _
 class Artifact(models.Model):
     # pdf
     file_extension_validator = FileExtensionValidator(allowed_extensions=["pdf"])
+    
+    uploader = models.ForeignKey("Registration", on_delete=models.CASCADE)
 
     entity = models.ForeignKey("Entity", on_delete=models.CASCADE)
 
