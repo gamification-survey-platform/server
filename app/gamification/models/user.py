@@ -124,6 +124,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         default=False,
         help_text=_("Designates whether the user can log into admin site."),
     )
+    is_first_login = models.BooleanField(default=True)
     is_active = models.BooleanField(
         _("active"),
         default=True,

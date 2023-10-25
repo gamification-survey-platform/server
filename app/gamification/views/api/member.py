@@ -93,6 +93,23 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         },
     )
     def post(self, request, course_id, *args, **kwargs):
+        andrew_id = request.data.get("andrew_id")
+        if not andrew_id:
+            return Response({"message": "AndrewID is missing"}, status=status.HTTP_400_BAD_REQUEST)
+        # For course "10000", directly enroll the user without additional checks
+        if course_id == "10000":
+            new_user, _ = CustomUser.objects.get_or_create(andrew_id=andrew_id)
+            course, _ = Course.objects.get_or_create(id="10000")
+            registration, _ = Registration.objects.get_or_create(user=new_user, course=course)
+            individual, _ = Individual.objects.get_or_create(course=course)
+            membership, _ = Membership.objects.get_or_create(student=registration, entity=individual)
+            response_data = {
+                "andrew_id": andrew_id,
+                "team": "",
+                "is_activated": new_user.is_activated,
+                "is_staff": new_user.is_staff,
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
         def create_member(user, users, andrew_id):
             if user not in users:
                 registration = Registration(user=user, course=course)
@@ -138,7 +155,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         user = get_object_or_404(CustomUser, pk=user_id)
         registration = get_object_or_404(Registration, user=user, course=course)
 
-        if not user.is_staff:
+        if course_id != "10000" and not user.is_staff:
             return Response({"message": "Only instructors can add users."}, status=status.HTTP_400_BAD_REQUEST)
 
         andrew_id = request.data.get("andrew_id")
