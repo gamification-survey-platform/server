@@ -22,7 +22,7 @@ from .answer import (
     ArtifactAnswerMultipleChoiceList,
 )
 from .assignment import AssignmentDetail, AssignmentList
-from .course import CourseDetail, CourseList
+from .course import CourseDetail, CourseList, CourseTeamList
 from .feedback_survey import SurveyDetail, SurveyList
 from .leaderboard import CourseLeaderboard, PlatformLeaderboard
 from .member import MemberList

@@ -8,7 +8,7 @@ class Artifact(models.Model):
     # pdf
     file_extension_validator = FileExtensionValidator(allowed_extensions=["pdf"])
     
-    uploader = models.ForeignKey("Registration", on_delete=models.CASCADE)
+    # uploader = models.ForeignKey("Registration", on_delete=models.CASCADE)
 
     entity = models.ForeignKey("Entity", on_delete=models.CASCADE)
 

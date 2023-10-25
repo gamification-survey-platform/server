@@ -42,7 +42,7 @@ class AssignmentArtifact(generics.ListCreateAPIView):
             key = f"assignment_files/artifact_{assignment.id}_{entity.id}.pdf"
         artifact.file = key
         artifact.entity = entity
-        artifact.uploader = registration
+        # artifact.uploader = registration
         artifact.save()
 
         return artifact

@@ -172,14 +172,12 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
         else:
             if len(feedbackSurvey) == 0:
                 return Response({"message": "No feedback survey found"}, status=status.HTTP_404_NOT_FOUND)
-            if feedbackSurvey[0].date_released > datetime.now().astimezone(pytz.timezone("America/Los_Angeles")):
+            if feedbackSurvey[0].date_released.astimezone(pytz.timezone("America/Los_Angeles")) > datetime.now().astimezone(pytz.timezone("America/Los_Angeles")):
                 return Response({"message": "Feedback survey not released yet"}, status=status.HTTP_404_NOT_FOUND)
             for artifact in artifacts:
                 # Prevent self review
                 artifact_members = artifact.entity.members
-                print("uploader", artifact.uploader, " and user, ", user)
-                # print("178", feedbackSurvey[0].date_released, " ", datetime.now().astimezone(pytz.timezone("America/Los_Angeles")))
-                # print("artifact_members", artifact_members)
+                # print("178", feedbackSurvey[0].date_released.astimezone(pytz.timezone("America/Los_Angeles")), " ", datetime.now().astimezone(pytz.timezone("America/Los_Angeles")))
                 if user in artifact_members:
                     continue
                 try:
@@ -206,7 +204,7 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                 else:
                     artifact_review_dict["status"] = (
                         "LATE"
-                        if feedbackSurvey[0].date_due < datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
+                        if feedbackSurvey[0].date_due.astimezone(pytz.timezone("America/Los_Angeles")) < datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
                         else artifact_review.status
                     )
                 artifact_review_dict["course_id"] = registration.course_id
@@ -307,7 +305,7 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                 assignment = get_object_or_404(Assignment, id=artifact.assignment_id)
                 feedbackSurvey = get_object_or_404(FeedbackSurvey, assignment=assignment)
                 if (
-                    feedbackSurvey.date_released > datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
+                    feedbackSurvey.date_released.astimezone(pytz.timezone("America/Los_Angeles")) > datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
                     or artifact_review.status == ArtifactReview.ArtifactReviewType.COMPLETED
                 ):
                     continue
@@ -326,7 +324,7 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                 else:
                     artifact_review_data["status"] = (
                         "LATE"
-                        if feedbackSurvey.date_due < datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
+                        if feedbackSurvey.date_due.astimezone(pytz.timezone("America/Los_Angeles")) < datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
                         else artifact_review.status
                     )
                 artifact_review_data["course_id"] = registration.course_id
