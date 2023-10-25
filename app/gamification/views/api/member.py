@@ -110,7 +110,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         def create_team_membership(new_team, registration):
             team = registration.team
             if team is not None:
-                membership = get_object_or_404(Membership, stuent=registration, entity=team)
+                membership = get_object_or_404(Membership, student=registration, entity=team)
                 membership.delete()
                 if len(team.members) == 0:
                     team.delete()
@@ -222,3 +222,95 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         registration.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+    @swagger_auto_schema(
+        operation_description="Update a member's team in a course",
+        tags=["members"],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "andrew_id": openapi.Schema(type=openapi.TYPE_STRING),
+                "team": openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ),
+        responses={
+            200: openapi.Response(
+                description="Updated member details",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "andrew_id": openapi.Schema(type=openapi.TYPE_STRING),
+                        "is_staff": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                        "team": openapi.Schema(type=openapi.TYPE_STRING),
+                        "is_activated": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                    },
+                ),
+            )
+        },
+    )
+
+    def patch(self, request, course_id, *args, **kwargs):
+        course = get_object_or_404(Course, pk=course_id)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, pk=user_id)
+        def create_team_membership(new_team, registration):
+            team = registration.team
+            if team is not None:
+                membership = get_object_or_404(Membership, student=registration, entity=team)
+                membership.delete()
+                if len(team.members) == 0:
+                    team.delete()
+                else:
+                    # Add all artifact reviews for registration
+                    artifacts = Artifact.objects.filter(entity=team)
+                    for artifact in artifacts:
+                        artifact_review = ArtifactReview(artifact=artifact, user=registration)
+                        artifact_review.save()
+            try:
+                team = Team.objects.get(course=course, name=new_team)
+            except Team.DoesNotExist:
+                team = Team(course=course, name=new_team)
+                team.save()
+            membership = Membership(student=registration, entity=team)
+            membership.save()
+
+            # Delete artifact reviews for updated team
+            artifacts = Artifact.objects.filter(entity=team)
+            for artifact in artifacts:
+                ArtifactReview.objects.filter(artifact=artifact, user=registration).delete()
+
+        # Ensure the user is an instructor
+        if not user.is_staff:
+            return Response({"message": "Only instructors can modify users."}, status=status.HTTP_400_BAD_REQUEST)
+
+        andrew_id = request.data.get("andrew_id")
+        new_team_name = request.data.get("team_id")
+        print(andrew_id, " new_team_name: ", new_team_name)
+
+        if not andrew_id:
+            return Response({"message": "AndrewID is missing"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            target_user = CustomUser.objects.get(andrew_id=andrew_id)
+            
+            # Don't allow users to modify their own team
+            if user.andrew_id == andrew_id:
+                return Response({"message": "Cannot modify your own role."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            registration = get_object_or_404(Registration, user=target_user, course=course)
+            
+            # If there's a team specified in the request, update the team
+            if new_team_name:
+                create_team_membership(new_team_name, registration)
+            
+        except CustomUser.DoesNotExist:
+            return Response({"message": "AndrewID does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
+        response_data = {
+            "andrew_id": target_user.andrew_id,
+            "team": new_team_name,
+            "is_activated": target_user.is_activated,
+            "is_staff": target_user.is_staff,
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
