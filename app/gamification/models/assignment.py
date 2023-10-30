@@ -41,6 +41,8 @@ class Assignment(models.Model):
     review_assign_policy = models.TextField(
         choices=ReviewerAssignPolicy.choices, default=ReviewerAssignPolicy.A, blank=True
     )
+    
+    min_reviewers = models.IntegerField(null=True, default=2, blank=True)
 
     ipsatization_min = models.IntegerField(null=True, default=80, blank=True)
 

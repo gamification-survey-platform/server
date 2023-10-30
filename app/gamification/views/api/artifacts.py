@@ -56,8 +56,22 @@ class AssignmentArtifact(generics.ListCreateAPIView):
             if classmates[user_index + 1].user.is_staff:
                 return self.next_classmate(user_index + 1, classmates)
             return classmates[user_index + 1]
+        
+    def next_n_classmates(self, user_index, classmates, n=1):
+        result = []
+        current_index = user_index
+
+        while n > 0 and len(result) < len(classmates) - 1:  # Prevent infinite loop
+            current_index = (current_index + 1) % len(classmates)
+            if not classmates[current_index].user.is_staff:
+                result.append(classmates[current_index])
+                n -= 1
+
+        return result
+
 
     def create_artifact_review(self, artifact, user, course, assignment_type, entity):
+        cur_assignment_min = Assignment.objects.filter(assignment_name=artifact.assignment)[0].min_reviewers
         if assignment_type == Assignment.AssigmentType.Team:
             team_members = [i.pk for i in entity.members]
             registrations = [i for i in Registration.objects.filter(course=course) if i.user.pk not in team_members]
@@ -73,12 +87,11 @@ class AssignmentArtifact(generics.ListCreateAPIView):
             if not user.is_staff:
                 for i in range(len(classmates)):
                     if classmates[i].user == user:
-                        next_one = self.next_classmate(i, classmates)
-                        if not ArtifactReview.objects.filter(artifact=artifact, user=next_one).exists():
-                            print("create artifact review ", next_one)
-                            artifact_review = ArtifactReview(artifact=artifact, user=next_one)
-                            artifact_review.save()
-                        
+                        next_n_classmates = self.next_n_classmates(i, classmates, cur_assignment_min)
+                        for next_one in next_n_classmates:
+                            if not ArtifactReview.objects.filter(artifact=artifact, user=next_one).exists():
+                                artifact_review = ArtifactReview(artifact=artifact, user=next_one)
+                                artifact_review.save()
             
             # registrations = [i for i in Registration.objects.filter(course=course) if i.user != user]
             # if not user.is_staff:

@@ -260,6 +260,84 @@ class ArtifactReviewersList(generics.GenericAPIView):
             response_data.append(artifact_review_data)
             # print('response', response_data)
         return Response(response_data)
+    
+#TO BE continue
+class OptionalArtifactReview(generics.GenericAPIView):
+    queryset = ArtifactReview.objects.all()
+    serializer_class = ArtifactReviewSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Get artifact reviews for a specific user",
+        tags=["artifact_reviews"],
+        responses={
+            200: openapi.Schema(
+                description="Artifact reviews for a user",
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Items(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "artifact": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "user": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "status": openapi.Schema(type=openapi.TYPE_STRING, enum=["COMPLETED", "INCOMPLETE", "LATE"]),
+                        "max_artifact_review_score": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "artifact_review_score": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "reviewing": openapi.Schema(type=openapi.TYPE_STRING),
+                        "course_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "course_number": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "assignment_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    },
+                ),
+            )
+        },
+    )
+    
+    def get(self, request, *args, **kwargs):
+        # get assignment, course and user from the request
+        # (just record the completed reviews of one artifact)
+        # and return the artifact with least number of completed reviews, and find the user related to that artifact
+        # but it can not be the user himself, or those which already assigned to him
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
+        registrations = Registration.objects.filter(user=user)
+        response_data = []
+        # for registration in registrations:
+        #     artifact_reviews = ArtifactReview.objects.filter(user=registration)
+        #     for artifact_review in artifact_reviews:
+        #         artifact = get_object_or_404(Artifact, id=artifact_review.artifact_id)
+        #         artifact_review_data = model_to_dict(artifact_review)
+        #         assignment = get_object_or_404(Assignment, id=artifact.assignment_id)
+        #         feedbackSurvey = get_object_or_404(FeedbackSurvey, assignment=assignment)
+        #         if (
+        #             feedbackSurvey.date_released.astimezone(pytz.timezone("America/Los_Angeles")) > datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
+        #             or artifact_review.status == ArtifactReview.ArtifactReviewType.COMPLETED
+        #         ):
+        #             continue
+        #         if assignment.assignment_type == Assignment.AssigmentType.Individual:
+        #             artifact_review_data["reviewing"] = Membership.objects.get(
+        #                 entity=artifact.entity
+        #             ).student.user.name_or_andrew_id()
+        #             artifact_review_data["assignment_type"] = "Individual"
+        #         else:
+        #             artifact_review_data["reviewing"] = artifact.entity.team.name
+        #             artifact_review_data["assignment_type"] = "Team"
+        #         course = get_object_or_404(Course, id=registration.course_id)
+        #         artifact_review_data["date_due"] = feedbackSurvey.date_due
+        #         if artifact_review.status == ArtifactReview.ArtifactReviewType.REOPEN:
+        #             artifact_review_data["status"] = "REOPEN"
+        #         else:
+        #             artifact_review_data["status"] = (
+        #                 "LATE"
+        #                 if feedbackSurvey.date_due.astimezone(pytz.timezone("America/Los_Angeles")) < datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
+        #                 else artifact_review.status
+        #             )
+        #         artifact_review_data["course_id"] = registration.course_id
+        #         artifact_review_data["course_number"] = course.course_number
+        #         artifact_review_data["assignment_id"] = assignment.id
+        #         # print("artifact_review", artifact_review_data)
+        #         response_data.append(artifact_review_data)
+        # return Response(response_data, status=status.HTTP_200_OK)
 
 
 class UserArtifactReviewList(generics.RetrieveAPIView):
@@ -330,7 +408,7 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                 artifact_review_data["course_id"] = registration.course_id
                 artifact_review_data["course_number"] = course.course_number
                 artifact_review_data["assignment_id"] = assignment.id
-                print("artifact_review", artifact_review_data)
+                # print("artifact_review", artifact_review_data)
                 response_data.append(artifact_review_data)
         return Response(response_data, status=status.HTTP_200_OK)
 

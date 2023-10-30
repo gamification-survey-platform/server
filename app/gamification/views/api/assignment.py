@@ -82,6 +82,7 @@ class AssignmentList(generics.ListCreateAPIView):
         submission_type = request.data.get("submission_type")
         total_score = request.data.get("total_score")
         weight = request.data.get("weight")
+        min_reviewers = request.data.get("min_reviewers")
         review_assign_policy = request.data.get("review_assign_policy")
         if user.is_staff:
             assignment = Assignment.objects.create(
@@ -95,6 +96,7 @@ class AssignmentList(generics.ListCreateAPIView):
                 total_score=total_score,
                 weight=weight,
                 review_assign_policy=review_assign_policy,
+                min_reviewers=min_reviewers,
             )
             assignment.save()
             data = model_to_dict(assignment)

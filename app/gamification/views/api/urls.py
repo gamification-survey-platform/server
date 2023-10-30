@@ -13,6 +13,7 @@ from app.gamification.views.api.artifact_review import (
     ArtifactReviewTrivia,
     AssignmentArtifactReviewList,
     UserArtifactReviewList,
+    OptionalArtifactReview
 )
 from app.gamification.views.api.artifacts import ArtifactDetail, AssignmentArtifact
 
@@ -26,6 +27,7 @@ from .course import CourseDetail, CourseList, CourseTeamList
 from .feedback_survey import SurveyDetail, SurveyList
 from .leaderboard import CourseLeaderboard, PlatformLeaderboard
 from .member import MemberList
+from .team import TeamList
 from .notification import NotificationDetail
 from .reward import (
     CourseRewardDetail,
@@ -90,6 +92,8 @@ urlpatterns = [
     ),
     # GET, POST, DELETE member from course
     path("courses/<str:course_id>/members/", MemberList.as_view(), name="member-list"),
+    # GET, POST, DELETE member from course
+    path("courses/<str:course_id>/teams/", TeamList.as_view(), name="team-list"),
     # POST, GET artifact for an assignment
     path(
         "courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/",
@@ -129,6 +133,12 @@ urlpatterns = [
         "courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/",
         AssignmentArtifactReviewList.as_view(),
         name="artifact-review-list",
+    ),
+    # GET optional artifact reviews for an assignment
+    path(
+        "courses/<str:course_id>/assignments/<str:assignment_id>/user/<str:user_id>/optional_review",
+        OptionalArtifactReview.as_view(),
+        name="optional-artifact-review",
     ),
     # GET all artifact reviewers for an assignment
     path(
