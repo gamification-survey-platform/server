@@ -89,7 +89,7 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
         course = get_object_or_404(Course, pk=course_id)
         assignment = get_object_or_404(Assignment, pk=assignment_id)
         reviewer_andrew_id = request.data.get("reviewer")
-        print("create new reviews now: ", reviewer_andrew_id)
+        print("create new reviews now:: ", reviewer_andrew_id)
         reviewee_andrew_id = request.data.get("reviewee")
         reviewer = get_object_or_404(CustomUser, andrew_id=reviewer_andrew_id)
         reviewee = get_object_or_404(CustomUser, andrew_id=reviewee_andrew_id)
@@ -408,8 +408,9 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                 artifact_review_data["course_id"] = registration.course_id
                 artifact_review_data["course_number"] = course.course_number
                 artifact_review_data["assignment_id"] = assignment.id
-                # print("artifact_review", artifact_review_data)
+
                 response_data.append(artifact_review_data)
+
         return Response(response_data, status=status.HTTP_200_OK)
 
 
@@ -609,6 +610,54 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         artifact_review.artifact_review_score = grade
         artifact_review.max_artifact_review_score = max_grade
         artifact_review.save()
+        
+        
+        # --------
+        
+        ## get the assigned artifactsm, and user
+        artifact_reviews_assgined = ArtifactReview.objects.filter(user=registration)
+        artifact_reviews_assgined_from_users = []
+        for a in artifact_reviews_assgined:
+            artifact_of_review = Artifact.objects.get(id=a.artifact_id)
+            uploader_of_artifact = Membership.objects.get(entity=artifact_of_review.entity).student.user.name_or_andrew_id()
+            artifact_reviews_assgined_from_users.append(uploader_of_artifact)
+            
+        print("artifact_artifact_reviews: ", artifact_reviews_assgined_from_users)
+        
+        
+        artifact = get_object_or_404(Artifact, id=artifact_review.artifact_id)
+        assignment = get_object_or_404(Assignment, id=artifact.assignment_id)
+        artifacts = Artifact.objects.filter(assignment_id=assignment.id)
+        
+        
+        ## get the uploader of the user
+        uploader = Membership.objects.get(entity=artifact.entity).student.user.name_or_andrew_id()
+        
+        print("uplodaer", uploader)
+        
+        ## get potential assigned users
+        potential_assgined_users = []
+        
+        for artifact in artifacts:
+            artifact_members = artifact.entity.members
+            potential_assgined_users.append(artifact_members[0])
+        print("potential users to be assigned: ", potential_assgined_users)
+        
+        ## filter out the users who already have artifact review
+        for c in potential_assgined_users:
+            if c.name_or_andrew_id() not in artifact_reviews_assgined_from_users and c != uploader and c.is_staff == False:
+                reg_c = Registration.objects.get(user=user)
+                ## get tobe assigned artifact
+                tobe_assigned_artifact = None
+                for arti in artifacts:
+                    if Membership.objects.get(entity=arti.entity).student.user.name_or_andrew_id() == c.name_or_andrew_id():
+                        tobe_assigned_artifact = arti
+                        optional_artifact_review = ArtifactReview(artifact=tobe_assigned_artifact, user=reg_c, status=ArtifactReview.ArtifactReviewType.OPTIONAL_INCOMPLETE)
+                        optional_artifact_review.save()
+                        break
+                break
+
+        
         level = inv_level_func(user.exp)
         next_level_exp = level_func(level + 1)
         response_data = {

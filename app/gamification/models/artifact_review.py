@@ -7,6 +7,7 @@ class ArtifactReview(models.Model):
         COMPLETED = "COMPLETED"
         INCOMPLETE = "INCOMPLETE"
         REOPEN = "REOPEN"
+        OPTIONAL_INCOMPLETE = "OPTIONAL_INCOMPLETE"
 
     artifact = models.ForeignKey("Artifact", on_delete=models.CASCADE)
 
