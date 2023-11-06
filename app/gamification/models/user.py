@@ -144,6 +144,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     last_login = models.DateTimeField(_("last login"), default=timezone.now, null=True, blank=True)
 
+    gamification_mode = models.BooleanField(_("gamification mode"), default=True, null= True, blank = True)
+
     objects = CustomUserManager()
 
     EMAIL_FIELD = "email"

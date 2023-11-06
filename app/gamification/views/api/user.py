@@ -68,6 +68,7 @@ class UserDetail(generics.RetrieveUpdateAPIView):
         first_name = request.data.get("first_name")
         last_name = request.data.get("last_name")
         email = request.data.get("email")
+        gamification_mode = request.data.get("gamification_mode")
 
         if first_name:
             user.first_name = first_name
@@ -75,6 +76,8 @@ class UserDetail(generics.RetrieveUpdateAPIView):
             user.last_name = last_name
         if email:
             user.email = email
+        if gamification_mode != None:
+            user.gamification_mode = gamification_mode
         user.save()
 
         response_data = self.get_serializer(user).data

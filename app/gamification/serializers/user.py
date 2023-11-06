@@ -20,4 +20,5 @@ class UserSerializer(serializers.ModelSerializer):
             "exp",
             "last_login",
             "daily_streak",
+            "gamification_mode"
         ]
