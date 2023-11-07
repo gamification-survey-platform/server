@@ -62,7 +62,7 @@ class TeamList(generics.RetrieveUpdateDestroyAPIView):
                     "team_id": team,
                 }
             )
-        print("teams: ", res_teams)
+        # print("teams: ", res_teams)
         return Response(res_teams, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
@@ -284,7 +284,7 @@ class TeamList(generics.RetrieveUpdateDestroyAPIView):
 
         andrew_id = request.data.get("andrew_id")
         new_team_name = request.data.get("team_id")
-        print(andrew_id, " new_team_name: ", new_team_name)
+        # print(andrew_id, " new_team_name: ", new_team_name)
 
         if not andrew_id:
             return Response({"message": "AndrewID is missing"}, status=status.HTTP_400_BAD_REQUEST)

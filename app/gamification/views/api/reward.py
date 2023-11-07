@@ -171,6 +171,7 @@ class CourseRewardList(generics.ListCreateAPIView):
             course=course,
             reward_type=type,
         )
+        print("Hello World", type)
         if points:
             reward.points = points
         if inventory:

@@ -546,6 +546,9 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         # Add points and experience if not previously completed
         if artifact_review.status != ArtifactReview.ArtifactReviewType.COMPLETED:
             behavior = Behavior.objects.get(operation="survey")
+            if artifact_review.status == ArtifactReview.ArtifactReviewType.OPTIONAL_INCOMPLETE:
+                behavior = Behavior.objects.get(operation="optional_survey")
+            
             user.exp += behavior.points
             user.save()
             registration.points += behavior.points
@@ -611,6 +614,11 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         artifact_review.artifact_review_score = grade
         artifact_review.max_artifact_review_score = max_grade
         artifact_review.save()
+        
+        # update the number of completed reviews for this artifact
+        artifact = get_object_or_404(Artifact, id=artifact_review.artifact_id)
+        artifact.uploader_id = artifact.uploader_id + 1
+        artifact.save()
         
         
         # --------
