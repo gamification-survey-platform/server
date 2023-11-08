@@ -200,6 +200,7 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                 else:
                     artifact_review_dict["reviewing"] = artifact.entity.team.name
                     artifact_review_dict["assignment_type"] = "Team"
+                    
                 if artifact_review.status == ArtifactReview.ArtifactReviewType.REOPEN:
                     artifact_review_dict["status"] = "REOPEN"
                 else:
@@ -208,6 +209,16 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                         if feedbackSurvey[0].date_due.astimezone(pytz.timezone("America/Los_Angeles")) < datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
                         else artifact_review.status
                     )
+
+                # print("status", feedbackSurvey[0].date_due.astimezone(pytz.timezone("America/Los_Angeles")), " ", datetime.now().astimezone(pytz.timezone("America/Los_Angeles")))
+                # if feedbackSurvey[0].date_due.astimezone(pytz.timezone("America/Los_Angeles")) < datetime.now().astimezone(pytz.timezone("America/Los_Angeles")):
+                #     artifact_review_dict["status"] = ArtifactReview.ArtifactReviewType.LATE
+                #     artifact_review.status = ArtifactReview.ArtifactReviewType.LATE
+                #     artifact_review.save()
+                # else:
+                #     artifact_review_dict["status"] = artifact_review.status
+
+                    
                 artifact_review_dict["course_id"] = registration.course_id
                 artifact_review_dict["course_number"] = course.course_number
                 artifact_review_dict["assignment_id"] = assignment.id
@@ -406,6 +417,16 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                         if feedbackSurvey.date_due.astimezone(pytz.timezone("America/Los_Angeles")) < datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
                         else artifact_review.status
                     )
+                if artifact_review.status != ArtifactReview.ArtifactReviewType.COMPLETED:
+                    print("status", feedbackSurvey.date_due.astimezone(pytz.timezone("America/Los_Angeles")), " ", datetime.now().astimezone(pytz.timezone("America/Los_Angeles")))
+                    if feedbackSurvey.date_due.astimezone(pytz.timezone("America/Los_Angeles")) < datetime.now().astimezone(pytz.timezone("America/Los_Angeles")):
+                        artifact_review_data["status"] = ArtifactReview.ArtifactReviewType.LATE
+                        artifact_review.status = ArtifactReview.ArtifactReviewType.LATE
+                        artifact_review.save()
+                    else:
+                        artifact_review_data["status"] = artifact_review.status
+                    
+                    
                 artifact_review_data["course_id"] = registration.course_id
                 artifact_review_data["course_number"] = course.course_number
                 artifact_review_data["assignment_id"] = assignment.id
@@ -548,6 +569,8 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             behavior = Behavior.objects.get(operation="survey")
             if artifact_review.status == ArtifactReview.ArtifactReviewType.OPTIONAL_INCOMPLETE:
                 behavior = Behavior.objects.get(operation="optional_survey")
+            elif artifact_review.status == ArtifactReview.ArtifactReviewType.LATE:
+                behavior = Behavior.objects.get(operation="late")
             
             user.exp += behavior.points
             user.save()
@@ -666,7 +689,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             return Response(response_data, status=status.HTTP_200_OK)
         else:
             user = get_object_or_404(CustomUser, id=user_id)
-            reg_c = Registration.objects.get(user=user)
+            reg_c = Registration.objects.get(user=user, course_id=course_id)
             for arti in artifacts:
 
                 if Membership.objects.get(entity=arti.entity).student.user.name_or_andrew_id() == optional_choice[0]:
@@ -674,6 +697,8 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                     optional_artifact_review = ArtifactReview(artifact=arti, user=reg_c, status=ArtifactReview.ArtifactReviewType.OPTIONAL_INCOMPLETE)
                     optional_artifact_review.save()
                     break
+                
+                
 
         user = get_object_or_404(CustomUser, id=user_id)
         level = inv_level_func(user.exp)

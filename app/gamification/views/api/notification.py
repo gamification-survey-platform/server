@@ -12,6 +12,7 @@ from app.gamification.models import (
     Notification,
     Registration,
 )
+from app.gamification.models.behavior import Behavior
 from app.gamification.serializers import NotificationSerializer
 from app.gamification.utils.auth import get_user_pk
 
@@ -42,6 +43,10 @@ class NotificationDetail(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         user_pk = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_pk)
+        # adding points for poke
+        behavior = Behavior.objects.get(operation="poke")
+        user.exp += behavior.points
+        user.save()
         receiver_id = request.data.get("receiver")
         type = request.data.get("type")
         text = request.data.get("text")

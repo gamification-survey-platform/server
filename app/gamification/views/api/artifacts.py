@@ -57,7 +57,7 @@ class AssignmentArtifact(generics.ListCreateAPIView):
                 return self.next_classmate(user_index + 1, classmates)
             return classmates[user_index + 1]
         
-    def next_n_classmates(self, user_index, classmates, n=1):
+    def next_n_classmates(self, classmates, user_index, n):
         result = []
         current_index = user_index
 
@@ -68,7 +68,7 @@ class AssignmentArtifact(generics.ListCreateAPIView):
                 n -= 1
 
         return result
-    
+    #### conflict with self when the second round
     def get_sublist(self, source_list, k, m):
         if len(source_list) < 2 * k:
             start_index = 0
@@ -97,12 +97,13 @@ class AssignmentArtifact(generics.ListCreateAPIView):
                         artifact_review = ArtifactReview(artifact=artifact, user=registration)
                         artifact_review.save()
         else:
-            classmates = Registration.objects.filter(course=course).exclude(user__is_staff=True)
+            classmates = Registration.objects.filter(course=course).exclude(user__is_staff=True).order_by("id")
             print("classmates_without_staff", classmates)
             ##find the starting point
             for i in range(len(classmates)):
                 if classmates[i].user == user:
-                    sublist_classmates = self.get_sublist(classmates, i, cur_assignment_min)
+                    sublist_classmates = self.next_n_classmates(classmates, i, cur_assignment_min)
+                    print("sublist_classmates", sublist_classmates)
                     for next_one in sublist_classmates:
                         if not ArtifactReview.objects.filter(artifact=artifact, user=next_one).exists():
                             artifact_review = ArtifactReview(artifact=artifact, user=next_one)
