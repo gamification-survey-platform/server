@@ -9,7 +9,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
-from app.gamification.models import CustomUser
+from app.gamification.models import CustomUser, Behavior
 from app.gamification.serializers import UserSerializer
 from app.gamification.utils.levels import inv_level_func, level_func
 from app.gamification.utils.s3 import generate_presigned_post, generate_presigned_url
@@ -71,6 +71,9 @@ class UserDetail(generics.RetrieveUpdateAPIView):
         gamification_mode = request.data.get("gamification_mode")
 
         if first_name:
+            if user.first_name == "":
+                behavior = Behavior.objects.get(operation="profile_name")
+                user.exp += behavior.points
             user.first_name = first_name
         if last_name:
             user.last_name = last_name
@@ -78,11 +81,12 @@ class UserDetail(generics.RetrieveUpdateAPIView):
             user.email = email
         if gamification_mode != None:
             user.gamification_mode = gamification_mode
-        user.save()
 
         response_data = self.get_serializer(user).data
 
         key = self.update_profile_picture(request, user)
+
+        user.save()
 
         # Generate the presigned URL to share with the user.
         if settings.USE_S3 and key is not None:
