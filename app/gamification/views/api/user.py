@@ -186,6 +186,9 @@ class Login(generics.CreateAPIView):
                 time_diff = now - user.last_login
                 if time_diff > one_day and time_diff < two_days:
                     user.daily_streak += 1
+                    if user.daily_streak == 3:
+                        behavior = Behavior.objects.get(operation="three_day_streak")
+                        user.exp += behavior.points
                     response_data["daily_streak"] = user.daily_streak
                     daily_streak_increment = True
                 elif time_diff > two_days:
