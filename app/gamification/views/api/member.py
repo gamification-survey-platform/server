@@ -225,8 +225,8 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
 
         instructor_count = 0
         course_registrations = Registration.objects.filter(course=course)
-        for registration in course_registrations:
-            if registration.user.is_staff:
+        for instructor_reg in course_registrations:
+            if instructor_reg.user.is_staff:
                 instructor_count += 1
         if user_to_delete.is_staff and instructor_count <= 1:
             return Response({"message": "Cannot delete the last instructor"}, status=status.HTTP_400_BAD_REQUEST)
