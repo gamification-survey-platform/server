@@ -9,6 +9,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
+from collections import OrderedDict
 
 from app.gamification.models.answer import Answer, ArtifactFeedback
 from app.gamification.models.artifact import Artifact
@@ -27,6 +28,7 @@ from app.gamification.serializers.answer import ArtifactReviewSerializer
 from app.gamification.utils.auth import get_user_pk
 from app.gamification.utils.levels import inv_level_func, level_func
 from django.db.models import Count
+import random
 
 base_artifact_review_schema = {
     "sections": openapi.Schema(
@@ -383,6 +385,117 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
         },
     )
     def get(self, request, *args, **kwargs):
+        ## assigning the reviews
+        # get FeedbackSurvey and filter the ones that is_released is false and release_date is before now
+        to_be_assigned_survey = FeedbackSurvey.objects.filter(is_released=False, date_released__lte=datetime.now())
+        print("to_be_assigned_assignments", to_be_assigned_survey)
+        ## find all the students in this course
+        
+        for survey in to_be_assigned_survey:
+            if survey.is_released == True:
+                continue
+
+            survey.is_released = True
+            survey.save()
+            
+            # assignment_id = survey.assignment.id
+            # assignment = get_object_or_404(Assignment, id=assignment_id)
+            assignment = survey.assignment
+            min_stu = assignment.min_reviewers
+            course_id = assignment.course
+
+            registrations = Registration.objects.filter(course_id=course_id)
+            ## find all the artifacts for this assignment
+            artifacts = Artifact.objects.filter(assignment_id=assignment.id)
+
+            artifact_uploader_list = {}
+            artifact_index_list = []
+            for artifact in artifacts:
+                uploder = Membership.objects.get(entity=artifact.entity).student.user.name_or_andrew_id()
+                artifact_uploader_list[uploder] = [artifact, 0]
+                artifact_index_list.append(uploder)
+        
+            
+            def next_index(index, list):
+                if index + 1 >= len(list):
+                    return 0
+                return index + 1
+            
+            sum = len(artifact_uploader_list) * min_stu
+            cur_sum = 0
+            cur_arti_index = 0
+            cur_registeration_index = 0
+            
+            
+            while cur_sum < sum:
+                registration = registrations[cur_registeration_index]
+                cur_registeration_index = next_index(cur_registeration_index, registrations)
+                if registration.user.name_or_andrew_id() == artifact_index_list[cur_arti_index]:
+                    cur_arti_index = next_index(cur_arti_index, artifact_index_list)
+                    
+                cur_artifact, _ = artifact_uploader_list[artifact_index_list[cur_arti_index]]
+                artifact_review = ArtifactReview(artifact=cur_artifact, user=registration, status=ArtifactReview.ArtifactReviewType.INCOMPLETE)
+                artifact_review.save()
+                artifact_uploader_list[artifact_index_list[cur_arti_index]][1] += 1
+                cur_sum += 1
+                if artifact_uploader_list[artifact_index_list[cur_arti_index]][1] >= min_stu:
+                    del artifact_uploader_list[artifact_index_list[cur_arti_index]]
+                    artifact_index_list.remove(artifact_index_list[cur_arti_index])
+                
+
+            # ## divide the students into groups
+            # min_stu= min(min_stu, len(artifact_uploader_list))
+            # print("416")
+            # ## distribute the artifacts to the students
+            # for registration in registrations:
+                
+            #     if registration.user.name_or_andrew_id() in artifact_uploader_list:
+            #         keys = []
+            #         if min_stu > len(artifact_uploader_list):
+            #             print("min_stu: not enough: ", min_stu, "artifact uploader list:", artifact_uploader_list)
+            #             keys = list(artifact_uploader_list.keys())
+            #         else:
+            #             print("min_stu: more: ", min_stu, "artifact uploader list:", artifact_uploader_list)
+            #             keys = random.sample(list(artifact_uploader_list.keys()), min_stu)
+            #         selected_items = {k: artifact_uploader_list[k] for k in keys}
+            #         count = 0
+            #         print("the user with artifact: ", registration.user.name_or_andrew_id(), ", and selected_items: ", selected_items)
+            #         for item in selected_items:
+            #             if count >= min_stu:
+            #                 break
+            #             if item == registration.user.name_or_andrew_id():
+            #                 continue
+            #             artifact_review = ArtifactReview(artifact=selected_items[item], user=registration, status=ArtifactReview.ArtifactReviewType.INCOMPLETE)
+            #             artifact_review.save()
+            #             print("the user with artifact: ",registration.user.name_or_andrew_id()," and created a new review, ", artifact_review)
+            #             count += 1
+                        
+            #         continue
+
+            #     ## assign the artifacts to the students
+            #     keys = []
+            #     if min_stu > len(artifact_uploader_list):
+            #         print("min_stu: not enough: ", min_stu, "artifact uploader list:", artifact_uploader_list)
+            #         keys = list(artifact_uploader_list.keys())
+            #     else:
+            #         print("min_stu: more: ", min_stu, "artifact uploader list:", artifact_uploader_list)
+            #         keys = random.sample(list(artifact_uploader_list.keys()), min_stu)
+                    
+            #     selected_items = {k: artifact_uploader_list[k] for k in keys}
+            #     print("the user: ", registration.user.name_or_andrew_id(), ", and selected_items: ", selected_items)
+            #     for item in selected_items:
+            #         print("item", selected_items[item])
+            #         artifact_review = ArtifactReview(artifact=selected_items[item], user=registration, status=ArtifactReview.ArtifactReviewType.INCOMPLETE)
+            #         artifact_review.save()
+            #         print("the user ",registration.user.name_or_andrew_id()," and created a new review, ", artifact_review)
+        
+        
+        
+        ## ------------
+        
+        
+        
+        ## original code
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
         registrations = Registration.objects.filter(user=user)

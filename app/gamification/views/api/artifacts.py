@@ -100,15 +100,15 @@ class AssignmentArtifact(generics.ListCreateAPIView):
             classmates = Registration.objects.filter(course=course).exclude(user__is_staff=True).order_by("id")
             print("classmates_without_staff", classmates)
             ##find the starting point
-            for i in range(len(classmates)):
-                if classmates[i].user == user:
-                    sublist_classmates = self.next_n_classmates(classmates, i, cur_assignment_min)
-                    print("sublist_classmates", sublist_classmates)
-                    for next_one in sublist_classmates:
-                        if not ArtifactReview.objects.filter(artifact=artifact, user=next_one).exists():
-                            artifact_review = ArtifactReview(artifact=artifact, user=next_one)
-                            artifact_review.save()
-                    break
+            # for i in range(len(classmates)):
+            #     if classmates[i].user == user:
+            #         sublist_classmates = self.next_n_classmates(classmates, i, cur_assignment_min)
+            #         print("sublist_classmates", sublist_classmates)
+            #         for next_one in sublist_classmates:
+            #             if not ArtifactReview.objects.filter(artifact=artifact, user=next_one).exists():
+            #                 artifact_review = ArtifactReview(artifact=artifact, user=next_one)
+            #                 artifact_review.save()
+            #         break
                     
                     
                     

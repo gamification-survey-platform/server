@@ -13,6 +13,8 @@ class FeedbackSurvey(models.Model):
     date_released = models.DateTimeField(null=True, blank=True)
 
     date_due = models.DateTimeField(null=True, blank=True)
+    
+    is_released = models.BooleanField(default=False)
 
     class Meta:
         db_table = "feedback_survey"
