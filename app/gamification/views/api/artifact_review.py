@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import math
 
 import pandas as pd
 import pytz
@@ -401,46 +402,107 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
             # assignment_id = survey.assignment.id
             # assignment = get_object_or_404(Assignment, id=assignment_id)
             assignment = survey.assignment
-            min_stu = assignment.min_reviewers
+            min_reviewer = assignment.min_reviewers
             course_id = assignment.course
 
-            registrations = Registration.objects.filter(course_id=course_id)
+            registrations = Registration.objects.filter(course_id=course_id, user__is_staff=False)
+            
             ## find all the artifacts for this assignment
             artifacts = Artifact.objects.filter(assignment_id=assignment.id)
+            
+            #number of uploader(= num of artifacts)
+            uploader_num = len(artifacts)
+            if uploader_num == 0:
+                continue
+            
+            #number of registration (number of people in class)
+            regis_num = len(registrations)
+            
+            # number of reviews need to be assigned per registration member in course
+            num_review_assigned_per_person = math.ceil((min_reviewer * uploader_num) / regis_num)
+            #total number of reviews need to be assigned after calculation to satisfy conditions
+            num_review_assigned = num_review_assigned_per_person * regis_num
+            # number of uploader(artifact) that needs to be assigned for one additional time
+            num_uploader_assigned_again = num_review_assigned % uploader_num 
+            # how many times each uploader(artifact) needs to be assigned to be reviewed
+            num_assigned = num_review_assigned // uploader_num
 
-            artifact_uploader_list = {}
-            artifact_index_list = []
+            # dict {key: uploader, val: artifact}
+            uploader_artifact_list = {}
             for artifact in artifacts:
                 uploder = Membership.objects.get(entity=artifact.entity).student.user.name_or_andrew_id()
-                artifact_uploader_list[uploder] = [artifact, 0]
-                artifact_index_list.append(uploder)
-        
+                uploader_artifact_list[uploder] = artifact
             
-            def next_index(index, list):
-                if index + 1 >= len(list):
-                    return 0
-                return index + 1
-            
-            sum = len(artifact_uploader_list) * min_stu
-            cur_sum = 0
-            cur_arti_index = 0
-            cur_registeration_index = 0
-            
-            
-            while cur_sum < sum:
-                registration = registrations[cur_registeration_index]
-                cur_registeration_index = next_index(cur_registeration_index, registrations)
-                if registration.user.name_or_andrew_id() == artifact_index_list[cur_arti_index]:
-                    cur_arti_index = next_index(cur_arti_index, artifact_index_list)
+            # dict {key: registration_andrew_id(str), val: number of reviews assigned to the current user}
+            registration_dict = {}
+            for registration in registrations:
+                name = registration.user.name_or_andrew_id()
+                registration_dict[name] = [0, registration]
+
+            for uploader in uploader_artifact_list:
+                cur_num_assigned = num_assigned
+                if num_uploader_assigned_again > 0:
+                    cur_num_assigned += 1
+                    num_uploader_assigned_again -= 1
+                for student in list(registration_dict.keys()):
                     
-                cur_artifact, _ = artifact_uploader_list[artifact_index_list[cur_arti_index]]
-                artifact_review = ArtifactReview(artifact=cur_artifact, user=registration, status=ArtifactReview.ArtifactReviewType.INCOMPLETE)
-                artifact_review.save()
-                artifact_uploader_list[artifact_index_list[cur_arti_index]][1] += 1
-                cur_sum += 1
-                if artifact_uploader_list[artifact_index_list[cur_arti_index]][1] >= min_stu:
-                    del artifact_uploader_list[artifact_index_list[cur_arti_index]]
-                    artifact_index_list.remove(artifact_index_list[cur_arti_index])
+                    print("stud", student, "upl", uploader)
+                    if student == uploader:
+                        continue
+                    if cur_num_assigned == 0:
+                        break
+                    registration_dict[student][0] += 1
+                    # assign~!!
+                    artifact_review = ArtifactReview(artifact=uploader_artifact_list[uploader], user=registration_dict[student][1], status=ArtifactReview.ArtifactReviewType.INCOMPLETE)
+                    artifact_review.save()
+                    
+                    if registration_dict[student][0] >= num_review_assigned_per_person:
+                        del registration_dict[student]
+                    cur_num_assigned -= 1
+                    if cur_num_assigned == 0:
+                        break
+            
+            # def next_index(index, list):
+            #     if index + 1 >= len(list):
+            #         return 0
+            #     return index + 1
+            
+            # sum = len(artifact_uploader_list) * min_stu
+            # cur_sum = 0
+            # cur_arti_index = 0
+            # cur_registeration_index = 0
+            
+            # artifact_list = []
+            # per_allocation = math.ceil(sum / len(registrations))
+            # real_sum = per_allocation * len(registrations)
+            # more_reviews_num = real_sum - sum
+            # print("real_sum: ", real_sum, "per_allocation: ", per_allocation)
+            # for uploader in artifact_uploader_list:
+            #     i = 0
+            #     while i < min_stu:
+            #         artifact_list.append(uploader)
+            #         i += 1
+            
+
+            
+            
+            # while cur_sum < sum:
+            #     registration = registrations[cur_registeration_index]
+            #     cur_registeration_index = next_index(cur_registeration_index, registrations)
+            #     if registration.user.name_or_andrew_id() == artifact_index_list[cur_arti_index]:
+            #         cur_arti_index = next_index(cur_arti_index, artifact_index_list)
+                    
+            #     cur_artifact, _ = artifact_uploader_list[artifact_index_list[cur_arti_index]]
+            #     artifact_review = ArtifactReview(artifact=cur_artifact, user=registration, status=ArtifactReview.ArtifactReviewType.INCOMPLETE)
+            #     artifact_review.save()
+            #     artifact_uploader_list[artifact_index_list[cur_arti_index]][1] += 1
+            #     cur_sum += 1
+            #     if artifact_uploader_list[artifact_index_list[cur_arti_index]][1] >= min_stu:
+            #         del artifact_uploader_list[artifact_index_list[cur_arti_index]]
+            #         artifact_index_list.remove(artifact_index_list[cur_arti_index])
+                    
+                    
+            
                 
 
             # ## divide the students into groups
