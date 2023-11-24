@@ -162,7 +162,7 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                     if assignment.assignment_type == "Individual":
                         artifact_review_dict["reviewing"] = Membership.objects.get(
                             entity=artifact.entity
-                        ).student.user.name_or_andrew_id()
+                        ).student.user.andrew_id
                         artifact_review_dict["assignment_type"] = "Team"
 
                     else:
@@ -198,7 +198,7 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                 if assignment.assignment_type == "Individual":
                     artifact_review_dict["reviewing"] = Membership.objects.get(
                         entity=artifact.entity
-                    ).student.user.name_or_andrew_id()
+                    ).student.user.andrew_id
                     artifact_review_dict["assignment_type"] = "Individual"
                 else:
                     artifact_review_dict["reviewing"] = artifact.entity.team.name
@@ -332,7 +332,7 @@ class OptionalArtifactReview(generics.GenericAPIView):
         #         if assignment.assignment_type == Assignment.AssigmentType.Individual:
         #             artifact_review_data["reviewing"] = Membership.objects.get(
         #                 entity=artifact.entity
-        #             ).student.user.name_or_andrew_id()
+        #             ).student.user.andrew_id
         #             artifact_review_data["assignment_type"] = "Individual"
         #         else:
         #             artifact_review_data["reviewing"] = artifact.entity.team.name
@@ -430,7 +430,7 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
             # dict {key: uploader, val: artifact}
             uploader_artifact_list = {}
             for artifact in artifacts:
-                uploder = Membership.objects.get(entity=artifact.entity).student.user.name_or_andrew_id()
+                uploder = Membership.objects.get(entity=artifact.entity).student.user.andrew_id
                 uploader_artifact_list[uploder] = artifact
             
             # dict {key: registration_andrew_id(str), val: number of reviews assigned to the current user}
@@ -577,7 +577,7 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                 if assignment.assignment_type == Assignment.AssigmentType.Individual:
                     artifact_review_data["reviewing"] = Membership.objects.get(
                         entity=artifact.entity
-                    ).student.user.name_or_andrew_id()
+                    ).student.user.andrew_id
                     artifact_review_data["assignment_type"] = "Individual"
                 else:
                     artifact_review_data["reviewing"] = artifact.entity.team.name
@@ -829,7 +829,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         
         get_all_potential_assigned_users_in_order = []
         for artifact in artifact_inorder_by_review_received:
-            user_info = Membership.objects.get(entity=artifact.entity).student.user.name_or_andrew_id()
+            user_info = Membership.objects.get(entity=artifact.entity).student.user.andrew_id
             get_all_potential_assigned_users_in_order.append(user_info)
         
         
@@ -838,7 +838,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         artifact_reviews_assgined_from_users = set()
         for a in artifact_reviews_assgined:
             artifact_of_review = Artifact.objects.get(id=a.artifact_id)
-            uploader_of_artifact = Membership.objects.get(entity=artifact_of_review.entity).student.user.name_or_andrew_id()
+            uploader_of_artifact = Membership.objects.get(entity=artifact_of_review.entity).student.user.andrew_id
             artifact_reviews_assgined_from_users.add(uploader_of_artifact)
         artifact_reviews_assgined_from_users.add(user.name_or_andrew_id())
         
@@ -867,7 +867,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             reg_c = Registration.objects.get(user=user, course_id=course_id)
             for arti in artifacts:
 
-                if Membership.objects.get(entity=arti.entity).student.user.name_or_andrew_id() == optional_choice[0]:
+                if Membership.objects.get(entity=arti.entity).student.user.andrew_id == optional_choice[0]:
                     print("arti", arti, "and uploader, ", arti.assignment)
                     optional_artifact_review = ArtifactReview(artifact=arti, user=reg_c, status=ArtifactReview.ArtifactReviewType.OPTIONAL_INCOMPLETE)
                     optional_artifact_review.save()
