@@ -13,6 +13,7 @@ from app.gamification.models.user_reward import UserReward
 from app.gamification.serializers.reward import RewardSerializer
 from app.gamification.utils.auth import get_user_pk
 from app.gamification.utils.s3 import generate_presigned_post, generate_presigned_url
+from django.utils import timezone
 
 base_reward_schema = {
     "name": openapi.Schema(type=openapi.TYPE_STRING),
@@ -101,8 +102,10 @@ def generate_reward_key(request, course):
     else:
         return None
 
+    timestamp = timezone.now().strftime('%Y%m%d%H%M%S')
+
     if settings.USE_S3:
-        key = f"rewards/reward_{course.id}.{file_ext}"
+        key = f"rewards/reward_{course.id}_{timestamp}.{file_ext}"
     else:
         key = picture
 
