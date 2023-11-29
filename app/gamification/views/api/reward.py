@@ -13,6 +13,7 @@ from app.gamification.models.user_reward import UserReward
 from app.gamification.serializers.reward import RewardSerializer
 from app.gamification.utils.auth import get_user_pk
 from app.gamification.utils.s3 import generate_presigned_post, generate_presigned_url
+from django.utils import timezone
 
 base_reward_schema = {
     "name": openapi.Schema(type=openapi.TYPE_STRING),
@@ -47,15 +48,32 @@ class RewardDetail(generics.RetrieveUpdateDestroyAPIView):
     def patch(self, request, reward_id, *args, **kwargs):
         user_id = get_user_pk(request)
         user = CustomUser.objects.get(pk=user_id)
-        is_active = request.data.get("is_active")
-        if user.is_superuser:
+
+        # Superuser or staff logic to update a reward
+        if user.is_superuser or user.is_staff:
             reward = Reward.objects.get(pk=reward_id)
-            reward.is_active = True if is_active == "true" else False
+
+            # Handling 'picture' field
+            picture_file = request.FILES.get('picture')
+            if picture_file:
+                picture_key = generate_reward_key(request, reward.course)
+                if picture_key:
+                    reward.picture = picture_key
+                    if settings.USE_S3:
+                        upload_url = generate_presigned_post(picture_key)
+                else:
+                    return Response({"message": "Invalid image file"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Handling other fields
+            for key, value in request.data.items():
+                if key != 'picture':
+                    setattr(reward, key, value)
+
             reward.save()
             serializer = self.get_serializer(reward)
             return Response(serializer.data)
-        elif user.is_staff:
-            pass
+
+        # Student logic to purchase a reward
         else:
             reward = Reward.objects.get(pk=reward_id)
             course = reward.course
@@ -65,9 +83,9 @@ class RewardDetail(generics.RetrieveUpdateDestroyAPIView):
             if reward.inventory > 0 or reward.inventory == -1:
                 if reward.inventory != -1:
                     reward.inventory -= 1
-                    reward.save()
                 registration.points -= reward.points
                 registration.save()
+                reward.save()
                 user_reward = UserReward.objects.create(user=user, reward=reward)
                 user_reward.save()
                 return Response(status=status.HTTP_200_OK)
@@ -101,8 +119,10 @@ def generate_reward_key(request, course):
     else:
         return None
 
+    timestamp = timezone.now().strftime('%Y%m%d%H%M%S')
+
     if settings.USE_S3:
-        key = f"rewards/reward_{course.id}.{file_ext}"
+        key = f"rewards/reward_{course.id}_{timestamp}.{file_ext}"
     else:
         key = picture
 
