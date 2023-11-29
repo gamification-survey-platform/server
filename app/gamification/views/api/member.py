@@ -93,29 +93,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         },
     )
     def post(self, request, course_id, *args, **kwargs):
-        andrew_id = request.data.get("andrew_id")
-        if not andrew_id:
-            return Response({"message": "AndrewID is missing"}, status=status.HTTP_400_BAD_REQUEST)
-        # For welcome course "2", directly enroll the user without additional checks
-        if course_id == "20230515" or course_id == "20230516":
-            course = get_object_or_404(Course, pk=course_id)
-            try:
-                new_user = CustomUser.objects.get(andrew_id=andrew_id)
-                registration, created = Registration.objects.get_or_create(user=new_user, course=course)
-                if created:
-                    individual = Individual(course=course)
-                    individual.save()
-                    membership = Membership(student=registration, entity=individual)
-                    membership.save()
-                response_data = {
-                    "andrew_id": new_user.andrew_id,
-                    "team": "",
-                    "is_activated": new_user.is_activated,
-                    "is_staff": new_user.is_staff,
-                }
-                return Response(response_data, status=status.HTTP_201_CREATED)
-            except CustomUser.DoesNotExist:
-                return Response({"message": "AndrewID does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+        
         def create_member(user, users, andrew_id):
             if user not in users:
                 registration = Registration(user=user, course=course)
@@ -155,6 +133,46 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
             artifacts = Artifact.objects.filter(entity=team)
             for artifact in artifacts:
                 ArtifactReview.objects.filter(artifact=artifact, user=registration).delete()
+
+        andrew_id = request.data.get("andrew_id")
+        if not andrew_id:
+            return Response({"message": "AndrewID is missing"}, status=status.HTTP_400_BAD_REQUEST)
+        # For welcome course "2", directly enroll the user without additional checks
+        if course_id == "20230515" or course_id == "20230516":
+            course = get_object_or_404(Course, pk=course_id)
+            team = request.data.get("team")
+            try:
+                new_user = CustomUser.objects.get(andrew_id=andrew_id)
+                registration, created = Registration.objects.get_or_create(user=new_user, course=course)
+                if user.andrew_id == andrew_id:
+                    return Response(
+                        {"message": "Cannot modify your own role."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                if created:
+                    individual = Individual(course=course)
+                    individual.save()
+                    membership = Membership(student=registration, entity=individual)
+                    membership.save()
+                    
+                new_user = CustomUser.objects.get(andrew_id=andrew_id)
+                current_members = []
+                course_registrations = Registration.objects.filter(course=course)
+                for registration in course_registrations:
+                    current_members.append(registration.user)
+                registration = create_member(new_user, current_members, andrew_id=andrew_id)
+                if not new_user.is_staff and team != "":
+                    create_team_membership(team, registration)
+                response_data = {
+                    "andrew_id": new_user.andrew_id,
+                    "team": team,
+                    "is_activated": new_user.is_activated,
+                    "is_staff": new_user.is_staff,
+                }
+                return Response(response_data, status=status.HTTP_201_CREATED)
+            except CustomUser.DoesNotExist:
+                return Response({"message": "AndrewID does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
         course = get_object_or_404(Course, pk=course_id)
         user_id = get_user_pk(request)
@@ -236,6 +254,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
 
         # Delete all the user's artifacts
         entity = Entity.objects.filter(registration=registration)
+        print("delete entity: ", entity)
         if entity.exists() and entity[0].number_members == 1:
             Artifact.objects.filter(entity=entity[0]).delete()
             entity[0].delete()
