@@ -134,6 +134,11 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
             for artifact in artifacts:
                 ArtifactReview.objects.filter(artifact=artifact, user=registration).delete()
 
+        course = get_object_or_404(Course, pk=course_id)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, pk=user_id)
+        registration = get_object_or_404(Registration, user=user, course=course)
+
         andrew_id = request.data.get("andrew_id")
         if not andrew_id:
             return Response({"message": "AndrewID is missing"}, status=status.HTTP_400_BAD_REQUEST)
@@ -173,11 +178,6 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
                 return Response(response_data, status=status.HTTP_201_CREATED)
             except CustomUser.DoesNotExist:
                 return Response({"message": "AndrewID does not exist"}, status=status.HTTP_400_BAD_REQUEST)
-
-        course = get_object_or_404(Course, pk=course_id)
-        user_id = get_user_pk(request)
-        user = get_object_or_404(CustomUser, pk=user_id)
-        registration = get_object_or_404(Registration, user=user, course=course)
 
         if not user.is_staff:
             return Response({"message": "Only instructors can add users."}, status=status.HTTP_400_BAD_REQUEST)

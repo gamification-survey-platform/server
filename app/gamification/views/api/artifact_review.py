@@ -419,12 +419,12 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
             uploader_num = len(artifacts)
             if uploader_num == 0:
                 continue
-            
+
             #number of registration (number of people in class)
             regis_num = len(registrations)
             if regis_num == 0:
                 continue
-            
+
             # number of reviews need to be assigned per registration member in course
             num_review_assigned_per_person = math.ceil((min_reviewer * uploader_num) / regis_num)
             #total number of reviews need to be assigned after calculation to satisfy conditions
