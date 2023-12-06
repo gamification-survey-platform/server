@@ -25,6 +25,7 @@ from app.gamification.models.notification import Notification
 from app.gamification.models.question import Question
 from app.gamification.models.registration import Registration
 from app.gamification.models.user import CustomUser
+from app.gamification.models.entity import Entity
 from app.gamification.serializers.answer import ArtifactReviewSerializer
 from app.gamification.utils.auth import get_user_pk
 from app.gamification.utils.levels import inv_level_func, level_func
@@ -404,12 +405,16 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
             assignment = survey.assignment
             min_reviewer = assignment.min_reviewers
             course_id = assignment.course
-
             registrations = Registration.objects.filter(course_id=course_id, user__is_staff=False)
-            
-            ## find all the artifacts for this assignment
-            artifacts = Artifact.objects.filter(assignment_id=assignment.id)
-            
+            is_team_assignment = True if assignment.assignment_type == "Team" else False
+            # print("is_team", is_team_assignment)
+                
+            ## find all the artifacts for this assignment, and make sure they all are from distinct entities
+            # artifacts = Artifact.objects.filter(assignment_id=assignment.id)
+            distinct_entity_ids = Artifact.objects.filter(assignment_id=assignment.id).values_list('entity_id', flat=True).distinct()
+            artifacts = Artifact.objects.filter(entity_id__in=distinct_entity_ids)
+
+
             #number of uploader(= num of artifacts)
             uploader_num = len(artifacts)
             if uploader_num == 0:
@@ -417,6 +422,8 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
             
             #number of registration (number of people in class)
             regis_num = len(registrations)
+            if regis_num == 0:
+                continue
             
             # number of reviews need to be assigned per registration member in course
             num_review_assigned_per_person = math.ceil((min_reviewer * uploader_num) / regis_num)
@@ -430,14 +437,15 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
             # dict {key: uploader, val: artifact}
             uploader_artifact_list = {}
             for artifact in artifacts:
-                uploder = Membership.objects.get(entity=artifact.entity).student.user.andrew_id
-                uploader_artifact_list[uploder] = artifact
+                # uploder = Membership.objects.get(entity=artifact.entity).student.user.name_or_andrew_id()
+                uploader = artifact.entity.id
+                uploader_artifact_list[uploader] = artifact
             
             # dict {key: registration_andrew_id(str), val: number of reviews assigned to the current user}
             registration_dict = {}
             for registration in registrations:
-                name = registration.user.name_or_andrew_id()
-                registration_dict[name] = [0, registration]
+                membership = Membership.objects.filter(student=registration)[0]
+                registration_dict[membership.entity.id] = [0, registration]
 
             for uploader in uploader_artifact_list:
                 cur_num_assigned = num_assigned
@@ -445,8 +453,6 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                     cur_num_assigned += 1
                     num_uploader_assigned_again -= 1
                 for student in list(registration_dict.keys()):
-                    
-                    print("stud", student, "upl", uploader)
                     if student == uploader:
                         continue
                     if cur_num_assigned == 0:

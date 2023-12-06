@@ -27,6 +27,8 @@ ENV = os.getenv("ENV", None)
 # Whether to use AWS S3 for storage.
 USE_S3 = os.getenv("USE_S3", False) == "True"
 
+DB_NAME = os.getenv("DB_NAME", "dev")
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -127,7 +129,7 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": "dev",
+            "NAME": DB_NAME,
             "USER": "dbuser",
             "PASSWORD": "dbuser",
             "HOST": "localhost",

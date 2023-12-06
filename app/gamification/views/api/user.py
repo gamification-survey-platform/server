@@ -35,6 +35,10 @@ class UserDetail(generics.RetrieveUpdateAPIView):
         key = picture
         if settings.USE_S3:
             key = f"profile_pics/user_{user.id}.{file_ext}"
+
+        if user.image == "":
+            behavior = Behavior.objects.get(operation="profile_pic")
+            user.exp += behavior.points
         user.image = key
         user.save()
 
