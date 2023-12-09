@@ -390,7 +390,7 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
         ## assigning the reviews
         # get FeedbackSurvey and filter the ones that is_released is false and release_date is before now
         to_be_assigned_survey = FeedbackSurvey.objects.filter(is_released=False, date_released__lte=datetime.now())
-        print("to_be_assigned_assignments", to_be_assigned_survey)
+        # print("to_be_assigned_assignments", to_be_assigned_survey)
         ## find all the students in this course
         
         for survey in to_be_assigned_survey:
@@ -433,6 +433,7 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
             num_uploader_assigned_again = num_review_assigned % uploader_num 
             # how many times each uploader(artifact) needs to be assigned to be reviewed
             num_assigned = num_review_assigned // uploader_num
+            # print(num_review_assigned_per_person, num_review_assigned, num_uploader_assigned_again, num_assigned)
 
             # dict {key: uploader, val: artifact}
             uploader_artifact_list = {}
@@ -444,8 +445,13 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
             # dict {key: registration_andrew_id(str), val: number of reviews assigned to the current user}
             registration_dict = {}
             for registration in registrations:
-                membership = Membership.objects.filter(student=registration)[0]
-                registration_dict[membership.entity.id] = [0, registration]
+                membership = Membership.objects.filter(student=registration)
+                for ele in membership:
+                    print(ele.entity.id)
+                    if ele.entity.id in distinct_entity_ids:
+                        # registration_dict[ele.entity.id] = [0, registration]
+                        registration_dict[registration.user.name_or_andrew_id()] = [0, registration, ele.entity.id]
+                        break   
 
             for uploader in uploader_artifact_list:
                 cur_num_assigned = num_assigned
@@ -453,7 +459,7 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                     cur_num_assigned += 1
                     num_uploader_assigned_again -= 1
                 for student in list(registration_dict.keys()):
-                    if student == uploader:
+                    if student[2] == uploader:
                         continue
                     if cur_num_assigned == 0:
                         break
