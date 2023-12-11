@@ -833,57 +833,85 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         
         # --------
         
-        ## 1. get all the potential assgined users
+        # ## 1. get all the potential assgined users
+        # artifact = get_object_or_404(Artifact, id=artifact_review.artifact_id)
+        # assignment = get_object_or_404(Assignment, id=artifact.assignment_id)
+        # artifacts = Artifact.objects.filter(assignment_id=assignment.id)
+        # artifact_inorder_by_review_received = Artifact.objects.filter(assignment_id=assignment).order_by('uploader_id')
+        
+        # get_all_potential_assigned_users_in_order = []
+        # for artifact in artifact_inorder_by_review_received:
+        #     # user_info = Membership.objects.get(entity=artifact.entity).student.user.andrew_id
+        #     user_info = artifact.entity
+        #     get_all_potential_assigned_users_in_order.append(user_info)
+
+        # ## 2. remove myself and the ones have been assigned
+        # artifact_reviews_assgined = ArtifactReview.objects.filter(user=registration)
+        # artifact_reviews_assgined_from_users = set()
+        # for a in artifact_reviews_assgined:
+        #     artifact_of_review = Artifact.objects.get(id=a.artifact_id)
+        #     # uploader_of_artifact = Membership.objects.get(entity=artifact_of_review.entity).student.user.andrew_id
+        #     uploader_of_artifact = artifact_of_review.entity
+        #     artifact_reviews_assgined_from_users.add(uploader_of_artifact)
+        # # artifact_reviews_assgined_from_users.add(user.name_or_andrew_id())
+        # cur_user_student_id = Registration.objects.get(user=user, course_id=course_id)
+        
+        # optional_choice = []
+        # for user in get_all_potential_assigned_users_in_order:
+        #     all_related_users = Membership.objects.filter(entity = user)
+        #     if user not in artifact_reviews_assgined_from_users and cur_user_student_id not in all_related_users:
+        #         optional_choice.append(user)
+        #         break
+    
+
         artifact = get_object_or_404(Artifact, id=artifact_review.artifact_id)
         assignment = get_object_or_404(Assignment, id=artifact.assignment_id)
-        artifacts = Artifact.objects.filter(assignment_id=assignment.id)
-        artifact_inorder_by_review_received = Artifact.objects.filter(assignment_id=assignment).order_by('uploader_id')
-        
-        get_all_potential_assigned_users_in_order = []
-        for artifact in artifact_inorder_by_review_received:
-            user_info = Membership.objects.get(entity=artifact.entity).student.user.andrew_id
-            get_all_potential_assigned_users_in_order.append(user_info)
-        
-        
-        ## 2. remove myself and the ones have been assigned
+        artifacts = Artifact.objects.filter(assignment_id=assignment).order_by('uploader_id')
+        my_entity_list = Membership.objects.filter(student_id = registration).values_list('entity_id', flat = True)
+
         artifact_reviews_assgined = ArtifactReview.objects.filter(user=registration)
-        artifact_reviews_assgined_from_users = set()
-        for a in artifact_reviews_assgined:
-            artifact_of_review = Artifact.objects.get(id=a.artifact_id)
-            uploader_of_artifact = Membership.objects.get(entity=artifact_of_review.entity).student.user.andrew_id
-            artifact_reviews_assgined_from_users.add(uploader_of_artifact)
-        artifact_reviews_assgined_from_users.add(user.name_or_andrew_id())
-        
-        optional_choice = []
-        for user in get_all_potential_assigned_users_in_order:
-            if user not in artifact_reviews_assgined_from_users:
-                optional_choice.append(user)
+        artifact_ids_assigned = ArtifactReview.objects.filter(user=registration).values_list('artifact_id', flat=True)
+        artifact_ids_mine = []
+        myself_artifact_id = None
+        for my_entity in my_entity_list:
+            tmp = Artifact.objects.filter(entity_id=my_entity)
+            if len(tmp) != 0:
+                myself_artifact_id = tmp[0]
+                artifact_ids_mine.append(myself_artifact_id)
+
+        for a in artifacts:
+            if a.id not in artifact_ids_assigned and a.id not in artifact_ids_mine:
+                optional_artifact_review = ArtifactReview(artifact=a, user=registration, status=ArtifactReview.ArtifactReviewType.OPTIONAL_INCOMPLETE)
+                optional_artifact_review.save()
                 break
-    
-        
+                #assign review
+            
+
+
         ## add this one to the view
         
-        if len(optional_choice) == 0:
-            user = get_object_or_404(CustomUser, id=user_id)
-            level = inv_level_func(user.exp)
-            response_data = {
-                "exp": user.exp,
-                "level": level,
-                "next_level_exp": level,
-                "points": registration.points,
-                "course_experience": registration.course_experience,
-            }
-            return Response(response_data, status=status.HTTP_200_OK)
-        else:
-            user = get_object_or_404(CustomUser, id=user_id)
-            reg_c = Registration.objects.get(user=user, course_id=course_id)
-            for arti in artifacts:
-
-                if Membership.objects.get(entity=arti.entity).student.user.andrew_id == optional_choice[0]:
-                    print("arti", arti, "and uploader, ", arti.assignment)
-                    optional_artifact_review = ArtifactReview(artifact=arti, user=reg_c, status=ArtifactReview.ArtifactReviewType.OPTIONAL_INCOMPLETE)
-                    optional_artifact_review.save()
-                    break
+        # if len(optional_choice) == 0:
+        #     user = get_object_or_404(CustomUser, id=user_id)
+        #     level = inv_level_func(user.exp)
+        #     response_data = {
+        #         "exp": user.exp,
+        #         "level": level,
+        #         "next_level_exp": level,
+        #         "points": registration.points,
+        #         "course_experience": registration.course_experience,
+        #     }
+        #     return Response(response_data, status=status.HTTP_200_OK)
+        # else:
+        #     user = get_object_or_404(CustomUser, id=user_id)
+        #     reg_c = Registration.objects.get(user=user, course_id=course_id)
+        #     for arti in artifacts:
+        #         for member in Membership.objects.filter(entity=arti.entity):
+        #             if member.student.user.andrew_id == optional_choice[0]:
+        #                 print("arti", arti, "and uploader, ", arti.assignment)
+        #                 optional_artifact_review = ArtifactReview(artifact=arti, user=reg_c, status=ArtifactReview.ArtifactReviewType.OPTIONAL_INCOMPLETE)
+        #                 optional_artifact_review.save()
+        #                 break
+        #         break
                 
                 
 
