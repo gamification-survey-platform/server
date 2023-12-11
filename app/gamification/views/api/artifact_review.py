@@ -869,16 +869,17 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         artifacts = Artifact.objects.filter(assignment_id=assignment).order_by('uploader_id')
         my_entity_list = Membership.objects.filter(student_id = registration).values_list('entity_id', flat = True)
 
-        artifact_reviews_assgined = ArtifactReview.objects.filter(user=registration)
         artifact_ids_assigned = ArtifactReview.objects.filter(user=registration).values_list('artifact_id', flat=True)
         artifact_ids_mine = []
         myself_artifact_id = None
         for my_entity in my_entity_list:
             tmp = Artifact.objects.filter(entity_id=my_entity)
             if len(tmp) != 0:
-                myself_artifact_id = tmp[0]
+                myself_artifact_id = tmp[0].id
                 artifact_ids_mine.append(myself_artifact_id)
 
+        # print("artifact_ids_mine", artifact_ids_mine)
+        # print("artifact_ids_assigned", artifact_ids_assigned)
         for a in artifacts:
             if a.id not in artifact_ids_assigned and a.id not in artifact_ids_mine:
                 optional_artifact_review = ArtifactReview(artifact=a, user=registration, status=ArtifactReview.ArtifactReviewType.OPTIONAL_INCOMPLETE)
