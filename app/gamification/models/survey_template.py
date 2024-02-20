@@ -13,6 +13,10 @@ class SurveyTemplate(models.Model):
     instructions = models.TextField(blank=True)
 
     trivia = models.ForeignKey("Trivia", null=True, blank=True, on_delete=models.CASCADE)
+    
+    user = models.ForeignKey("CustomUser", null=True, blank=True, on_delete=models.CASCADE)
+    
+    course = models.ForeignKey("Course", null=True, blank=True, on_delete=models.CASCADE)
 
     class Meta:
         db_table = "survey_template"

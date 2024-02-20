@@ -1,3 +1,4 @@
+import copy
 from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -21,9 +22,8 @@ class SurveyList(generics.ListCreateAPIView):
     @swagger_auto_schema(operation_description="Get survey information", tags=["surveys"])
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         assignment = get_object_or_404(Assignment, pk=assignment_id)
-        try:
-            feedback_survey = FeedbackSurvey.objects.get(assignment=assignment)
-        except FeedbackSurvey.DoesNotExist:
+        feedback_survey = FeedbackSurvey.objects.filter(assignment=assignment).order_by('pk').last()
+        if feedback_survey is None:
             return Response({"messages": "Feedback Survey does not exist"}, status=status.HTTP_404_NOT_FOUND)
         survey_template = feedback_survey.template
         context = {
@@ -50,20 +50,25 @@ class SurveyList(generics.ListCreateAPIView):
             },
         ),
     )
-    def post(self, request, assignment_id, *args, **kwargs):
+    def post(self, request, course_id, assignment_id, *args, **kwargs):
         assignment = get_object_or_404(Assignment, pk=assignment_id)
+        # Get survey_id. If survey_id is -1, it means we are using a template,
+        # hence we need to deepcopy the sections and questions
+        survey_id = request.data.get("survey_id")
+        is_using_template = False
+
+        # Using a template
+        if survey_id is not None and survey_id != -1:
+            # Reuse template
+            is_using_template = True
+            survey_template = SurveyTemplate.objects.get(id=survey_id)
+            survey_sections = survey_template.sections.all()
+
+        # Get request parameters
+        user_id = request.data.get("user_id")
         survey_template_name = request.data.get("template_name").strip()
         survey_template_instructions = request.data.get("instructions")
-        feedback_survey_date_released = request.data.get("date_released")
-        feedback_survey_date_due = request.data.get("date_due")
         trivia_data = request.data.get("trivia")
-        response_data = {
-            "template_name": survey_template_name,
-            "instructions": survey_template_instructions,
-            "date_released": feedback_survey_date_released,
-            "date_due": feedback_survey_date_due,
-            "trivia": trivia_data,
-        }
         trivia = None
         if trivia_data is not None and "question" in trivia_data and "answer" in trivia_data:
             trivia = Trivia(
@@ -72,30 +77,51 @@ class SurveyList(generics.ListCreateAPIView):
                 hints=trivia_data["hints"],
             )
             trivia.save()
+        feedback_survey_date_released = request.data.get("date_released")
+        feedback_survey_date_due = request.data.get("date_due")
 
-        feedback_survey = FeedbackSurvey.objects.filter(assignment=assignment)
-        # Check if feedback survey exists
-        if feedback_survey.exists():
-            survey_template = feedback_survey[0].template
-            survey_template.name = survey_template_name
-            survey_template.instructions = survey_template_instructions
-            survey_template.trivia = trivia
-
-            survey_template.save()
-            # Create new survey
-            feedback_survey[0].template = survey_template
-            feedback_survey[0].date_released = feedback_survey_date_released
-            feedback_survey[0].date_due = feedback_survey_date_due
-            feedback_survey[0].save()
-            return Response(response_data, status=status.HTTP_200_OK)
-
-        # Create new template
+        # Create a new survey
         survey_template = SurveyTemplate(
+            user_id=user_id,
+            course_id=course_id,
             name=survey_template_name,
             instructions=survey_template_instructions,
             trivia=trivia,
         )
         survey_template.save()
+
+        # Copy from existing survey, no need to create an artifact section
+        if is_using_template:
+            new_survey_sections = copy.deepcopy(survey_sections)
+            for new_section in new_survey_sections:
+                questions = Question.objects.filter(section=new_section.pk)
+                # Clear the primary key
+                new_section.pk = None
+                new_section.template = survey_template
+                new_section.save()
+
+                # Iterate through questions of the copied section
+                for question in questions:
+                    new_question = copy.deepcopy(question)
+                    new_question.pk = None
+                    new_question.section = new_section
+                    new_question.save()
+        else:
+            # Create the artifact section
+            SurveySection.objects.create(
+                template=survey_template,
+                title="Artifact",
+                description="Please review the artifact.",
+                is_required=False,
+            )
+
+        response_data = {
+            "template_name": survey_template_name,
+            "instructions": survey_template_instructions,
+            "date_released": feedback_survey_date_released,
+            "date_due": feedback_survey_date_due
+        }
+
         feedback_survey = FeedbackSurvey(
             assignment=assignment,
             template=survey_template,
@@ -104,48 +130,7 @@ class SurveyList(generics.ListCreateAPIView):
         )
 
         feedback_survey.save()
-
-        if survey_template_name == "Default Template":
-            default_survey_template = get_object_or_404(SurveyTemplate, name="Survey Template")
-            for default_section in default_survey_template.sections:
-                section = SurveySection(
-                    template=survey_template,
-                    title=default_section.title,
-                    description=default_section.description,
-                    is_required=default_section.is_required,
-                )
-                section.save()
-                for default_question in default_section.questions:
-                    question = Question(
-                        section=section,
-                        text=default_question.text,
-                        question_type=default_question.question_type,
-                        number_of_text=default_question.number_of_text,
-                        number_of_scale=default_question.number_of_scale,
-                        is_required=default_question.is_required,
-                    )
-                    question.save()
-                    for default_option in default_question.options:
-                        option_choice = OptionChoice(
-                            question=question,
-                            text=default_option.text,
-                        )
-                        option_choice.save()
-        # Automatically create a section and question for artifact
-        else:
-            artifact_section = SurveySection.objects.create(
-                template=survey_template,
-                title="Artifact",
-                description="Please review the artifact.",
-                is_required=False,
-            )
-            artifact_question = Question.objects.create(
-                section=artifact_section,
-                text="",
-                question_type=Question.QuestionType.SLIDEREVIEW,
-            )
-            empty_option, _ = OptionChoice.objects.get_or_create(text="", question=artifact_question)
-            self.serializer_class(survey_template)
+        self.serializer_class(survey_template)
 
         return Response(response_data, status=status.HTTP_201_CREATED)
 

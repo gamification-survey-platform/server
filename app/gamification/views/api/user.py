@@ -206,6 +206,7 @@ class Login(generics.CreateAPIView):
             user.save()
             response_data["token"] = jwt_token["token"]
             response_data["daily_streak_increment"] = daily_streak_increment
+            response_data["id"] = user.id
             return Response(response_data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST, data={"message": "Failed to login. Invalid password."})

@@ -37,7 +37,7 @@ from .reward import (
     RewardDetail,
     UserRewardPurchases,
 )
-from .survey import SurveyGetInfo
+from .survey import SurveyGetById, SurveyGetInfo, SurveyListByUser
 from .theme import PublishedThemes, ThemeDetail
 from .user import Login, Register, UserDetail
 
@@ -112,6 +112,18 @@ urlpatterns = [
         "courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/",
         SurveyList.as_view(),
         name="survey-list",
+    ),
+    # GET all Surveys that created by a user
+    path(
+        "surveys/userid/<str:user_id>/",
+        SurveyListByUser.as_view(),
+        name="survey-list-by-user",
+    ),
+    # GET survey by id
+    path(
+        "surveys/surveyid/<str:survey_id>/",
+        SurveyGetById.as_view(),
+        name="survey-get-by-id",
     ),
     # GET all Survey contents - details, sections, questions
     path(

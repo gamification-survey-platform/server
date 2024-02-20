@@ -57,7 +57,7 @@ class Assignment(models.Model):
     def survey_template(self):
         feedback_survey = FeedbackSurvey.objects.filter(assignment=self)
         if len(feedback_survey) > 0:
-            feedback_survey = feedback_survey[0]
+            feedback_survey = feedback_survey.order_by('id').last()
             return feedback_survey.template
         else:
             return None

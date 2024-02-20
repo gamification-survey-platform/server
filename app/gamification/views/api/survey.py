@@ -1,5 +1,6 @@
 from django.forms import model_to_dict
 from django.shortcuts import get_object_or_404
+from app.gamification.models.user import CustomUser
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions, status
@@ -13,6 +14,64 @@ from app.gamification.models.question import Question
 from app.gamification.models.survey_section import SurveySection
 from app.gamification.models.survey_template import SurveyTemplate
 from app.gamification.serializers.survey import SurveySerializer
+
+class SurveyListByUser(generics.ListAPIView):
+    queryset = SurveyTemplate.objects.all()
+    serializer_class = SurveySerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        user = get_object_or_404(CustomUser, id=user_id)
+        surveys = SurveyTemplate.objects.filter(user=user)
+        return surveys
+    
+class SurveyGetById(generics.RetrieveAPIView):
+    queryset = SurveyTemplate.objects.all()
+    serializer_class = SurveySerializer
+    permission_classes = [permissions.AllowAny]  # [IsAdminOrReadOnly]
+       
+    def get(self, request, survey_id, *args, **kwargs):
+        survey_template = get_object_or_404(SurveyTemplate, id=survey_id)
+        data = dict()
+        data["pk"] = survey_template.pk
+        data["name"] = survey_template.name
+        data["instructions"] = survey_template.instructions
+        data["sections"] = []
+        data["trivia"] = None
+        if survey_template.trivia is not None:
+            data["trivia"] = model_to_dict(survey_template.trivia)
+        for section in survey_template.sections:
+            curr_section = dict()
+            curr_section["pk"] = section.pk
+            curr_section["title"] = section.title
+            curr_section["is_required"] = section.is_required
+            curr_section["questions"] = []
+            for question in section.questions:
+                curr_question = dict()
+                curr_question["pk"] = question.pk
+                curr_question["text"] = question.text
+                curr_question["is_required"] = question.is_required
+                curr_question["phrased_positively"] = question.phrased_positively
+                curr_question["gamified"] = question.gamified
+                curr_question["question_type"] = question.question_type
+                if (
+                    question.question_type == Question.QuestionType.MULTIPLECHOICE
+                    or question.question_type == Question.QuestionType.MULTIPLESELECT
+                ):
+                    curr_question["option_choices"] = []
+                    for option_choice in question.options:
+                        curr_option_choice = dict()
+                        curr_option_choice["pk"] = option_choice.pk
+                        curr_option_choice["text"] = option_choice.text
+                        curr_question["option_choices"].append(curr_option_choice)
+                elif question.question_type == Question.QuestionType.SCALEMULTIPLECHOICE:
+                    curr_question["number_of_scale"] = question.number_of_scale
+                else:
+                    curr_question["number_of_text"] = question.number_of_text
+                curr_section["questions"].append(curr_question)
+            data["sections"].append(curr_section)
+        return Response(data)
 
 
 class SurveyGetInfo(generics.RetrieveUpdateAPIView):
@@ -30,6 +89,7 @@ class SurveyGetInfo(generics.RetrieveUpdateAPIView):
             ),
         },
     )
+       
     def get(self, request, course_id, assignment_id, *args, **kwargs):
         assignment = get_object_or_404(Assignment, id=assignment_id)
         survey_template = assignment.survey_template

@@ -43,6 +43,7 @@ ALLOWED_HOSTS = [
     "13.57.207.133",
     "localhost",
     "127.0.0.1",
+    "db",
 ]
 
 
@@ -132,7 +133,7 @@ else:
             "NAME": DB_NAME,
             "USER": "dbuser",
             "PASSWORD": "dbuser",
-            "HOST": "localhost",
+            "HOST": "db",
             "PORT": "5432",
         },
     }
