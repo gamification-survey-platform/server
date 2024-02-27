@@ -1,5 +1,8 @@
 import os
 from datetime import timedelta
+from app.gamification.models.survey_template import SurveyTemplate
+from app.gamification.serializers.survey import SurveySerializer
+from django.shortcuts import get_object_or_404
 
 import jwt
 from django.conf import settings
@@ -13,6 +16,18 @@ from app.gamification.models import CustomUser, Behavior
 from app.gamification.serializers import UserSerializer
 from app.gamification.utils.levels import inv_level_func, level_func
 from app.gamification.utils.s3 import generate_presigned_post, generate_presigned_url
+
+
+class ListSurveysByUser(generics.ListAPIView):
+    queryset = SurveyTemplate.objects.all()
+    serializer_class = SurveySerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        user = get_object_or_404(CustomUser, id=user_id)
+        surveys = SurveyTemplate.objects.filter(user=user)
+        return surveys
 
 
 class UserDetail(generics.RetrieveUpdateAPIView):

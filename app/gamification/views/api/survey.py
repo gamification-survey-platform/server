@@ -14,17 +14,6 @@ from app.gamification.models.question import Question
 from app.gamification.models.survey_section import SurveySection
 from app.gamification.models.survey_template import SurveyTemplate
 from app.gamification.serializers.survey import SurveySerializer
-
-class SurveyListByUser(generics.ListAPIView):
-    queryset = SurveyTemplate.objects.all()
-    serializer_class = SurveySerializer
-    permission_classes = [permissions.AllowAny]
-
-    def get_queryset(self):
-        user_id = self.kwargs['user_id']
-        user = get_object_or_404(CustomUser, id=user_id)
-        surveys = SurveyTemplate.objects.filter(user=user)
-        return surveys
     
 class SurveyGetById(generics.RetrieveAPIView):
     queryset = SurveyTemplate.objects.all()

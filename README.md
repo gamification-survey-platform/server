@@ -10,7 +10,24 @@ You can access the application here https://gamification-client.onrender.com/.
 
 1. Download and install docker from https://www.docker.com
 
-2. Open a terminal and go to the root directory(where this readme file located)
+2. Add a `.env` file at the project directory (the same level as `manage.py`)
+   with the following environment variables:
+
+   ```
+   SECRET_KEY='django-insecure-2-mg5vw^&skma(kxqan1_7^2acwc74pb54g6&ea&&a=0g=!!0g'
+   DEBUG=True
+   ALLOWED_HOSTS='localhost 127.0.0.1'
+   DB_ENGINE='django.db.backends.postgresql'
+   DB_NAME='dev'
+   DB_USER='dbuser'
+   DB_PASSWORD='dbuser'
+   DB_PORT='5432'
+   DB_HOST='db'
+   ``` 
+
+   For more information about these environment variables, please go to step 4 in `Developer Environment Setup without Docker`
+
+3. Open a terminal and navigate to the same directory(where .env and readme file located)
 
 3. run `docker-compose up --build`
 

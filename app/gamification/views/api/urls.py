@@ -37,9 +37,9 @@ from .reward import (
     RewardDetail,
     UserRewardPurchases,
 )
-from .survey import SurveyGetById, SurveyGetInfo, SurveyListByUser
+from .survey import SurveyGetById, SurveyGetInfo
 from .theme import PublishedThemes, ThemeDetail
-from .user import Login, Register, UserDetail
+from .user import ListSurveysByUser, Login, Register, UserDetail
 
 # Create a schema view for Swagger UI
 schema_view = get_schema_view(
@@ -115,13 +115,13 @@ urlpatterns = [
     ),
     # GET all Surveys that created by a user
     path(
-        "surveys/userid/<str:user_id>/",
-        SurveyListByUser.as_view(),
-        name="survey-list-by-user",
+        "user/<str:user_id>/surveys/",
+        ListSurveysByUser.as_view(),
+        name="list-survey-by-user",
     ),
     # GET survey by id
     path(
-        "surveys/surveyid/<str:survey_id>/",
+        "surveys/<str:survey_id>/",
         SurveyGetById.as_view(),
         name="survey-get-by-id",
     ),
