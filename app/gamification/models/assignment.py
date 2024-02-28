@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from app.gamification.models.course import Course
-from app.gamification.models.feedback_survey import FeedbackSurvey
+from app.gamification.models.survey import FeedbackSurvey
 
 
 class Assignment(models.Model):
@@ -54,11 +54,11 @@ class Assignment(models.Model):
         verbose_name_plural = _("assignments")
 
     @property
-    def survey_template(self):
+    def survey(self):
         feedback_survey = FeedbackSurvey.objects.filter(assignment=self)
         if len(feedback_survey) > 0:
             feedback_survey = feedback_survey.order_by('id').last()
-            return feedback_survey.template
+            return feedback_survey
         else:
             return None
 

@@ -121,7 +121,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     )
     is_staff = models.BooleanField(
         _("staff status"),
-        default=True,
+        default=False,
         help_text=_("Designates whether the user can log into admin site."),
     )
     is_first_login = models.BooleanField(default=True)

@@ -1,13 +1,13 @@
 from rest_framework import serializers
 
-from app.gamification.models import SurveySection, SurveyTemplate
+from app.gamification.models import SurveySection, FeedbackSurvey
 from app.gamification.models.option_choice import OptionChoice
 from app.gamification.models.question import Question
 
 
 class SurveySerializer(serializers.ModelSerializer):
     class Meta:
-        model = SurveyTemplate
+        model = FeedbackSurvey
         fields = ["pk", "name", "instructions"]
 
 
@@ -57,7 +57,7 @@ class SurveySectionSerializer(serializers.ModelSerializer):
     sections = SectionSerializer(many=True)
 
     class Meta:
-        model = SurveyTemplate
+        model = FeedbackSurvey
         fields = ["pk", "name", "instructions", "sections"]
 
 

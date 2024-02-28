@@ -7,6 +7,7 @@ class Trivia(models.Model):
     question = models.TextField(blank=True)
     answer = models.TextField(blank=True)
     hints = ArrayField(models.TextField(blank=True))
+    course = models.ForeignKey("Course", on_delete=models.CASCADE)
 
     class Meta:
         db_table = "trivia"
