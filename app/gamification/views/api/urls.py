@@ -10,7 +10,7 @@ from app.gamification.views.api.artifact_review import (
     ArtifactReviewersList,
     ArtifactReviewIpsatization,
     ArtifactReviewStatus,
-    ArtifactReviewTrivia,
+
     AssignmentArtifactReviewList,
     UserArtifactReviewList,
     OptionalArtifactReview
@@ -40,6 +40,7 @@ from .reward import (
 from .survey import SurveyGetInfo
 from .theme import PublishedThemes, ThemeDetail
 from .user import Login, Register, UserDetail
+from .trivia import CourseTrivia
 
 # Create a schema view for Swagger UI
 schema_view = get_schema_view(
@@ -84,6 +85,8 @@ urlpatterns = [
     path("courses/", CourseList.as_view(), name="course-list"),
     # GET, PATCH, DELETE course by id
     path("courses/<str:course_id>/", CourseDetail.as_view(), name="course-detail"),
+    # POST trivia
+    path("courses/<str:course_id>/trivia", CourseTrivia.as_view(), name="course-trivia"),
     # GET, POST course assignments
     path("courses/<str:course_id>/assignments/", AssignmentList.as_view(), name="assignment-list"),
     # GET, PATCH, DELETE, course assignment by id
@@ -150,12 +153,6 @@ urlpatterns = [
     path(
         "courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/<str:artifact_review_pk>/",
         ArtifactReviewDetails.as_view(),
-        name="survey-detail",
-    ),
-    # POST artifact review trivia
-    path(
-        "courses/<str:course_id>/assignments/<str:assignment_id>/artifact_reviews/<str:artifact_review_pk>/trivia",
-        ArtifactReviewTrivia.as_view(),
         name="survey-detail",
     ),
     # GET ipsatization results from artifact_reviews

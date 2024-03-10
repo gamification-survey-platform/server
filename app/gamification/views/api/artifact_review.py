@@ -189,9 +189,6 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                     artifact_review = ArtifactReview.objects.get(artifact=artifact, user=registration)
                 except ArtifactReview.DoesNotExist:
                     continue
-                    # artifact_review = ArtifactReview(artifact=artifact, user=registration)
-                    # if save() here, it will create a new artifact review for each artifact
-                    # artifact_review.save()
                 if artifact_review.status == ArtifactReview.ArtifactReviewType.COMPLETED:
                     continue
                 
@@ -213,15 +210,6 @@ class AssignmentArtifactReviewList(generics.GenericAPIView):
                         if feedbackSurvey[0].date_due.astimezone(pytz.timezone("America/Los_Angeles")) < datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
                         else artifact_review.status
                     )
-
-                # print("status", feedbackSurvey[0].date_due.astimezone(pytz.timezone("America/Los_Angeles")), " ", datetime.now().astimezone(pytz.timezone("America/Los_Angeles")))
-                # if feedbackSurvey[0].date_due.astimezone(pytz.timezone("America/Los_Angeles")) < datetime.now().astimezone(pytz.timezone("America/Los_Angeles")):
-                #     artifact_review_dict["status"] = ArtifactReview.ArtifactReviewType.LATE
-                #     artifact_review.status = ArtifactReview.ArtifactReviewType.LATE
-                #     artifact_review.save()
-                # else:
-                #     artifact_review_dict["status"] = artifact_review.status
-
                     
                 artifact_review_dict["course_id"] = registration.course_id
                 artifact_review_dict["course_number"] = course.course_number
@@ -310,51 +298,10 @@ class OptionalArtifactReview(generics.GenericAPIView):
     )
     
     def get(self, request, *args, **kwargs):
-        # get assignment, course and user from the request
-        # (just record the completed reviews of one artifact)
-        # and return the artifact with least number of completed reviews, and find the user related to that artifact
-        # but it can not be the user himself, or those which already assigned to him
         user_id = get_user_pk(request)
         user = get_object_or_404(CustomUser, id=user_id)
         registrations = Registration.objects.filter(user=user)
         response_data = []
-        # for registration in registrations:
-        #     artifact_reviews = ArtifactReview.objects.filter(user=registration)
-        #     for artifact_review in artifact_reviews:
-        #         artifact = get_object_or_404(Artifact, id=artifact_review.artifact_id)
-        #         artifact_review_data = model_to_dict(artifact_review)
-        #         assignment = get_object_or_404(Assignment, id=artifact.assignment_id)
-        #         feedbackSurvey = get_object_or_404(FeedbackSurvey, assignment=assignment)
-        #         if (
-        #             feedbackSurvey.date_released.astimezone(pytz.timezone("America/Los_Angeles")) > datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
-        #             or artifact_review.status == ArtifactReview.ArtifactReviewType.COMPLETED
-        #         ):
-        #             continue
-        #         if assignment.assignment_type == Assignment.AssigmentType.Individual:
-        #             artifact_review_data["reviewing"] = Membership.objects.get(
-        #                 entity=artifact.entity
-        #             ).student.user.andrew_id
-        #             artifact_review_data["assignment_type"] = "Individual"
-        #         else:
-        #             artifact_review_data["reviewing"] = artifact.entity.team.name
-        #             artifact_review_data["assignment_type"] = "Team"
-        #         course = get_object_or_404(Course, id=registration.course_id)
-        #         artifact_review_data["date_due"] = feedbackSurvey.date_due
-        #         if artifact_review.status == ArtifactReview.ArtifactReviewType.REOPEN:
-        #             artifact_review_data["status"] = "REOPEN"
-        #         else:
-        #             artifact_review_data["status"] = (
-        #                 "LATE"
-        #                 if feedbackSurvey.date_due.astimezone(pytz.timezone("America/Los_Angeles")) < datetime.now().astimezone(pytz.timezone("America/Los_Angeles"))
-        #                 else artifact_review.status
-        #             )
-        #         artifact_review_data["course_id"] = registration.course_id
-        #         artifact_review_data["course_number"] = course.course_number
-        #         artifact_review_data["assignment_id"] = assignment.id
-        #         # print("artifact_review", artifact_review_data)
-        #         response_data.append(artifact_review_data)
-        # return Response(response_data, status=status.HTTP_200_OK)
-
 
 class UserArtifactReviewList(generics.RetrieveAPIView):
     queryset = ArtifactReview.objects.all()
@@ -387,11 +334,7 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
         },
     )
     def get(self, request, *args, **kwargs):
-        ## assigning the reviews
-        # get FeedbackSurvey and filter the ones that is_released is false and release_date is before now
         to_be_assigned_survey = FeedbackSurvey.objects.filter(is_released=False, date_released__lte=datetime.now())
-        # print("to_be_assigned_assignments", to_be_assigned_survey)
-        ## find all the students in this course
         
         for survey in to_be_assigned_survey:
             if survey.is_released == True:
@@ -400,22 +343,15 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
             survey.is_released = True
             survey.save()
             
-            # assignment_id = survey.assignment.id
-            # assignment = get_object_or_404(Assignment, id=assignment_id)
             assignment = survey.assignment
             min_reviewer = assignment.min_reviewers
             course_id = assignment.course
             registrations = Registration.objects.filter(course_id=course_id, user__is_staff=False)
             is_team_assignment = True if assignment.assignment_type == "Team" else False
-            # print("is_team", is_team_assignment)
-                
-            ## find all the artifacts for this assignment, and make sure they all are from distinct entities
-            # artifacts = Artifact.objects.filter(assignment_id=assignment.id)
             distinct_entity_ids = Artifact.objects.filter(assignment_id=assignment.id).values_list('entity_id', flat=True).distinct()
             artifacts = Artifact.objects.filter(entity_id__in=distinct_entity_ids)
 
 
-            #number of uploader(= num of artifacts)
             uploader_num = len(artifacts)
             if uploader_num == 0:
                 continue
@@ -473,100 +409,7 @@ class UserArtifactReviewList(generics.RetrieveAPIView):
                     cur_num_assigned -= 1
                     if cur_num_assigned == 0:
                         break
-            
-            # def next_index(index, list):
-            #     if index + 1 >= len(list):
-            #         return 0
-            #     return index + 1
-            
-            # sum = len(artifact_uploader_list) * min_stu
-            # cur_sum = 0
-            # cur_arti_index = 0
-            # cur_registeration_index = 0
-            
-            # artifact_list = []
-            # per_allocation = math.ceil(sum / len(registrations))
-            # real_sum = per_allocation * len(registrations)
-            # more_reviews_num = real_sum - sum
-            # print("real_sum: ", real_sum, "per_allocation: ", per_allocation)
-            # for uploader in artifact_uploader_list:
-            #     i = 0
-            #     while i < min_stu:
-            #         artifact_list.append(uploader)
-            #         i += 1
-            
 
-            
-            
-            # while cur_sum < sum:
-            #     registration = registrations[cur_registeration_index]
-            #     cur_registeration_index = next_index(cur_registeration_index, registrations)
-            #     if registration.user.name_or_andrew_id() == artifact_index_list[cur_arti_index]:
-            #         cur_arti_index = next_index(cur_arti_index, artifact_index_list)
-                    
-            #     cur_artifact, _ = artifact_uploader_list[artifact_index_list[cur_arti_index]]
-            #     artifact_review = ArtifactReview(artifact=cur_artifact, user=registration, status=ArtifactReview.ArtifactReviewType.INCOMPLETE)
-            #     artifact_review.save()
-            #     artifact_uploader_list[artifact_index_list[cur_arti_index]][1] += 1
-            #     cur_sum += 1
-            #     if artifact_uploader_list[artifact_index_list[cur_arti_index]][1] >= min_stu:
-            #         del artifact_uploader_list[artifact_index_list[cur_arti_index]]
-            #         artifact_index_list.remove(artifact_index_list[cur_arti_index])
-                    
-                    
-            
-                
-
-            # ## divide the students into groups
-            # min_stu= min(min_stu, len(artifact_uploader_list))
-            # print("416")
-            # ## distribute the artifacts to the students
-            # for registration in registrations:
-                
-            #     if registration.user.name_or_andrew_id() in artifact_uploader_list:
-            #         keys = []
-            #         if min_stu > len(artifact_uploader_list):
-            #             print("min_stu: not enough: ", min_stu, "artifact uploader list:", artifact_uploader_list)
-            #             keys = list(artifact_uploader_list.keys())
-            #         else:
-            #             print("min_stu: more: ", min_stu, "artifact uploader list:", artifact_uploader_list)
-            #             keys = random.sample(list(artifact_uploader_list.keys()), min_stu)
-            #         selected_items = {k: artifact_uploader_list[k] for k in keys}
-            #         count = 0
-            #         print("the user with artifact: ", registration.user.name_or_andrew_id(), ", and selected_items: ", selected_items)
-            #         for item in selected_items:
-            #             if count >= min_stu:
-            #                 break
-            #             if item == registration.user.name_or_andrew_id():
-            #                 continue
-            #             artifact_review = ArtifactReview(artifact=selected_items[item], user=registration, status=ArtifactReview.ArtifactReviewType.INCOMPLETE)
-            #             artifact_review.save()
-            #             print("the user with artifact: ",registration.user.name_or_andrew_id()," and created a new review, ", artifact_review)
-            #             count += 1
-                        
-            #         continue
-
-            #     ## assign the artifacts to the students
-            #     keys = []
-            #     if min_stu > len(artifact_uploader_list):
-            #         print("min_stu: not enough: ", min_stu, "artifact uploader list:", artifact_uploader_list)
-            #         keys = list(artifact_uploader_list.keys())
-            #     else:
-            #         print("min_stu: more: ", min_stu, "artifact uploader list:", artifact_uploader_list)
-            #         keys = random.sample(list(artifact_uploader_list.keys()), min_stu)
-                    
-            #     selected_items = {k: artifact_uploader_list[k] for k in keys}
-            #     print("the user: ", registration.user.name_or_andrew_id(), ", and selected_items: ", selected_items)
-            #     for item in selected_items:
-            #         print("item", selected_items[item])
-            #         artifact_review = ArtifactReview(artifact=selected_items[item], user=registration, status=ArtifactReview.ArtifactReviewType.INCOMPLETE)
-            #         artifact_review.save()
-            #         print("the user ",registration.user.name_or_andrew_id()," and created a new review, ", artifact_review)
-        
-        
-        
-        ## ------------
-        
         
         
         ## original code
@@ -656,9 +499,6 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         data["name"] = survey_template.name
         data["artifact_pk"] = artifact.pk
         data["instructions"] = survey_template.instructions
-        if survey_template.trivia is not None:
-            data["trivia"] = model_to_dict(survey_template.trivia)
-            data["trivia"]["completed"] = artifact_review.trivia_completed
         data["sections"] = []
         for section in survey_template.sections:
             curr_section = dict()
@@ -829,39 +669,6 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         artifact = get_object_or_404(Artifact, id=artifact_review.artifact_id)
         artifact.uploader_id = artifact.uploader_id + 1
         artifact.save()
-        
-        
-        # --------
-        
-        # ## 1. get all the potential assgined users
-        # artifact = get_object_or_404(Artifact, id=artifact_review.artifact_id)
-        # assignment = get_object_or_404(Assignment, id=artifact.assignment_id)
-        # artifacts = Artifact.objects.filter(assignment_id=assignment.id)
-        # artifact_inorder_by_review_received = Artifact.objects.filter(assignment_id=assignment).order_by('uploader_id')
-        
-        # get_all_potential_assigned_users_in_order = []
-        # for artifact in artifact_inorder_by_review_received:
-        #     # user_info = Membership.objects.get(entity=artifact.entity).student.user.andrew_id
-        #     user_info = artifact.entity
-        #     get_all_potential_assigned_users_in_order.append(user_info)
-
-        # ## 2. remove myself and the ones have been assigned
-        # artifact_reviews_assgined = ArtifactReview.objects.filter(user=registration)
-        # artifact_reviews_assgined_from_users = set()
-        # for a in artifact_reviews_assgined:
-        #     artifact_of_review = Artifact.objects.get(id=a.artifact_id)
-        #     # uploader_of_artifact = Membership.objects.get(entity=artifact_of_review.entity).student.user.andrew_id
-        #     uploader_of_artifact = artifact_of_review.entity
-        #     artifact_reviews_assgined_from_users.add(uploader_of_artifact)
-        # # artifact_reviews_assgined_from_users.add(user.name_or_andrew_id())
-        # cur_user_student_id = Registration.objects.get(user=user, course_id=course_id)
-        
-        # optional_choice = []
-        # for user in get_all_potential_assigned_users_in_order:
-        #     all_related_users = Membership.objects.filter(entity = user)
-        #     if user not in artifact_reviews_assgined_from_users and cur_user_student_id not in all_related_users:
-        #         optional_choice.append(user)
-        #         break
     
 
         artifact = get_object_or_404(Artifact, id=artifact_review.artifact_id)
@@ -878,41 +685,13 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
                 myself_artifact_id = tmp[0].id
                 artifact_ids_mine.append(myself_artifact_id)
 
-        # print("artifact_ids_mine", artifact_ids_mine)
-        # print("artifact_ids_assigned", artifact_ids_assigned)
+
         for a in artifacts:
             if a.id not in artifact_ids_assigned and a.id not in artifact_ids_mine:
                 optional_artifact_review = ArtifactReview(artifact=a, user=registration, status=ArtifactReview.ArtifactReviewType.OPTIONAL_INCOMPLETE)
                 optional_artifact_review.save()
                 break
                 #assign review
-            
-
-
-        ## add this one to the view
-        
-        # if len(optional_choice) == 0:
-        #     user = get_object_or_404(CustomUser, id=user_id)
-        #     level = inv_level_func(user.exp)
-        #     response_data = {
-        #         "exp": user.exp,
-        #         "level": level,
-        #         "next_level_exp": level,
-        #         "points": registration.points,
-        #         "course_experience": registration.course_experience,
-        #     }
-        #     return Response(response_data, status=status.HTTP_200_OK)
-        # else:
-        #     user = get_object_or_404(CustomUser, id=user_id)
-        #     reg_c = Registration.objects.get(user=user, course_id=course_id)
-        #     for arti in artifacts:
-        #         for member in Membership.objects.filter(entity=arti.entity):
-        #             if member.student.user.andrew_id == optional_choice[0]:
-        #                 print("arti", arti, "and uploader, ", arti.assignment)
-        #                 optional_artifact_review = ArtifactReview(artifact=arti, user=reg_c, status=ArtifactReview.ArtifactReviewType.OPTIONAL_INCOMPLETE)
-        #                 optional_artifact_review.save()
-        #                 break
-        #         break
                 
                 
 
@@ -927,58 +706,6 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
             "course_experience": registration.course_experience,
         }
         return Response(response_data, status=status.HTTP_200_OK)
-
-
-class ArtifactReviewTrivia(generics.GenericAPIView):
-    queryset = ArtifactReview.objects.all()
-    serializer_class = ArtifactReviewSerializer
-    permission_classes = [permissions.AllowAny]
-
-    @swagger_auto_schema(
-        operation_description="Submit artifact review trivia",
-        tags=["artifact_review"],
-    )
-    def post(self, request, course_id, assignment_id, artifact_review_pk, *args, **kwargs):
-        artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_pk)
-        user_id = get_user_pk(request)
-        user = get_object_or_404(CustomUser, id=user_id)
-        course = get_object_or_404(Course, id=course_id)
-        registration = get_object_or_404(Registration, course=course, user=user)
-        if not artifact_review.trivia_completed:
-            assignment = get_object_or_404(Assignment, id=assignment_id)
-            feedback_survey = get_object_or_404(FeedbackSurvey, assignment=assignment)
-            survey_template = feedback_survey.template
-            trivia = survey_template.trivia
-            answer = request.data.get("answer").strip().lower()
-            # Get all artifact reviews associated with this assignment
-            all_artifacts = Artifact.objects.filter(assignment=assignment)
-            user_artifact_reviews = ArtifactReview.objects.filter(user=registration, artifact__in=all_artifacts)
-            # Mark all trivias as completed
-            for user_review in user_artifact_reviews:
-                user_review.trivia_completed = True
-                user_review.save()
-            if trivia.answer.strip().lower() == answer:
-                behavior = Behavior.objects.get(operation="trivia")
-                user.exp += behavior.points
-                user.save()
-                registration.points += behavior.points
-                registration.course_experience += behavior.points
-                registration.save()
-                level = inv_level_func(user.exp)
-                next_level_exp = level_func(level + 1)
-                response_data = {
-                    "message": f"Congrats! You gained {behavior.points} points!",
-                    "exp": user.exp,
-                    "level": level,
-                    "next_level_exp": next_level_exp,
-                    "points": registration.points,
-                    "course_experience": registration.course_experience,
-                }
-                return Response(response_data, status=status.HTTP_201_CREATED)
-            else:
-                return Response({"message": "Uh oh! Wrong answer."}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"message": "Survey trivia already completed."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ArtifactReviewIpsatization(generics.RetrieveAPIView):

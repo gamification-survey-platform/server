@@ -16,8 +16,6 @@ class ArtifactReview(models.Model):
 
     status = models.TextField(choices=ArtifactReviewType.choices, default=ArtifactReviewType.INCOMPLETE)
 
-    trivia_completed = models.BooleanField(default=False)
-
     artifact_review_score = models.IntegerField(default=None, null=True, blank=True)
 
     max_artifact_review_score = models.IntegerField(default=None, null=True, blank=True)

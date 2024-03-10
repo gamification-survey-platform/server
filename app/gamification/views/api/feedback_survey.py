@@ -10,7 +10,6 @@ from app.gamification.models.option_choice import OptionChoice
 from app.gamification.models.question import Question
 from app.gamification.models.survey_section import SurveySection
 from app.gamification.models.survey_template import SurveyTemplate
-from app.gamification.models.trivia import Trivia
 from app.gamification.serializers.survey import SurveySerializer
 
 
@@ -56,22 +55,12 @@ class SurveyList(generics.ListCreateAPIView):
         survey_template_instructions = request.data.get("instructions")
         feedback_survey_date_released = request.data.get("date_released")
         feedback_survey_date_due = request.data.get("date_due")
-        trivia_data = request.data.get("trivia")
         response_data = {
             "template_name": survey_template_name,
             "instructions": survey_template_instructions,
             "date_released": feedback_survey_date_released,
             "date_due": feedback_survey_date_due,
-            "trivia": trivia_data,
         }
-        trivia = None
-        if trivia_data is not None and "question" in trivia_data and "answer" in trivia_data:
-            trivia = Trivia(
-                question=trivia_data["question"],
-                answer=trivia_data["answer"],
-                hints=trivia_data["hints"],
-            )
-            trivia.save()
 
         feedback_survey = FeedbackSurvey.objects.filter(assignment=assignment)
         # Check if feedback survey exists
@@ -79,7 +68,6 @@ class SurveyList(generics.ListCreateAPIView):
             survey_template = feedback_survey[0].template
             survey_template.name = survey_template_name
             survey_template.instructions = survey_template_instructions
-            survey_template.trivia = trivia
 
             survey_template.save()
             # Create new survey
@@ -92,8 +80,7 @@ class SurveyList(generics.ListCreateAPIView):
         # Create new template
         survey_template = SurveyTemplate(
             name=survey_template_name,
-            instructions=survey_template_instructions,
-            trivia=trivia,
+            instructions=survey_template_instructions
         )
         survey_template.save()
         feedback_survey = FeedbackSurvey(
@@ -181,23 +168,6 @@ class SurveyDetail(generics.RetrieveUpdateDestroyAPIView):
         if name == "":
             content = {"message": "Survey name cannot be empty"}
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
-        if request.data.get("trivia"):
-            trivia_data = request.data.get("trivia")
-            if "id" in trivia_data:
-                trivia = get_object_or_404(Trivia, id=trivia_data["id"])
-                trivia.question = trivia_data["question"]
-                trivia.answer = trivia_data["answer"]
-                trivia.hints = trivia_data["hints"]
-            else:
-                trivia = Trivia(
-                    question=trivia_data["question"],
-                    answer=trivia_data["answer"],
-                    hints=trivia_data["hints"],
-                )
-            trivia.save()
-            survey.trivia = trivia
-        elif survey.trivia is not None:
-            survey.trivia.delete()
 
         instructions = request.data.get("instructions")
         survey.name = name
