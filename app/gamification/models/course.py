@@ -60,6 +60,8 @@ class Course(models.Model):
 
     visible = models.BooleanField(_("visible"), default=False)
 
+    trivia = models.ForeignKey("Trivia", null=True, blank=True, on_delete=models.CASCADE)
+
     users = models.ManyToManyField(CustomUser, through="Registration")
 
     image_extension_validator = FileExtensionValidator(allowed_extensions=["png", "jpg", "jpeg"])

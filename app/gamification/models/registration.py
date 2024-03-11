@@ -14,6 +14,8 @@ class Registration(models.Model):
 
     course_experience = models.IntegerField(_("points"), default=0, null=True, blank=False)
 
+    trivia_completed = models.BooleanField(default=False)
+
     class Meta:
         db_table = "registration"
         verbose_name = _("registration")

@@ -1,3 +1,4 @@
+from django.forms import model_to_dict
 from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -7,6 +8,9 @@ from rest_framework.response import Response
 from app.gamification.models import Course, CustomUser, Registration
 from app.gamification.serializers import CourseSerializer
 from app.gamification.utils.auth import get_user_pk
+from app.gamification.models.trivia import Trivia
+from app.gamification.models.behavior import Behavior
+from app.gamification.utils.levels import inv_level_func, level_func
 
 
 class CourseList(generics.RetrieveUpdateDestroyAPIView):
@@ -70,13 +74,23 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         visible = request.data.get("visible")
         visible = False if visible == "false" else True
         picture = request.data.get("picture")
+        trivia_data = request.data.get("trivia")
         course = Course.objects.create(
             course_number=course_number,
             course_name=course_name,
             syllabus=syllabus,
             semester=semester,
             visible=visible,
+            trivia_data=trivia_data,
         )
+        trivia = None
+        if trivia_data is not None and "question" in trivia_data and "answer" in trivia_data:
+            trivia = Trivia(
+                question=trivia_data["question"],
+                answer=trivia_data["answer"],
+                hints=trivia_data["hints"],
+            )
+        trivia.save()
         course.picture = picture
         course.save()
         registration = Registration(user=user, course=course)
@@ -84,6 +98,45 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         serializer = CourseSerializer(course)
         return Response(serializer.data)
 
+class CourseTrivia(generics.GenericAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Submit trivia",
+        tags=["course_trivia"],
+    )
+    def post(self, request, course_id, *args, **kwargs):
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, id=user_id)
+        course = get_object_or_404(Course, id=course_id)
+        registration = get_object_or_404(Registration, course=course, user=user)
+        if not registration.trivia_completed:
+            trivia = trivia
+            answer = request.data.get("answer").strip().lower()
+            if trivia.answer.strip().lower() == answer:
+                behavior = Behavior.objects.get(operation="trivia")
+                user.exp += behavior.points
+                user.save()
+                registration.points += behavior.points
+                registration.course_experience += behavior.points
+                registration.save()
+                level = inv_level_func(user.exp)
+                next_level_exp = level_func(level + 1)
+                response_data = {
+                    "message": f"Congrats! You gained {behavior.points} points!",
+                    "exp": user.exp,
+                    "level": level,
+                    "next_level_exp": next_level_exp,
+                    "points": registration.points,
+                    "course_experience": registration.course_experience,
+                }
+                return Response(response_data, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message": "Uh oh! Wrong answer."}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message": "Survey trivia already completed."}, status=status.HTTP_400_BAD_REQUEST)
 
 class CourseTeamList(generics.RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
@@ -188,6 +241,11 @@ class CourseDetail(generics.ListCreateAPIView):
         },
     )
     def get(self, request, course_id, *args, **kwargs):
+
+        if course.trivia is not None:
+            trivia_dict = model_to_dict(course.trivia)
+            trivia_dict["completed"] = registration.trivia_completed
+
         andrew_id = get_user_pk(request)
         user = CustomUser.objects.get(andrew_id=andrew_id)
         course = get_object_or_404(Course, pk=course_id)
