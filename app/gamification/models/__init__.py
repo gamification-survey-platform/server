@@ -14,7 +14,6 @@ from .registration import *
 from .reward import *
 from .survey_section import *
 from .survey_template import *
-from .todo_list import *
 from .trivia import *
 from .user import *
 from .user_reward import *
