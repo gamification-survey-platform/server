@@ -503,7 +503,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_pk)
         artifact = artifact_review.artifact
         assignment = get_object_or_404(Assignment, id=assignment_id)
-        survey_template = assignment.survey_template
+        survey_template = assignment.survey
         if not survey_template:
             return Response({"message": "Survey has not been created."}, status=status.HTTP_400_BAD_REQUEST)
         data = dict()

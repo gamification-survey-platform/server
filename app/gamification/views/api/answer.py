@@ -166,7 +166,7 @@ class ArtifactAnswerDetail(generics.GenericAPIView):
             artifact_id=artifact_pk, status=ArtifactReview.ArtifactReviewType.COMPLETED
         )
         assignment = get_object_or_404(Assignment, id=assignment_id)
-        survey_template = assignment.survey_template
+        survey_template = assignment.survey
         data = dict()
         data["pk"] = survey_template.pk
         data["name"] = survey_template.name
