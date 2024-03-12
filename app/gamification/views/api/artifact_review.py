@@ -503,7 +503,7 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         artifact_review = get_object_or_404(ArtifactReview, id=artifact_review_pk)
         artifact = artifact_review.artifact
         assignment = get_object_or_404(Assignment, id=assignment_id)
-        survey_template = assignment.survey_template
+        survey_template = assignment.survey
         if not survey_template:
             return Response({"message": "Survey has not been created."}, status=status.HTTP_400_BAD_REQUEST)
         data = dict()
@@ -511,9 +511,6 @@ class ArtifactReviewDetails(generics.RetrieveUpdateDestroyAPIView):
         data["name"] = survey_template.name
         data["artifact_pk"] = artifact.pk
         data["instructions"] = survey_template.instructions
-        if survey_template.trivia is not None:
-            data["trivia"] = model_to_dict(survey_template.trivia)
-            data["trivia"]["completed"] = artifact_review.trivia_completed
         data["sections"] = []
         for section in survey_template.sections:
             curr_section = dict()
