@@ -13,7 +13,6 @@ from app.gamification.models.survey import FeedbackSurvey
 from app.gamification.models.option_choice import OptionChoice
 from app.gamification.models.question import Question
 from app.gamification.models.survey_section import SurveySection
-from app.gamification.models.trivia import Trivia
 from app.gamification.serializers.survey import SurveySerializer
 
 
