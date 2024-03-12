@@ -1,5 +1,8 @@
 import os
 from datetime import timedelta
+from app.gamification.models.survey import FeedbackSurvey
+from app.gamification.serializers.survey import SurveySerializer
+from django.shortcuts import get_object_or_404
 
 import jwt
 from django.conf import settings
@@ -206,6 +209,7 @@ class Login(generics.CreateAPIView):
             user.save()
             response_data["token"] = jwt_token["token"]
             response_data["daily_streak_increment"] = daily_streak_increment
+            response_data["id"] = user.id
             return Response(response_data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST, data={"message": "Failed to login. Invalid password."})
@@ -246,3 +250,15 @@ class Register(generics.ListCreateAPIView):
         return Response(
             status=status.HTTP_400_BAD_REQUEST, data={"message": "Failed to register. Username already taken."}
         )
+
+
+class UserSurvey(generics.ListAPIView):
+    queryset = FeedbackSurvey.objects.all()
+    serializer_class = SurveySerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        user = get_object_or_404(CustomUser, id=user_id)
+        surveys = FeedbackSurvey.objects.filter(user=user)
+        return surveys

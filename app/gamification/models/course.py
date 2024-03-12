@@ -5,6 +5,7 @@ from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext_lazy as _
 
 from app.gamification.models.entity import Team
+from app.gamification.models.trivia import Trivia
 
 from .user import CustomUser
 

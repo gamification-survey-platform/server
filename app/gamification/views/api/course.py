@@ -1,4 +1,6 @@
+import json
 from django.shortcuts import get_object_or_404
+from app.gamification.models.trivia import Trivia
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions, status
@@ -70,15 +72,37 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         visible = request.data.get("visible")
         visible = False if visible == "false" else True
         picture = request.data.get("picture")
+
+        # Check if trivia is set
+        is_trivia_enabled = request.data.get("enableTrivia") == 'true'
+
         course = Course.objects.create(
             course_number=course_number,
             course_name=course_name,
             syllabus=syllabus,
             semester=semester,
-            visible=visible,
+            visible=visible
         )
         course.picture = picture
         course.save()
+
+        # Get trivia data
+        if is_trivia_enabled:
+            question = request.data.get("question")
+            answer = request.data.get("answer")
+            hints = []
+            for key in request.data.keys():
+                if key.startswith("hint"):
+                    hints.append(request.data.get(key))
+            if question and answer:
+                trivia = Trivia(
+                    course=course,
+                    question=question,
+                    answer=answer,
+                    hints=hints
+                )
+            trivia.save()
+
         registration = Registration(user=user, course=course)
         registration.save()
         serializer = CourseSerializer(course)
@@ -159,7 +183,6 @@ class CourseTeamList(generics.RetrieveUpdateDestroyAPIView):
         registration.save()
         serializer = CourseSerializer(course)
         return Response(serializer.data)
-
 
 
 class CourseDetail(generics.ListCreateAPIView):
@@ -246,6 +269,27 @@ class CourseDetail(generics.ListCreateAPIView):
         visible = request.data.get("visible")
         visible = True if visible == "true" else False
         picture = request.data.get("picture")
+        # Check if trivia is set
+        is_trivia_enabled = request.data.get("enableTrivia") == 'true'
+        # Get trivia data
+        if is_trivia_enabled:
+            question = request.data.get("question")
+            answer = request.data.get("answer")
+            hints = []
+            for key in request.data.keys():
+                if key.startswith("hint"):
+                    hints.append(request.data.get(key))
+            if question and answer:
+                trivia = Trivia(
+                    course=course,
+                    question=question,
+                    answer=answer,
+                    hints=hints
+                )
+            trivia.save()
+        elif course.trivia is not None:
+            course.trivia.delete()
+
         course.course_number = course_number
         course.course_name = course_name
         course.syllabus = syllabus

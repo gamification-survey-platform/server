@@ -5,7 +5,7 @@ from .assignment import *
 from .behavior import *
 from .course import *
 from .entity import *
-from .feedback_survey import *
+from .survey import *
 from .membership import *
 from .notification import *
 from .option_choice import *
@@ -13,7 +13,6 @@ from .question import *
 from .registration import *
 from .reward import *
 from .survey_section import *
-from .survey_template import *
 from .todo_list import *
 from .trivia import *
 from .user import *

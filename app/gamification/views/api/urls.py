@@ -1,4 +1,5 @@
 from django.urls import path
+from app.gamification.views.api.survey import SurveyDetail
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg.views import get_schema_view
@@ -22,9 +23,8 @@ from .answer import (
     ArtifactAnswerKeywordList,
     ArtifactAnswerMultipleChoiceList,
 )
-from .assignment import AssignmentDetail, AssignmentList
-from .course import CourseDetail, CourseList, CourseTeamList
-from .feedback_survey import SurveyDetail, SurveyList
+from .assignment import AssignmentDetail, AssignmentList, AssignmentSurvey
+from .course import CourseDetail, CourseList
 from .leaderboard import CourseLeaderboard, PlatformLeaderboard
 from .member import MemberList
 from .team import TeamList
@@ -37,9 +37,8 @@ from .reward import (
     RewardDetail,
     UserRewardPurchases,
 )
-from .survey import SurveyGetInfo
 from .theme import PublishedThemes, ThemeDetail
-from .user import Login, Register, UserDetail
+from .user import Login, Register, UserDetail, UserSurvey
 
 # Create a schema view for Swagger UI
 schema_view = get_schema_view(
@@ -94,6 +93,7 @@ urlpatterns = [
     path("courses/<str:course_id>/members/", MemberList.as_view(), name="member-list"),
     # GET, POST, DELETE member from course
     path("courses/<str:course_id>/teams/", TeamList.as_view(), name="team-list"),
+    # GET, POST, DELETE member from course
     # POST, GET artifact for an assignment
     path(
         "courses/<str:course_id>/assignments/<str:assignment_id>/artifacts/",
@@ -107,21 +107,21 @@ urlpatterns = [
         name="submit-artifact",
     ),
     # Surveys are templates created by instructors --> used to create ArtifactReviews
-    # GET, POST survey for an assignment
+    # GET, POST, PATCH survey based on assignment_id
     path(
-        "courses/<str:course_id>/assignments/<str:assignment_id>/feedback_surveys/",
-        SurveyList.as_view(),
+        "assignments/<str:assignment_id>/surveys/",
+        AssignmentSurvey.as_view(),
         name="survey-list",
     ),
-    # GET all Survey contents - details, sections, questions
+    # GET all Surveys based on user_id
     path(
-        "courses/<str:course_id>/assignments/<str:assignment_id>/surveys/",
-        SurveyGetInfo.as_view(),
-        name="survey-get-info",
+        "user/<str:user_id>/surveys/",
+        UserSurvey.as_view(),
+        name="user-survey",
     ),
-    # PATCH, DELETE survey template
+    # GET, PATCH, DELETE survey template
     path(
-        "feedback_surveys/<str:feedback_survey_pk>",
+        "surveys/<str:survey_pk>/",
         SurveyDetail.as_view(),
         name="survey-detail",
     ),

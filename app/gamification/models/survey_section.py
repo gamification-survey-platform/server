@@ -9,7 +9,7 @@ class SurveySection(models.Model):
     Model for SurveySection
     """
 
-    template = models.ForeignKey("SurveyTemplate", on_delete=models.CASCADE)
+    survey = models.ForeignKey("FeedbackSurvey", on_delete=models.CASCADE)
 
     title = models.CharField(max_length=150)
 

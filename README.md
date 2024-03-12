@@ -6,29 +6,40 @@ elements to encourage students' engagement. It is based on Django 3.2 and
 PostgreSQL server database.
 You can access the application here https://gamification-client.onrender.com/.
 
-# Developer Environment Setup
+# Developer Environment Setup with Docker
+
+1. Download and install docker from https://www.docker.com
+
+2. Add a `.env` file at the project directory (the same level as `manage.py`)
+   with the following environment variables:
+
+   ```
+   SECRET_KEY='django-insecure-2-mg5vw^&skma(kxqan1_7^2acwc74pb54g6&ea&&a=0g=!!0g'
+   DEBUG=True
+   ALLOWED_HOSTS='localhost 127.0.0.1'
+   DB_ENGINE='django.db.backends.postgresql'
+   DB_NAME='dev'
+   DB_USER='dbuser'
+   DB_PASSWORD='dbuser'
+   DB_PORT='5432'
+   DB_HOST='db'
+   ``` 
+
+   For more information about these environment variables, please go to step 4 in `Developer Environment Setup without Docker`
+
+3. Open a terminal and navigate to the same directory(where .env and readme file located)
+
+3. run `docker-compose up --build`
+
+4. You are good to go
+
+Note: If you want to shut down the container, please first stop all containers that are running (with Ctrl-C) and run `docker-compose down`. With the current docker configuration, everytime you restart the database container, the database will be refreshed
+
+# Developer Environment Setup without Docker
 
 1. Install required python packages
 
    It is suggested to create a brand-new virtual environment then `pip install -r requirements.txt`.
-
-   > **Deprecated**
-   >
-   > For Mac users, replace `mysqlclient==2.1.0` with `PyMySQL==1.0.2` in `requirements.txt` file. Then add the following lines to `config/__init__.py`
-   >
-   > ```python
-   > import pymysql
-   > pymysql.install_as_MySQLdb()
-   > ```
-   >
-   > > Note: Don't forget to add `config/__init__.py` to your local 'ignore' file
-   > > list so as not to mess up the repo. Follow instructions in this [link](https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files#excluding-local-files-without-creating-a-gitignore-file)
-   > > for how to ignore files locally.
-   >
-   > > What we are doing here is essentially changing the [MySQL driver](https://docs.djangoproject.com/en/3.2/ref/databases/#mysql-db-api-drivers) for Django,
-   > > since `mysqlclient` seems to have some compatiblity issues on Mac while [`PyMySQL`](https://pypi.org/project/PyMySQL/)
-   > > is purely based on Python and will work on any platform. But `mysqlclient` is
-   > > officially supported by Django in this [list](https://docs.djangoproject.com/en/3.2/ref/databases/#mysql-db-api-drivers), so we will stick with it on other platforms.
 
 2. Install PostgreSQL server locally
 
