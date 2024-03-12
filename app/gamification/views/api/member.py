@@ -97,7 +97,7 @@ class MemberList(generics.RetrieveUpdateDestroyAPIView):
         if not andrew_id:
             return Response({"message": "AndrewID is missing"}, status=status.HTTP_400_BAD_REQUEST)
         # For welcome course "2", directly enroll the user without additional checks
-        if course_id == "20230516" or course_id == "20230521":
+        if course_id == "1" or course_id == "2":
             course = get_object_or_404(Course, pk=course_id)
             try:
                 new_user = CustomUser.objects.get(andrew_id=andrew_id)
