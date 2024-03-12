@@ -37,7 +37,6 @@ class AssignmentSurvey(generics.ListCreateAPIView):
         data["name"] = survey.name
         data["instructions"] = survey.instructions
         data["sections"] = []
-        data["trivia"] = None
         for section in survey.sections:
             curr_section = dict()
             curr_section["pk"] = section.pk
