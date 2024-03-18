@@ -27,4 +27,5 @@ class TriviaView(generics.GenericAPIView):
         if trivia:
             serializer = TriviaSerializer(trivia)
             return Response(serializer.data)
-        return Response({'message': 'No trivia found for this course'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response(status=status.HTTP_204_NO_CONTENT)
