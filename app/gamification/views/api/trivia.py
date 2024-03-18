@@ -23,7 +23,7 @@ class TriviaView(generics.GenericAPIView):
     permission_classes = [AllowAny]
     def get(self, request, course_id):
         course = get_object_or_404(Course, pk=course_id)
-        trivia = Trivia.objects.filter(course=course).first()  # Fetch the first trivia related to the course
+        trivia = Trivia.objects.filter(course=course).first()
         if trivia:
             serializer = TriviaSerializer(trivia)
             return Response(serializer.data)
