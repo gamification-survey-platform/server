@@ -16,7 +16,7 @@ from app.gamification.views.api.artifact_review import (
     OptionalArtifactReview
 )
 
-from app.gamification.views.api.trivia import Trivia
+from app.gamification.views.api.trivia import TriviaView
 from app.gamification.views.api.artifacts import ArtifactDetail, AssignmentArtifact
 
 from .answer import (
@@ -82,9 +82,9 @@ urlpatterns = [
     # GET user courses
     # POST course
     path("courses/", CourseList.as_view(), name="course-list"),
-    # GET / POST trivia
+    # GET trivia
     path(
-        "courses/<str:course_id>/trivia", Trivia.as_view(), name="course-detail-trivia",
+        "courses/<str:course_id>/trivia", TriviaView.as_view(), name="course-trivia",
     ),
     # GET, PATCH, DELETE course by id
     path("courses/<str:course_id>/", CourseDetail.as_view(), name="course-detail"),
