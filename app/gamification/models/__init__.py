@@ -16,3 +16,4 @@ from .survey_section import *
 from .trivia import *
 from .user import *
 from .user_reward import *
+from .user_trivia import *
