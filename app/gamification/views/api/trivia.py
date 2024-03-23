@@ -16,16 +16,21 @@ from app.gamification.models.trivia import Trivia
 from app.gamification.serializers.trivia import TriviaSerializer
 from app.gamification.utils.auth import get_user_pk
 from app.gamification.utils.levels import inv_level_func, level_func
+from app.gamification.models.user_trivia import UserTrivia
 
 
 class TriviaView(generics.GenericAPIView):
     serializer_class = TriviaSerializer
     permission_classes = [AllowAny]
     def get(self, request, course_id):
+        user_pk = get_user_pk(request)
+        user = get_object_or_404(CustomUser, pk=user_pk)
         course = get_object_or_404(Course, pk=course_id)
-        trivia_qs = Trivia.objects.filter(course=course)
+        # Get trivia items that have not been completed by the user
+        completed_trivia_ids = UserTrivia.objects.filter(user=user, is_completed=True).values_list('trivia', flat=True)
+        trivia_qs = Trivia.objects.filter(course=course).exclude(id__in=completed_trivia_ids)
         if trivia_qs.exists():
             serializer = TriviaSerializer(trivia_qs, many=True)
             return Response(serializer.data)
         else:
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({"message": "You have completed all trivia for this course"}, status=status.HTTP_204_NO_CONTENT)
