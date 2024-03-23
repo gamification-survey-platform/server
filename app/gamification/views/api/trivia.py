@@ -23,9 +23,9 @@ class TriviaView(generics.GenericAPIView):
     permission_classes = [AllowAny]
     def get(self, request, course_id):
         course = get_object_or_404(Course, pk=course_id)
-        trivia = Trivia.objects.filter(course=course).first()
-        if trivia:
-            serializer = TriviaSerializer(trivia)
+        trivia_qs = Trivia.objects.filter(course=course)
+        if trivia_qs.exists():
+            serializer = TriviaSerializer(trivia_qs, many=True)
             return Response(serializer.data)
         else:
             return Response(status=status.HTTP_204_NO_CONTENT)
