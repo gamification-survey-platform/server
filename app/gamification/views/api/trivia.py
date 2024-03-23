@@ -23,8 +23,8 @@ class TriviaView(generics.GenericAPIView):
     serializer_class = TriviaSerializer
     permission_classes = [AllowAny]
     def get(self, request, course_id):
-        user_pk = get_user_pk(request)
-        user = get_object_or_404(CustomUser, pk=user_pk)
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, pk=user_id)
         course = get_object_or_404(Course, pk=course_id)
         # Get trivia items that have not been completed by the user
         completed_trivia_ids = UserTrivia.objects.filter(user=user, is_completed=True).values_list('trivia', flat=True)
