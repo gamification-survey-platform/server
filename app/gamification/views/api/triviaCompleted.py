@@ -27,9 +27,14 @@ class MarkTriviaCompletedView(generics.GenericAPIView):
             return Response({'message': 'Trivia already completed'}, status=status.HTTP_208_ALREADY_REPORTED)
         user_trivia.is_completed = True
         user_trivia.save()
+
+        hints_used = request.data.get('hintsUsed', 0)
+        initial_points = 12
+        for i in range(hints_used):
+            initial_points = max(0, initial_points // 2)
+        points = initial_points
         # Update user points and experience
         registration = Registration.objects.get(user=user, course=trivia.course)
-        points = 10
         user.exp += points
         user.save()
         registration.points += points
@@ -37,6 +42,7 @@ class MarkTriviaCompletedView(generics.GenericAPIView):
         registration.save()
         level = inv_level_func(user.exp)
         next_level_exp = level_func(level + 1)
+
         response_data = {
             "message": f"Congrats! You gained {points} points!",
             "exp": user.exp,
