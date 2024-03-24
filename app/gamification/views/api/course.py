@@ -10,7 +10,6 @@ from app.gamification.models import Course, CustomUser, Registration
 from app.gamification.serializers import CourseSerializer
 from app.gamification.utils.auth import get_user_pk
 
-
 class CourseList(generics.RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
@@ -85,24 +84,17 @@ class CourseList(generics.RetrieveUpdateDestroyAPIView):
         )
         course.picture = picture
         course.save()
-
         # Get trivia data
         if is_trivia_enabled:
-            question = request.data.get("question")
-            answer = request.data.get("answer")
-            hints = []
-            for key in request.data.keys():
-                if key.startswith("hint"):
-                    hints.append(request.data.get(key))
-            if question and answer:
-                trivia = Trivia(
+            trivia_items_data = parse_trivia_items(request)
+            print(trivia_items_data)
+            for trivia_data in trivia_items_data:
+                Trivia.objects.create(
                     course=course,
-                    question=question,
-                    answer=answer,
-                    hints=hints
+                    question=trivia_data['question'],
+                    answer=trivia_data['answer'],
+                    hints=trivia_data['hints']
                 )
-            trivia.save()
-
         registration = Registration(user=user, course=course)
         registration.save()
         serializer = CourseSerializer(course)
@@ -326,3 +318,29 @@ class CourseDetail(generics.ListCreateAPIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         return Response(status=status.HTTP_200_OK)
+
+# This function is used to parse the trivia items from the request to handle multiple trivia items
+def parse_trivia_items(request):
+    trivia_items = []
+    i = 0
+    while True:
+        base_key = f'trivia[{i}]'
+        if f'{base_key}.question' in request.data:
+            trivia_data = {
+                'question': request.data.get(f'{base_key}.question'),
+                'answer': request.data.get(f'{base_key}.answer'),
+                'hints': []
+            }
+            j = 0
+            while True:
+                hint_key = f'{base_key}[hints][{j}]'
+                if hint_key in request.data:
+                    trivia_data['hints'].append(request.data[hint_key])
+                    j += 1
+                else:
+                    break
+            trivia_items.append(trivia_data)
+            i += 1
+        else:
+            break
+    return trivia_items

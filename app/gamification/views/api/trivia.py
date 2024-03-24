@@ -16,16 +16,26 @@ from app.gamification.models.trivia import Trivia
 from app.gamification.serializers.trivia import TriviaSerializer
 from app.gamification.utils.auth import get_user_pk
 from app.gamification.utils.levels import inv_level_func, level_func
+from app.gamification.models.user_trivia import UserTrivia
 
+from django.http import JsonResponse
 
 class TriviaView(generics.GenericAPIView):
     serializer_class = TriviaSerializer
     permission_classes = [AllowAny]
+
     def get(self, request, course_id):
+        user_id = get_user_pk(request)
+        user = get_object_or_404(CustomUser, pk=user_id)
         course = get_object_or_404(Course, pk=course_id)
-        trivia = Trivia.objects.filter(course=course).first()
-        if trivia:
-            serializer = TriviaSerializer(trivia)
-            return Response(serializer.data)
+        all_trivia_qs = Trivia.objects.filter(course=course)
+        completed_trivia_ids = UserTrivia.objects.filter(user=user, is_completed=True).values_list('trivia', flat=True)
+        remaining_trivia_qs = all_trivia_qs.exclude(id__in=completed_trivia_ids)
+
+        if not all_trivia_qs.exists():
+            return JsonResponse({"message": "No trivia for this course"}, status=status.HTTP_204_NO_CONTENT)
+        elif not remaining_trivia_qs.exists():
+            return JsonResponse({"message": "All trivia completed"}, status=status.HTTP_208_ALREADY_REPORTED)
         else:
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            serializer = TriviaSerializer(remaining_trivia_qs, many=True)
+            return Response(serializer.data)

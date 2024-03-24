@@ -12,3 +12,4 @@ class UserTrivia(models.Model):
         db_table = "user_trivia"
         verbose_name = "user trivia"
         verbose_name_plural = "user trivia"
+        unique_together = ('user', 'trivia')
