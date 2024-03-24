@@ -10,6 +10,9 @@ from rest_framework.response import Response
 from app.gamification.models import Trivia, UserTrivia
 from app.gamification.models.user import CustomUser
 from app.gamification.utils.auth import get_user_pk
+from app.gamification.utils.levels import inv_level_func, level_func
+from app.gamification.models.registration import Registration
+from app.gamification.models.behavior import Behavior
 
 
 class MarkTriviaCompletedView(generics.GenericAPIView):
@@ -24,4 +27,22 @@ class MarkTriviaCompletedView(generics.GenericAPIView):
             return Response({'message': 'Trivia already completed'}, status=status.HTTP_208_ALREADY_REPORTED)
         user_trivia.is_completed = True
         user_trivia.save()
-        return Response({'message': 'Trivia marked as completed'}, status=status.HTTP_200_OK)
+        # Update user points and experience
+        registration = Registration.objects.get(user=user, course=trivia.course)
+        points = 10
+        user.exp += points
+        user.save()
+        registration.points += points
+        registration.course_experience += points
+        registration.save()
+        level = inv_level_func(user.exp)
+        next_level_exp = level_func(level + 1)
+        response_data = {
+            "message": f"Congrats! You gained {points} points!",
+            "exp": user.exp,
+            "level": level,
+            "next_level_exp": next_level_exp,
+            "points": registration.points,
+            "course_experience": registration.course_experience,
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
