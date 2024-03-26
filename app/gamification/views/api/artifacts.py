@@ -29,7 +29,6 @@ class AssignmentArtifact(generics.ListCreateAPIView):
     permission_classes = [permissions.AllowAny]
 
     def create_artifact(self, request, assignment, registration, entity):
-        print("create artifact", registration)
         try:
             artifact = Artifact.objects.get(assignment=assignment, entity=entity)
         except Artifact.DoesNotExist:
@@ -98,43 +97,15 @@ class AssignmentArtifact(generics.ListCreateAPIView):
                         artifact_review.save()
         else:
             classmates = Registration.objects.filter(course=course).exclude(user__is_staff=True).order_by("id")
-            print("classmates_without_staff", classmates)
-            ##find the starting point
-            # for i in range(len(classmates)):
-            #     if classmates[i].user == user:
-            #         sublist_classmates = self.next_n_classmates(classmates, i, cur_assignment_min)
-            #         print("sublist_classmates", sublist_classmates)
-            #         for next_one in sublist_classmates:
-            #             if not ArtifactReview.objects.filter(artifact=artifact, user=next_one).exists():
-            #                 artifact_review = ArtifactReview(artifact=artifact, user=next_one)
-            #                 artifact_review.save()
-            #         break
-                    
-                    
-                    
-            ## ----------------- old code -----------------
-            # if not user.is_staff:
-            #     for i in range(len(classmates)):
-            #         if classmates[i].user == user:
-            #             next_n_classmates = self.next_n_classmates(i, classmates, cur_assignment_min)
-            #             for next_one in next_n_classmates:
-            #                 if not ArtifactReview.objects.filter(artifact=artifact, user=next_one).exists():
-            #                     artifact_review = ArtifactReview(artifact=artifact, user=next_one)
-            #                     artifact_review.save()
-            #             break
-            
-            # registrations = [i for i in Registration.objects.filter(course=course) if i.user != user]
-            # if not user.is_staff:
-            #     for single_registration in registrations:
-            #         print("create artifact review ", single_registration)
-            #         single_user = single_registration.user
-            #         # create artifact review if it doesn't exist
-            #         if (
-            #             not ArtifactReview.objects.filter(artifact=artifact, user=single_registration).exists()
-            #             and not single_user.is_staff
-            #         ):
-            #             artifact_review = ArtifactReview(artifact=artifact, user=single_registration)
-            #             artifact_review.save()
+            #find the starting point
+            for i in range(len(classmates)):
+                if classmates[i].user == user:
+                    sublist_classmates = self.next_n_classmates(classmates, i, cur_assignment_min)
+                    for next_one in sublist_classmates:
+                        if not ArtifactReview.objects.filter(artifact=artifact, user=next_one).exists():
+                            artifact_review = ArtifactReview(artifact=artifact, user=next_one)
+                            artifact_review.save()
+                    break
 
     @swagger_auto_schema(
         operation_description="Upload an artifact for an assignment",
